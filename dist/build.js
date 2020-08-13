@@ -196,8 +196,7 @@ var rtVis = (function () {
     };
     return rtVis;
 }());
-;
-var vis = new rtVis();
+;;var vis = new rtVis();
 vis.setupPage();
 vis.createMap();
 vis.plotRt('R0');;var __extends = (this && this.__extends) || (function () {

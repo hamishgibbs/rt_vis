@@ -12,7 +12,7 @@ module.exports = function(grunt) {
         sourceMap :true,
       },
       js: {
-        src: ['src/js/rt_vis.js', 'src/js/setup.js', 'src/js/map.js', 'src/js/ts.js'],
+        src: ['src/js/rt_vis.js', 'src/js/app.js', 'src/js/setup.js', 'src/js/map.js', 'src/js/ts.js'],
         dest: 'dist/build.js',
       },
       css: {
