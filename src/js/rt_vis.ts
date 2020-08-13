@@ -1,14 +1,3 @@
-// Need a setup method to define containers of each vis (map and timeseries)
-
-// Need a plotMap method
-
-// Need a plotTs method
-
-// each method is exported from the rtVis class, relies on functions in other .ts files
-
-//It may be prudent to redo lots of this. other project is a hot mess
-
-//Make d3 available for typescript
 try {
   var d3 = require('d3')
 }
