@@ -53,7 +53,7 @@ class map extends rtVis {
 
     this.createLegend(map_svg, map_svg_dims, colour_ref)
 
-    var areaNames = geoData.features.map(function(d){return(d.properties.sovereignt)}).filter(this.onlyUnique)
+    var areaNames = geoData.features.map(function(d){return(d.properties.sovereignt)}).filter(this.onlyUnique).sort()
 
     // @ts-ignore
     $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select a country', data: areaNames}).on('select2:select', dropdownClick);
@@ -75,12 +75,12 @@ class map extends rtVis {
     var legend_height = 200
 
     var legend_x = map_svg_dims.width / 30
-    var legend_y = map_svg_dims.height / 2 - (legend_height / 2)
+    var legend_y = map_svg_dims.height / 2
 
     map_svg.append("rect")
       .attr("x", legend_x)
       .attr("y", legend_y)
-      .attr("width", 168)
+      .attr("width", 185)
       .attr("height", legend_height)
       .attr('fill', 'white')
       .attr('stroke', 'black')
@@ -91,8 +91,8 @@ class map extends rtVis {
     map_svg.append('text')
       .attr("x", legend_x + 6)
       .attr("y", legend_y + 20)
-      .text('Expected change in daily cases')
-      .style('font-size', '12')
+      .text('Expected change in cases')
+      .style('font-size', '10pt')
       .style('font-weight', 'bold')
 
     var i;
