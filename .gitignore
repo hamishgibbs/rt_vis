@@ -3,5 +3,3 @@ node_modules
 src/js/*.js
 src/js/*.js.map
 *.tscache
-Untitled.html
-Untitled.Rmd
