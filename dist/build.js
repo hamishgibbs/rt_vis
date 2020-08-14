@@ -398,7 +398,7 @@ var map = (function (_super) {
             .on("mouseout", this.mapMouseOut)
             .on('click', mapClick)
             .style('stroke', 'black')
-            .style('stroke-width', '0.5px');
+            .style('stroke-width', '0.2px');
         this.createLegend(map_svg, map_svg_dims, colour_ref);
         var areaNames = geoData.features.map(function (d) { return (d.properties.sovereignt); }).filter(this.onlyUnique).sort();
         $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select a country', data: areaNames }).on('select2:select', dropdownClick);
@@ -578,25 +578,66 @@ var ts = (function (_super) {
             .attr('stroke', 'black')
             .attr('stroke-width', '1px')
             .attr('stroke-opacity', 0);
+        var tooltip = d3.select("#ts-container")
+            .append("div")
+            .style("opacity", 0)
+            .attr("class", "tooltip")
+            .attr('id', 'ts-tooltip')
+            .style("background-color", "white")
+            .style("border", "solid")
+            .style("border-width", "2px")
+            .style("border-radius", "5px")
+            .style("padding", "5px")
+            .style('font-size', '9pt')
+            .style('overflow', 'visible');
+        function tsMouseMove() {
+            var _this = this;
+            d3.select("#ts-hover-line")
+                .attr('x1', d3.mouse(this)[0])
+                .attr('x2', d3.mouse(this)[0]);
+            console.log(x.invert(d3.mouse(this)[0]).toDateString(), y.invert(d3.mouse(this)[1]));
+            var mousedata = rtData.filter(function (a) { return parseTime(a['date']).toDateString() == x.invert(d3.mouse(_this)[0]).toDateString(); });
+            var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
+                '<br>' +
+                '50% CI: ' + parseFloat(mousedata[0]['lower_50']) + ' to ' + parseFloat(mousedata[0]['upper_50']) +
+                '<br>' +
+                '90% CI: ' + parseFloat(mousedata[0]['lower_90']) + ' to ' + parseFloat(mousedata[0]['upper_90']);
+            var x_offset;
+            if (ts_svg_dims.width - d3.mouse(this)[0] < 80) {
+                x_offset = -70;
+            }
+            else {
+                x_offset = 70;
+            }
+            tooltip.html(tooltip_str)
+                .style("left", (d3.mouse(this)[0] + x_offset) + "px")
+                .style("top", (d3.mouse(this)[1] - 270) + "px");
+            console.log(mousedata[0]);
+        }
         ts_svg.append("rect")
             .attr("class", "overlay")
             .attr("width", ts_svg_dims.width)
             .attr("height", ts_svg_dims.height)
-            .on('mousemove', this.tsMouseMove)
+            .on('mousemove', tsMouseMove)
             .on('mouseenter', this.tsMouseIn)
             .on('mouseout', this.tsMouseOut)
             .attr('fill-opacity', '0');
     };
     ts.prototype.tsMouseMove = function (e) {
+        console.log(this);
         d3.select("#ts-hover-line")
             .attr('x1', d3.mouse(this)[0])
             .attr('x2', d3.mouse(this)[0]);
     };
     ts.prototype.tsMouseIn = function (e) {
+        d3.select('#ts-tooltip')
+            .style("opacity", 1);
         d3.select("#ts-hover-line")
             .attr('stroke-opacity', 1);
     };
     ts.prototype.tsMouseOut = function (e) {
+        d3.select('#ts-tooltip')
+            .style("opacity", 0);
         d3.select("#ts-hover-line")
             .attr('stroke-opacity', 0);
     };

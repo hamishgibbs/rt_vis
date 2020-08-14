@@ -123,4 +123,10 @@
   fill: #a8a5d0;
 }
 
+.tooltip {
+  position: relative;
+  display: inline-block;
+  border-bottom: 1px dotted black;
+}
+
 /*# sourceMappingURL=styles.css.map */
