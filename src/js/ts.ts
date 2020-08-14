@@ -15,6 +15,7 @@ class ts extends rtVis {
   plotTs(rtData, country, time, r0 = false) {
 
     d3.select("#ts-svg").remove()
+    d3.select("#ts-tooltip").remove()
 
     rtData = rtData.filter(a=>a['country']==country)
 

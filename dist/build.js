@@ -479,6 +479,7 @@ var ts = (function (_super) {
     ts.prototype.plotTs = function (rtData, country, time, r0) {
         if (r0 === void 0) { r0 = false; }
         d3.select("#ts-svg").remove();
+        d3.select("#ts-tooltip").remove();
         rtData = rtData.filter(function (a) { return a['country'] == country; });
         var parseTime = d3.timeParse("%Y-%m-%d");
         var ts_svg = d3.select("#ts-container")
