@@ -15,6 +15,7 @@ class ts extends rtVis {
   plotTs(rtData, country, time, r0 = false) {
 
     d3.select("#ts-svg").remove()
+    d3.select("#ts-tooltip").remove()
 
     rtData = rtData.filter(a=>a['country']==country)
 
@@ -143,27 +144,85 @@ class ts extends rtVis {
       .attr('stroke-width', '1px')
       .attr('stroke-opacity', 0);
 
+    var tooltip = d3.select("#ts-container")
+      .append("div")
+      .style("opacity", 0)
+      .attr("class", "tooltip")
+      .attr('id', 'ts-tooltip')
+      .style("background-color", "white")
+      .style("border", "solid")
+      .style("border-width", "2px")
+      .style("border-radius", "5px")
+      .style("padding", "5px")
+      .style('font-size', '9pt')
+      .style('overflow', 'visible')
+
+    function tsMouseMove(){
+
+      d3.select("#ts-hover-line")
+        .attr('x1', d3.mouse(this)[0])
+        .attr('x2', d3.mouse(this)[0])
+
+      console.log(x.invert(d3.mouse(this)[0]).toDateString(), y.invert(d3.mouse(this)[1]))
+
+      var mousedata = rtData.filter(a=>parseTime(a['date']).toDateString()==x.invert(d3.mouse(this)[0]).toDateString());
+
+      var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
+          '<br>' +
+          '50% CI: ' + parseFloat(mousedata[0]['lower_50']) + ' to ' + parseFloat(mousedata[0]['upper_50']) +
+          '<br>' +
+          '90% CI: ' + parseFloat(mousedata[0]['lower_90']) + ' to ' + parseFloat(mousedata[0]['upper_90'])
+
+
+      var x_offset
+
+      if (ts_svg_dims.width - d3.mouse(this)[0] < 80){
+        x_offset = -70
+      } else {
+        x_offset = 70
+      }
+
+      tooltip.html(tooltip_str)
+        .style("left", (d3.mouse(this)[0] + x_offset) + "px")
+        .style("top", (d3.mouse(this)[1] - 270) + "px")
+
+      console.log(mousedata[0])
+
+    }
+
     ts_svg.append("rect")
       .attr("class", "overlay")
       .attr("width", ts_svg_dims.width)
       .attr("height", ts_svg_dims.height)
-      .on('mousemove', this.tsMouseMove)
+      .on('mousemove', tsMouseMove)
       .on('mouseenter', this.tsMouseIn)
       .on('mouseout', this.tsMouseOut)
       .attr('fill-opacity', '0')
 
+    //issue is that we need to access x and y axes and event
 
   }
   tsMouseMove(e) {
+
+    console.log(this)
+
     d3.select("#ts-hover-line")
       .attr('x1', d3.mouse(this)[0])
       .attr('x2', d3.mouse(this)[0])
   }
   tsMouseIn(e) {
+
+    d3.select('#ts-tooltip')
+      .style("opacity", 1)
+
     d3.select("#ts-hover-line")
       .attr('stroke-opacity', 1)
   }
   tsMouseOut(e) {
+
+    d3.select('#ts-tooltip')
+      .style("opacity", 0)
+
     d3.select("#ts-hover-line")
       .attr('stroke-opacity', 0)
   }
