@@ -36,6 +36,11 @@ class setup extends rtVis {
       .attr('class', 'controls-container')
       .attr('id', 'controls-container')
 
+    //Solves a problem with rendering in Rmd
+    d3.select('#root')
+      .append('div')
+      .attr('class', 'footer')
+
     d3.select('#root')
       .append('div')
       .attr('class', 'download-container')

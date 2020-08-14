@@ -244,6 +244,9 @@ var setup = (function (_super) {
             .attr('id', 'controls-container');
         d3.select('#root')
             .append('div')
+            .attr('class', 'footer');
+        d3.select('#root')
+            .append('div')
             .attr('class', 'download-container')
             .attr('id', 'download-container');
         d3.select('#controls-container')
