@@ -2,30 +2,34 @@
 
 .poly_90_e {
   fill: #c5e6dc;
+  opacity: 0.55;
 }
 
 .poly_90_eb {
   fill: #f5d6bf;
+  opacity: 0.55;
 }
 
 .poly_90_f {
   fill: #dcdbec;
+  opacity: 0.55;
 }
 
 .poly_50_e {
   fill: #6fc2a9;
+  opacity: 0.55;
 }
 
 .poly_50_eb {
   fill: #e79a60;
+  opacity: 0.55;
 }
 
 .poly_50_f {
   fill: #a8a5d0;
+  opacity: 0.55;
 }
 
-.tooltip {
-  position: relative;
-  display: inline-block;
-  border-bottom: 1px dotted black;
+.cases_bar {
+  fill: #DFDFDF;
 }

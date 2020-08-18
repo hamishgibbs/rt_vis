@@ -12,19 +12,26 @@ var rtVis = (function () {
         this.r0Url = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv';
         this.casesInfectionUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_infection.csv';
         this.casesReportUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_report.csv';
-        this.obsCasesUrl = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/csv';
+        this.obsCasesUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/reported_cases.csv';
         this._requiredData = Promise.all([d3.json(this.geoUrl),
             d3.csv(this.summaryUrl),
             d3.csv(this.r0Url),
             d3.csv(this.casesInfectionUrl),
-            d3.csv(this.casesReportUrl)]);
+            d3.csv(this.casesReportUrl),
+            d3.csv(this.obsCasesUrl)]);
         this._dataset_ref = { 'R0': { 'index': 2, 'title': 'R' }, 'casesInfection': { 'index': 3, 'title': 'Cases by date of infection' }, 'casesReport': { 'index': 4, 'title': 'Cases by date of report' } };
+        this._subregional_ref = { 'Afghanistan': 'https://epiforecasts.io/covid/posts/national/afghanistan/',
+            'Brazil': 'https://epiforecasts.io/covid/posts/national/brazil/',
+            'Colombia': 'https://epiforecasts.io/covid/posts/national/colombia/',
+            'India': 'https://epiforecasts.io/covid/posts/national/india/',
+            'Italy': 'https://epiforecasts.io/covid/posts/national/italy/',
+            'Germany': 'https://epiforecasts.io/covid/posts/national/germany/',
+            'Russia': 'https://epiforecasts.io/covid/posts/national/russia/',
+            'United Kingdom': 'https://epiforecasts.io/covid/posts/national/united-kingdom/',
+            'United States of America': 'https://epiforecasts.io/covid/posts/national/united-states/' };
     }
     rtVis.prototype.setupPage = function () {
         var eventHandlersRef = {
-            'r0ButtonClick': this.r0ButtonClick.bind(this),
-            'casesInfectionButtonClick': this.casesInfectionButtonClick.bind(this),
-            'casesReportButtonClick': this.casesReportButtonClick.bind(this),
             'time7ButtonClick': this.time7ButtonClick.bind(this),
             'time14ButtonClick': this.time14ButtonClick.bind(this),
             'time30ButtonClick': this.time30ButtonClick.bind(this),
@@ -55,39 +62,14 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.plotTs(data[dataset_ref[dataset]['index']], country, time, r0);
-            t.tsTitle(country, dataset_ref[dataset]['title']);
+            t.tsCountryTitle(country, 'country-title-container');
+            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
+            t.tsDataTitle('R', 'r0-title-container');
+            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
+            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
+            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
         });
-    };
-    rtVis.prototype.r0ButtonClick = function () {
-        var country = this.activeArea;
-        var time = this.activeTime;
-        this._requiredData.then(function (data) {
-            var t = new ts;
-            t.plotTs(data[2], country, time, true);
-            t.tsTitle(country, 'Cases by date of infection');
-        });
-        this.activeData = 'R0';
-    };
-    rtVis.prototype.casesInfectionButtonClick = function () {
-        var country = this.activeArea;
-        var time = this.activeTime;
-        this._requiredData.then(function (data) {
-            var t = new ts;
-            t.plotTs(data[3], country, time);
-            t.tsTitle(country, 'Cases by date of infection');
-        });
-        this.activeData = 'casesInfection';
-    };
-    rtVis.prototype.casesReportButtonClick = function () {
-        var country = this.activeArea;
-        var time = this.activeTime;
-        this._requiredData.then(function (data) {
-            var t = new ts;
-            t.plotTs(data[4], country, time);
-            t.tsTitle(country, 'Cases by date of report');
-        });
-        this.activeData = 'casesReport';
     };
     rtVis.prototype.time7ButtonClick = function () {
         var country = this.activeArea;
@@ -101,8 +83,14 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.plotTs(data[dataset], country, '7d', r0);
-            t.tsTitle(country, dataset_title);
+            var time = '7d';
+            console.log(data);
+            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
+            t.tsDataTitle('R', 'r0-title-container');
+            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
+            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
+            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
         });
         this.activeTime = '7d';
     };
@@ -118,8 +106,13 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.plotTs(data[dataset], country, '14d', r0);
-            t.tsTitle(country, dataset_title);
+            var time = '14d';
+            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
+            t.tsDataTitle('R', 'r0-title-container');
+            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
+            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
+            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
         });
         this.activeTime = '14d';
     };
@@ -135,8 +128,13 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.plotTs(data[dataset], country, '30d', r0);
-            t.tsTitle(country, dataset_title);
+            var time = '30d';
+            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
+            t.tsDataTitle('R', 'r0-title-container');
+            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
+            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
+            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
         });
         this.activeTime = '30d';
     };
@@ -152,8 +150,13 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.plotTs(data[dataset], country, 'all', r0);
-            t.tsTitle(country, dataset_title);
+            var time = 'all';
+            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
+            t.tsDataTitle('R', 'r0-title-container');
+            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
+            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
+            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
         });
         this.activeTime = 'all';
     };
@@ -171,8 +174,10 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.plotTs(data[dataset], country, time, r0);
-            t.tsTitle(country, dataset_title);
+            t.tsCountryTitle(country, 'country-title-container');
+            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
+            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
+            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
         });
     };
     rtVis.prototype.dropdownClick = function (e) {
@@ -189,8 +194,10 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.plotTs(data[dataset], country, time, r0);
-            t.tsTitle(country, dataset_title);
+            t.tsCountryTitle(country, 'country-title-container');
+            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
+            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
+            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
         });
         d3.select('#select2-dropdown-container-container').text(this.activeArea);
     };
@@ -232,12 +239,32 @@ var setup = (function (_super) {
             .attr('id', 'dropdown-container');
         d3.select('#root')
             .append('div')
-            .attr('class', 'title-container')
-            .attr('id', 'title-container');
+            .attr('class', 'country-title-container')
+            .attr('id', 'country-title-container');
         d3.select('#root')
             .append('div')
-            .attr('class', 'ts-container')
-            .attr('id', 'ts-container');
+            .attr('class', 'r0-title-container')
+            .attr('id', 'r0-title-container');
+        d3.select('#root')
+            .append('div')
+            .attr('class', 'r0-ts-container')
+            .attr('id', 'r0-ts-container');
+        d3.select('#root')
+            .append('div')
+            .attr('class', 'cases-infection-title-container')
+            .attr('id', 'cases-infection-title-container');
+        d3.select('#root')
+            .append('div')
+            .attr('class', 'cases-infection-ts-container')
+            .attr('id', 'cases-infection-ts-container');
+        d3.select('#root')
+            .append('div')
+            .attr('class', 'cases-report-title-container')
+            .attr('id', 'cases-report-title-container');
+        d3.select('#root')
+            .append('div')
+            .attr('class', 'cases-report-ts-container')
+            .attr('id', 'cases-report-ts-container');
         d3.select('#root')
             .append('div')
             .attr('class', 'controls-container')
@@ -251,32 +278,39 @@ var setup = (function (_super) {
             .attr('id', 'download-container');
         d3.select('#controls-container')
             .append('div')
-            .attr('class', 'controls-container-data')
-            .attr('id', 'controls-container-data');
+            .attr('class', 'controls-container-legend')
+            .attr('id', 'controls-container-legend');
         d3.select('#controls-container')
             .append('div')
             .attr('class', 'controls-container-time')
             .attr('id', 'controls-container-time');
-        d3.select('#controls-container-data')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-r0')
-            .text('R')
-            .on('click', eventHandlersRef['r0ButtonClick']);
-        this.addButtonSpacer('#controls-container-data');
-        d3.select('#controls-container-data')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-casesInfection')
-            .text('Cases by date of infection')
-            .on('click', eventHandlersRef['casesInfectionButtonClick']);
-        this.addButtonSpacer('#controls-container-data');
-        d3.select('#controls-container-data')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-casesReport')
-            .text('Cases by date of report')
-            .on('click', eventHandlersRef['casesReportButtonClick']);
+        d3.select('#controls-container-legend')
+            .append('div')
+            .style('width', '12px')
+            .style('height', '12px')
+            .attr('class', 'ts-legend-e');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .text('Estimate')
+            .attr('class', 'ts-legend-text');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .style('width', '12px')
+            .style('height', '12px')
+            .attr('class', 'ts-legend-eb');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .text('Estimate based on partial data')
+            .attr('class', 'ts-legend-text');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .style('width', '12px')
+            .style('height', '12px')
+            .attr('class', 'ts-legend-f');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .text('Forecast')
+            .attr('class', 'ts-legend-text');
         d3.select('#controls-container-time')
             .append('button')
             .attr('class', 'control-button')
@@ -476,24 +510,25 @@ var ts = (function (_super) {
     __extends(ts, _super);
     function ts() {
         var _this = _super.call(this) || this;
-        _this.margin = { top: 30, right: 30, bottom: 30, left: 60 };
+        _this.margin = { top: 10, right: 30, bottom: 30, left: 60 };
         return _this;
     }
-    ts.prototype.plotTs = function (rtData, country, time, r0) {
+    ts.prototype.plotTs = function (rtData, country, time, cases_data, container_id, r0) {
         if (r0 === void 0) { r0 = false; }
-        d3.select("#ts-svg").remove();
-        d3.select("#ts-tooltip").remove();
+        d3.select("#" + container_id + '-svg').remove();
+        d3.select('#' + container_id + '-tooltip').remove();
         rtData = rtData.filter(function (a) { return a['country'] == country; });
+        cases_data = cases_data.filter(function (a) { return a['region'] == country; });
         var parseTime = d3.timeParse("%Y-%m-%d");
-        var ts_svg = d3.select("#ts-container")
+        var ts_svg = d3.select("#" + container_id)
             .append('svg')
-            .attr('class', 'ts-svg')
-            .attr('id', 'ts-svg')
+            .attr('class', container_id + '-svg')
+            .attr('id', container_id + '-svg')
             .style("width", '100%')
             .style("height", '100%')
             .append("g")
             .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
-        var ts_svg_dims = document.getElementById('ts-container').getBoundingClientRect();
+        var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect();
         ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
         ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
         var minDate = d3.min(rtData, function (d) { return parseTime(d.date); });
@@ -507,6 +542,7 @@ var ts = (function (_super) {
             minDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         }
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
+        cases_data = cases_data.filter(function (a) { return d3.timeDay.offset(parseTime(a['date']), -1) >= minDate; });
         if (rtData.length === 0) {
             ts_svg.append('text')
                 .attr('x', ts_svg_dims.width / 2)
@@ -534,6 +570,17 @@ var ts = (function (_super) {
         var forecast_data = rtData.filter(function (a) { return a['type'] == 'forecast'; });
         var poly_90 = this.plotHPoly('date', 'upper_90', 'lower_90', x, y, parseTime);
         var poly_50 = this.plotHPoly('date', 'upper_50', 'lower_50', x, y, parseTime);
+        if (!r0) {
+            ts_svg.selectAll('rect')
+                .data(cases_data)
+                .enter()
+                .append('rect')
+                .attr('height', function (d, i) { return ts_svg_dims.height - y(d.confirm); })
+                .attr('y', function (d, i) { return y(d.confirm); })
+                .attr("width", function (d) { return x(d3.timeDay.offset(parseTime(d.date), 1)) - x(parseTime(d.date)); })
+                .attr('x', function (d, i) { return x(d3.timeDay.offset(parseTime(d.date), -0.5)); })
+                .attr('class', 'cases_bar');
+        }
         ts_svg.append("path")
             .datum(estimate_data)
             .attr("d", poly_90)
@@ -574,7 +621,7 @@ var ts = (function (_super) {
             .call(d3.axisLeft(y))
             .attr("class", 'r0-yaxis');
         ts_svg.append('line')
-            .attr('id', 'ts-hover-line')
+            .attr('id', container_id + '-hover-line')
             .attr("x1", 20)
             .attr("y1", 0)
             .attr("x2", 20)
@@ -582,24 +629,37 @@ var ts = (function (_super) {
             .attr('stroke', 'black')
             .attr('stroke-width', '1px')
             .attr('stroke-opacity', 0);
-        var tooltip = d3.select("#ts-container")
+        var tooltip = d3.select("#" + container_id)
             .append("div")
             .style("opacity", 0)
-            .attr("class", "tooltip")
-            .attr('id', 'ts-tooltip')
+            .attr("class", container_id + '-tooltip')
+            .attr('id', container_id + '-tooltip')
             .style("background-color", "white")
             .style("border", "solid")
             .style("border-width", "2px")
             .style("border-radius", "5px")
             .style("padding", "5px")
             .style('font-size', '9pt')
-            .style('overflow', 'visible');
+            .style('overflow', 'visible')
+            .style('position', 'relative')
+            .style('display', 'inline-block');
+        function tsMouseIn(e) {
+            d3.select('#' + container_id + '-tooltip')
+                .style("opacity", 1);
+            d3.select('#' + container_id + '-hover-line')
+                .attr('stroke-opacity', 1);
+        }
+        function tsMouseOut(e) {
+            d3.select('#' + container_id + '-tooltip')
+                .style("opacity", 0);
+            d3.select('#' + container_id + '-hover-line')
+                .attr('stroke-opacity', 0);
+        }
         function tsMouseMove() {
             var _this = this;
-            d3.select("#ts-hover-line")
+            d3.select('#' + container_id + '-hover-line')
                 .attr('x1', d3.mouse(this)[0])
                 .attr('x2', d3.mouse(this)[0]);
-            console.log(x.invert(d3.mouse(this)[0]).toDateString(), y.invert(d3.mouse(this)[1]));
             var mousedata = rtData.filter(function (a) { return parseTime(a['date']).toDateString() == x.invert(d3.mouse(_this)[0]).toDateString(); });
             var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
                 '<br>' +
@@ -615,38 +675,28 @@ var ts = (function (_super) {
             }
             tooltip.html(tooltip_str)
                 .style("left", (d3.mouse(this)[0] + x_offset) + "px")
-                .style("top", (d3.mouse(this)[1] - 270) + "px");
-            console.log(mousedata[0]);
+                .style("top", (d3.mouse(this)[1] - 200) + "px");
         }
         ts_svg.append("rect")
             .attr("class", "overlay")
             .attr("width", ts_svg_dims.width)
             .attr("height", ts_svg_dims.height)
             .on('mousemove', tsMouseMove)
-            .on('mouseenter', this.tsMouseIn)
-            .on('mouseout', this.tsMouseOut)
+            .on('mouseenter', tsMouseIn)
+            .on('mouseout', tsMouseOut)
             .attr('fill-opacity', '0');
     };
-    ts.prototype.tsMouseMove = function (e) {
-        console.log(this);
-        d3.select("#ts-hover-line")
-            .attr('x1', d3.mouse(this)[0])
-            .attr('x2', d3.mouse(this)[0]);
+    ts.prototype.tsDataTitle = function (dataset, container_id) {
+        d3.select("#" + container_id).text(dataset);
     };
-    ts.prototype.tsMouseIn = function (e) {
-        d3.select('#ts-tooltip')
-            .style("opacity", 1);
-        d3.select("#ts-hover-line")
-            .attr('stroke-opacity', 1);
-    };
-    ts.prototype.tsMouseOut = function (e) {
-        d3.select('#ts-tooltip')
-            .style("opacity", 0);
-        d3.select("#ts-hover-line")
-            .attr('stroke-opacity', 0);
-    };
-    ts.prototype.tsTitle = function (country, dataset) {
-        d3.select("#title-container").text(country + ' - ' + dataset);
+    ts.prototype.tsCountryTitle = function (country, container_id) {
+        if (Object.keys(this._subregional_ref).includes(country)) {
+            var text = '<a href="' + this._subregional_ref[country] + '" target="_blank">' + country + '</a>';
+        }
+        else {
+            text = country;
+        }
+        d3.select("#" + container_id).html(text);
     };
     ts.prototype.plotHPoly = function (x, y0, y1, x_scale, y_scale, parseTime) {
         if (parseTime === void 0) { parseTime = null; }

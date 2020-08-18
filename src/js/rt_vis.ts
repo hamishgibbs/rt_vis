@@ -14,10 +14,10 @@ interface rtVis {
   casesReportUrl: string;
   obsCasesUrl: string;
   _requiredData: Promise<any[]>;
-  //_optionalData: Promise<any[]>;
   _dataset_ref: any;
-  r0ButtonClick(): void;
+  _subregional_ref: any;
 }
+
 class rtVis {
   constructor() {
     this.activeArea = 'United Kingdom';
@@ -28,22 +28,29 @@ class rtVis {
     this.r0Url = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv'
     this.casesInfectionUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_infection.csv'
     this.casesReportUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_report.csv'
-    this.obsCasesUrl = 'https://opendata.ecdc.europa.eu/covid19/casedistribution/csv'
+    this.obsCasesUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/reported_cases.csv'
     this._requiredData = Promise.all([d3.json(this.geoUrl),
       d3.csv(this.summaryUrl),
       d3.csv(this.r0Url),
       d3.csv(this.casesInfectionUrl),
-      d3.csv(this.casesReportUrl)])
+      d3.csv(this.casesReportUrl),
+      d3.csv(this.obsCasesUrl)])
     //this._optionalData = Promise.all([d3.csv(this.obsCasesUrl)])
     this._dataset_ref = {'R0':{'index':2, 'title':'R'},'casesInfection':{'index':3, 'title':'Cases by date of infection'},'casesReport':{'index':4, 'title':'Cases by date of report'}}
+    this._subregional_ref = {'Afghanistan':'https://epiforecasts.io/covid/posts/national/afghanistan/',
+                             'Brazil':'https://epiforecasts.io/covid/posts/national/brazil/',
+                             'Colombia':'https://epiforecasts.io/covid/posts/national/colombia/',
+                             'India':'https://epiforecasts.io/covid/posts/national/india/',
+                             'Italy':'https://epiforecasts.io/covid/posts/national/italy/',
+                             'Germany':'https://epiforecasts.io/covid/posts/national/germany/',
+                             'Russia':'https://epiforecasts.io/covid/posts/national/russia/',
+                             'United Kingdom':'https://epiforecasts.io/covid/posts/national/united-kingdom/',
+                             'United States of America':'https://epiforecasts.io/covid/posts/national/united-states/'}
 
   }
   setupPage() {
 
     var eventHandlersRef = {
-      'r0ButtonClick': this.r0ButtonClick.bind(this),
-      'casesInfectionButtonClick': this.casesInfectionButtonClick.bind(this),
-      'casesReportButtonClick': this.casesReportButtonClick.bind(this),
       'time7ButtonClick': this.time7ButtonClick.bind(this),
       'time14ButtonClick': this.time14ButtonClick.bind(this),
       'time30ButtonClick': this.time30ButtonClick.bind(this),
@@ -82,69 +89,23 @@ class rtVis {
 
       var t = new ts
 
-      t.plotTs(data[dataset_ref[dataset]['index']], country, time, r0)
-      t.tsTitle(country, dataset_ref[dataset]['title'])
+      t.tsCountryTitle(country, 'country-title-container')
+
+      //issues with updating
+      //issues with tooltip
+      //issues with syncing plot hover
+      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
+      t.tsDataTitle('R', 'r0-title-container')
+
+      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
+      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+
+      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
+      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
 
     });
-  }
-  r0ButtonClick() {
-
-
-    //this switched to bound because it is fixed when it is bound
-    //the  data and time methods talk to eachother correctly
-
-    var country = this.activeArea
-    var time = this.activeTime
-
-    this._requiredData.then(function(data: any){
-      var t = new ts
-
-      t.plotTs(data[2], country, time, true)
-      t.tsTitle(country, 'Cases by date of infection')
-
-    });
-
-    this.activeData = 'R0'
-
-  }
-  casesInfectionButtonClick() {
-
-
-
-    var country = this.activeArea
-    var time = this.activeTime
-
-    this._requiredData.then(function(data: any){
-      var t = new ts
-
-      t.plotTs(data[3], country, time)
-      t.tsTitle(country, 'Cases by date of infection')
-
-    });
-
-    this.activeData = 'casesInfection'
-  }
-  casesReportButtonClick() {
-
-
-
-    var country = this.activeArea
-    var time = this.activeTime
-
-    this._requiredData.then(function(data: any){
-      var t = new ts
-
-      t.plotTs(data[4], country, time)
-      t.tsTitle(country, 'Cases by date of report')
-
-    });
-
-    this.activeData = 'casesReport'
-
   }
   time7ButtonClick() {
-
-
 
     var country = this.activeArea
     var dataset = this._dataset_ref[this.activeData]['index']
@@ -159,8 +120,19 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.plotTs(data[dataset], country, '7d', r0)
-      t.tsTitle(country, dataset_title)
+      var time = '7d'
+
+      console.log(data)
+
+      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
+      t.tsDataTitle('R', 'r0-title-container')
+
+      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
+      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+
+      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
+      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+
 
     });
 
@@ -184,8 +156,17 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.plotTs(data[dataset], country, '14d', r0)
-      t.tsTitle(country, dataset_title)
+      var time = '14d'
+
+      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
+      t.tsDataTitle('R', 'r0-title-container')
+
+      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
+      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+
+      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
+      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+
 
     });
 
@@ -209,8 +190,17 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.plotTs(data[dataset], country, '30d', r0)
-      t.tsTitle(country, dataset_title)
+      var time = '30d'
+
+      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
+      t.tsDataTitle('R', 'r0-title-container')
+
+      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
+      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+
+      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
+      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+
 
     });
 
@@ -234,8 +224,17 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.plotTs(data[dataset], country, 'all', r0)
-      t.tsTitle(country, dataset_title)
+      var time = 'all'
+
+      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
+      t.tsDataTitle('R', 'r0-title-container')
+
+      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
+      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+
+      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
+      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+
 
     });
 
@@ -259,8 +258,13 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.plotTs(data[dataset], country, time, r0)
-      t.tsTitle(country, dataset_title)
+      t.tsCountryTitle(country, 'country-title-container')
+
+      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
+
+      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
+
+      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
 
     });
 
@@ -282,13 +286,17 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.plotTs(data[dataset], country, time, r0)
-      t.tsTitle(country, dataset_title)
+      t.tsCountryTitle(country, 'country-title-container')
+
+      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
+
+      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
+
+      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
 
     });
 
     d3.select('#select2-dropdown-container-container').text(this.activeArea)
 
   }
-
 };

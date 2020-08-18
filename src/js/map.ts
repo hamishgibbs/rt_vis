@@ -59,6 +59,7 @@ class map extends rtVis {
     $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select a country', data: areaNames}).on('select2:select', dropdownClick);
 
   }
+  
   mapMouseIn(e) {
 
     d3.select(this)

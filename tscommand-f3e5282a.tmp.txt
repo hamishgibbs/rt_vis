@@ -1,0 +1,1 @@
+src/js/app.ts src/js/map.ts src/js/rt_vis.ts src/js/setup.ts src/js/ts.ts --sourcemap --removeComments --target ES5

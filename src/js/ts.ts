@@ -10,27 +10,28 @@ interface ts {
 class ts extends rtVis {
   constructor () {
     super()
-    this.margin = {top: 30, right: 30, bottom: 30, left: 60}
+    this.margin = {top: 10, right: 30, bottom: 30, left: 60}
   }
-  plotTs(rtData, country, time, r0 = false) {
+  plotTs(rtData, country, time, cases_data, container_id, r0 = false) {
 
-    d3.select("#ts-svg").remove()
-    d3.select("#ts-tooltip").remove()
+    d3.select("#" + container_id + '-svg').remove()
+    d3.select('#' + container_id + '-tooltip').remove()
 
     rtData = rtData.filter(a=>a['country']==country)
+    cases_data = cases_data.filter(a=>a['region']==country)
 
     var parseTime = d3.timeParse("%Y-%m-%d");
 
-    var ts_svg = d3.select("#ts-container")
+    var ts_svg = d3.select("#" + container_id)
       .append('svg')
-      .attr('class', 'ts-svg')
-      .attr('id', 'ts-svg')
+      .attr('class', container_id + '-svg')
+      .attr('id', container_id + '-svg')
       .style("width", '100%')
       .style("height", '100%')
       .append("g")
       .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
 
-    var ts_svg_dims = document.getElementById('ts-container').getBoundingClientRect()
+    var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect()
 
     ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
     ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
@@ -46,7 +47,7 @@ class ts extends rtVis {
     }
 
     rtData = rtData.filter(a=>parseTime(a['date'])>=minDate)
-
+    cases_data = cases_data.filter(a=>d3.timeDay.offset(parseTime(a['date']), -1)>=minDate)
 
     if (rtData.length === 0){
       ts_svg.append('text')
@@ -73,7 +74,6 @@ class ts extends rtVis {
                 .domain([minDate,maxDate])
                 .range([0, ts_svg_dims.width]);
 
-
     var line = d3.line()
       .x(function(d){ return x(parseTime(d['date'])); })
       .y(function(d){ return y(1); })
@@ -85,6 +85,19 @@ class ts extends rtVis {
 
     var poly_90 = this.plotHPoly('date', 'upper_90', 'lower_90', x, y, parseTime)
     var poly_50 = this.plotHPoly('date', 'upper_50', 'lower_50', x, y, parseTime)
+
+
+    if (!r0){
+      ts_svg.selectAll('rect')
+        .data(cases_data)
+        .enter()
+        .append('rect')
+        .attr('height', function(d, i) {return ts_svg_dims.height - y(d.confirm);})
+        .attr('y', function(d, i) {return y(d.confirm);})
+        .attr("width", function(d) {return x(d3.timeDay.offset(parseTime(d.date), 1)) - x(parseTime(d.date))})
+        .attr('x', function(d, i) {return x(d3.timeDay.offset(parseTime(d.date), -0.5));})
+        .attr('class', 'cases_bar');
+    }
 
     ts_svg.append("path")
       .datum(estimate_data)
@@ -135,7 +148,7 @@ class ts extends rtVis {
       .attr("class", 'r0-yaxis');
 
     ts_svg.append('line')
-      .attr('id', 'ts-hover-line')
+      .attr('id', container_id + '-hover-line')
       .attr("x1", 20)
       .attr("y1", 0)
       .attr("x2", 20)
@@ -144,11 +157,11 @@ class ts extends rtVis {
       .attr('stroke-width', '1px')
       .attr('stroke-opacity', 0);
 
-    var tooltip = d3.select("#ts-container")
+    var tooltip = d3.select("#" + container_id)
       .append("div")
       .style("opacity", 0)
-      .attr("class", "tooltip")
-      .attr('id', 'ts-tooltip')
+      .attr("class", container_id + '-tooltip')
+      .attr('id', container_id + '-tooltip')
       .style("background-color", "white")
       .style("border", "solid")
       .style("border-width", "2px")
@@ -156,14 +169,33 @@ class ts extends rtVis {
       .style("padding", "5px")
       .style('font-size', '9pt')
       .style('overflow', 'visible')
+      .style('position', 'relative')
+      .style('display', 'inline-block')
+      //.style('border-bottom', '2px black')
+
+    function tsMouseIn(e) {
+
+      d3.select('#' + container_id + '-tooltip')
+        .style("opacity", 1)
+
+      d3.select('#' + container_id + '-hover-line')
+        .attr('stroke-opacity', 1)
+    }
+
+    function tsMouseOut(e) {
+
+      d3.select('#' + container_id + '-tooltip')
+        .style("opacity", 0)
+
+      d3.select('#' + container_id + '-hover-line')
+        .attr('stroke-opacity', 0)
+    }
 
     function tsMouseMove(){
 
-      d3.select("#ts-hover-line")
+      d3.select('#' + container_id + '-hover-line')
         .attr('x1', d3.mouse(this)[0])
         .attr('x2', d3.mouse(this)[0])
-
-      console.log(x.invert(d3.mouse(this)[0]).toDateString(), y.invert(d3.mouse(this)[1]))
 
       var mousedata = rtData.filter(a=>parseTime(a['date']).toDateString()==x.invert(d3.mouse(this)[0]).toDateString());
 
@@ -184,9 +216,7 @@ class ts extends rtVis {
 
       tooltip.html(tooltip_str)
         .style("left", (d3.mouse(this)[0] + x_offset) + "px")
-        .style("top", (d3.mouse(this)[1] - 270) + "px")
-
-      console.log(mousedata[0])
+        .style("top", (d3.mouse(this)[1] - 200) + "px")
 
     }
 
@@ -195,39 +225,25 @@ class ts extends rtVis {
       .attr("width", ts_svg_dims.width)
       .attr("height", ts_svg_dims.height)
       .on('mousemove', tsMouseMove)
-      .on('mouseenter', this.tsMouseIn)
-      .on('mouseout', this.tsMouseOut)
+      .on('mouseenter', tsMouseIn)
+      .on('mouseout', tsMouseOut)
       .attr('fill-opacity', '0')
 
-    //issue is that we need to access x and y axes and event
-
   }
-  tsMouseMove(e) {
+  tsDataTitle (dataset, container_id) {
 
-    console.log(this)
-
-    d3.select("#ts-hover-line")
-      .attr('x1', d3.mouse(this)[0])
-      .attr('x2', d3.mouse(this)[0])
+    d3.select("#" + container_id).text(dataset)
   }
-  tsMouseIn(e) {
+  tsCountryTitle (country, container_id){
 
-    d3.select('#ts-tooltip')
-      .style("opacity", 1)
+    if (Object.keys(this._subregional_ref).includes(country)){
+      var text = '<a href="' + this._subregional_ref[country] + '" target="_blank">' + country + '</a>'
+    } else {
+      text = country
+    }
 
-    d3.select("#ts-hover-line")
-      .attr('stroke-opacity', 1)
-  }
-  tsMouseOut(e) {
+    d3.select("#" + container_id).html(text)
 
-    d3.select('#ts-tooltip')
-      .style("opacity", 0)
-
-    d3.select("#ts-hover-line")
-      .attr('stroke-opacity', 0)
-  }
-  tsTitle (country, dataset) {
-     d3.select("#title-container").text(country + ' - ' + dataset)
   }
   plotHPoly (x, y0, y1, x_scale, y_scale, parseTime = null){
 

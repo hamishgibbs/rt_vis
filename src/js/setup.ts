@@ -23,13 +23,38 @@ class setup extends rtVis {
 
     d3.select('#root')
       .append('div')
-      .attr('class', 'title-container')
-      .attr('id', 'title-container')
+      .attr('class', 'country-title-container')
+      .attr('id', 'country-title-container')
 
     d3.select('#root')
       .append('div')
-      .attr('class', 'ts-container')
-      .attr('id', 'ts-container')
+      .attr('class', 'r0-title-container')
+      .attr('id', 'r0-title-container')
+
+    d3.select('#root')
+      .append('div')
+      .attr('class', 'r0-ts-container')
+      .attr('id', 'r0-ts-container')
+
+    d3.select('#root')
+      .append('div')
+      .attr('class', 'cases-infection-title-container')
+      .attr('id', 'cases-infection-title-container')
+
+    d3.select('#root')
+      .append('div')
+      .attr('class', 'cases-infection-ts-container')
+      .attr('id', 'cases-infection-ts-container')
+
+    d3.select('#root')
+      .append('div')
+      .attr('class', 'cases-report-title-container')
+      .attr('id', 'cases-report-title-container')
+
+    d3.select('#root')
+      .append('div')
+      .attr('class', 'cases-report-ts-container')
+      .attr('id', 'cases-report-ts-container')
 
     d3.select('#root')
       .append('div')
@@ -49,40 +74,49 @@ class setup extends rtVis {
     //controls containers
     d3.select('#controls-container')
       .append('div')
-      .attr('class', 'controls-container-data')
-      .attr('id', 'controls-container-data')
+      .attr('class', 'controls-container-legend')
+      .attr('id', 'controls-container-legend')
 
     d3.select('#controls-container')
       .append('div')
       .attr('class', 'controls-container-time')
       .attr('id', 'controls-container-time')
 
+    //legend items
+    d3.select('#controls-container-legend')
+      .append('div')
+      .style('width', '12px')
+      .style('height', '12px')
+      .attr('class', 'ts-legend-e')
+
+    d3.select('#controls-container-legend')
+      .append('div')
+      .text('Estimate')
+      .attr('class', 'ts-legend-text')
+
+    d3.select('#controls-container-legend')
+      .append('div')
+      .style('width', '12px')
+      .style('height', '12px')
+      .attr('class', 'ts-legend-eb')
+
+    d3.select('#controls-container-legend')
+      .append('div')
+      .text('Estimate based on partial data')
+      .attr('class', 'ts-legend-text')
+
+    d3.select('#controls-container-legend')
+      .append('div')
+      .style('width', '12px')
+      .style('height', '12px')
+      .attr('class', 'ts-legend-f')
+
+    d3.select('#controls-container-legend')
+      .append('div')
+      .text('Forecast')
+      .attr('class', 'ts-legend-text')
+
     //controls buttons
-    d3.select('#controls-container-data')
-      .append('button')
-      .attr('class', 'control-button')
-      .attr('id', 'control-r0')
-      .text('R')
-      .on('click', eventHandlersRef['r0ButtonClick'])
-
-    this.addButtonSpacer('#controls-container-data')
-
-    d3.select('#controls-container-data')
-      .append('button')
-      .attr('class', 'control-button')
-      .attr('id', 'control-casesInfection')
-      .text('Cases by date of infection')
-      .on('click',  eventHandlersRef['casesInfectionButtonClick'])
-
-    this.addButtonSpacer('#controls-container-data')
-
-    d3.select('#controls-container-data')
-      .append('button')
-      .attr('class', 'control-button')
-      .attr('id', 'control-casesReport')
-      .text('Cases by date of report')
-      .on('click',  eventHandlersRef['casesReportButtonClick'])
-
     d3.select('#controls-container-time')
       .append('button')
       .attr('class', 'control-button')

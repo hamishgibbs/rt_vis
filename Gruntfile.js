@@ -35,7 +35,8 @@ module.exports = function(grunt) {
       files: ['src/**/*.ts', 'src/**/*.css'],
       tasks: ['ts', 'concat', 'uglify'],
       options: {
-        spawn: false,
+        spawn: true,
+        atBegin: true
       },
     },
   }
