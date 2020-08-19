@@ -655,7 +655,6 @@ var ts = (function (_super) {
     };
     ts.prototype.plotAllTs = function (country, time, data) {
         var newData = this.preprocessDataSets(country, data);
-        console.log(newData);
         this.tsCountryTitle(country, 'country-title-container');
         this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', true);
         this.tsDataTitle('R', 'r0-title-container');
