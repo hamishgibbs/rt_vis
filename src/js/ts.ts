@@ -230,6 +230,53 @@ class ts extends rtVis {
       .attr('fill-opacity', '0')
 
   }
+  plotAllTs(country, time, data) {
+
+    var newData = this.preprocessDataSets(country, data)
+
+    console.log(newData)
+
+    this.tsCountryTitle(country, 'country-title-container')
+
+    this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', true)
+    this.tsDataTitle('R', 'r0-title-container')
+
+    this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', false)
+    this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+
+    this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', false)
+    this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+
+  }
+  preprocessDataSets(country, data){
+
+    //wrap this with other plot init functions and pass NewData not data
+
+    var parseTime = d3.timeParse("%Y-%m-%d");
+
+    var r0Data = data[2].filter(a=>a['country']==country)
+    var casesInfectionData = data[3].filter(a=>a['country']==country)
+    var casesReportData = data[4].filter(a=>a['country']==country)
+    var casesObservedData = data[5].filter(a=>a['region']==country)
+
+    var max_observed_cases = d3.max(casesObservedData, function(d) { return parseFloat(d.confirm); });
+
+    var threshold_date = d3.min(casesInfectionData.filter(a=>a['upper_90']>=max_observed_cases * 10), function(d) { return parseTime(d.date)})
+
+    if (typeof(threshold_date) !== 'undefined'){
+      r0Data = r0Data.filter(a=>parseTime(a['date'])<=threshold_date)
+      casesInfectionData = casesInfectionData.filter(a=>parseTime(a['date'])<=threshold_date)
+      casesReportData = casesReportData.filter(a=>parseTime(a['date'])<=threshold_date)
+      casesObservedData = casesObservedData.filter(a=>parseTime(a['date'])<=threshold_date)
+
+      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData]
+    } else {
+      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData]
+    }
+
+    return(newData)
+
+  }
   tsDataTitle (dataset, container_id) {
 
     d3.select("#" + container_id).text(dataset)

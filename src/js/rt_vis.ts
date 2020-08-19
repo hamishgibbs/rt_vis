@@ -89,19 +89,7 @@ class rtVis {
 
       var t = new ts
 
-      t.tsCountryTitle(country, 'country-title-container')
-
-      //issues with updating
-      //issues with tooltip
-      //issues with syncing plot hover
-      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
-      t.tsDataTitle('R', 'r0-title-container')
-
-      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
-      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
-
-      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
-      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+      t.plotAllTs(country, time, data)
 
     });
   }
@@ -122,17 +110,7 @@ class rtVis {
 
       var time = '7d'
 
-      console.log(data)
-
-      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
-      t.tsDataTitle('R', 'r0-title-container')
-
-      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
-      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
-
-      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
-      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
-
+      t.plotAllTs(country, time, data)
 
     });
 
@@ -158,15 +136,7 @@ class rtVis {
 
       var time = '14d'
 
-      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
-      t.tsDataTitle('R', 'r0-title-container')
-
-      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
-      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
-
-      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
-      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
-
+      t.plotAllTs(country, time, data)
 
     });
 
@@ -192,15 +162,7 @@ class rtVis {
 
       var time = '30d'
 
-      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
-      t.tsDataTitle('R', 'r0-title-container')
-
-      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
-      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
-
-      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
-      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
-
+      t.plotAllTs(country, time, data)
 
     });
 
@@ -226,15 +188,7 @@ class rtVis {
 
       var time = 'all'
 
-      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
-      t.tsDataTitle('R', 'r0-title-container')
-
-      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
-      t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
-
-      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
-      t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
-
+      t.plotAllTs(country, time, data)
 
     });
 
@@ -258,13 +212,7 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.tsCountryTitle(country, 'country-title-container')
-
-      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
-
-      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
-
-      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
+      t.plotAllTs(country, time, data)
 
     });
 
@@ -286,13 +234,7 @@ class rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts
 
-      t.tsCountryTitle(country, 'country-title-container')
-
-      t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true)
-
-      t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false)
-
-      t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false)
+      t.plotAllTs(country, time, data)
 
     });
 

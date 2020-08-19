@@ -62,13 +62,7 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.tsCountryTitle(country, 'country-title-container');
-            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
-            t.tsDataTitle('R', 'r0-title-container');
-            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
-            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
-            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
-            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+            t.plotAllTs(country, time, data);
         });
     };
     rtVis.prototype.time7ButtonClick = function () {
@@ -84,13 +78,7 @@ var rtVis = (function () {
         this._requiredData.then(function (data) {
             var t = new ts;
             var time = '7d';
-            console.log(data);
-            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
-            t.tsDataTitle('R', 'r0-title-container');
-            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
-            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
-            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
-            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+            t.plotAllTs(country, time, data);
         });
         this.activeTime = '7d';
     };
@@ -107,12 +95,7 @@ var rtVis = (function () {
         this._requiredData.then(function (data) {
             var t = new ts;
             var time = '14d';
-            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
-            t.tsDataTitle('R', 'r0-title-container');
-            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
-            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
-            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
-            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+            t.plotAllTs(country, time, data);
         });
         this.activeTime = '14d';
     };
@@ -129,12 +112,7 @@ var rtVis = (function () {
         this._requiredData.then(function (data) {
             var t = new ts;
             var time = '30d';
-            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
-            t.tsDataTitle('R', 'r0-title-container');
-            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
-            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
-            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
-            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+            t.plotAllTs(country, time, data);
         });
         this.activeTime = '30d';
     };
@@ -151,12 +129,7 @@ var rtVis = (function () {
         this._requiredData.then(function (data) {
             var t = new ts;
             var time = 'all';
-            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
-            t.tsDataTitle('R', 'r0-title-container');
-            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
-            t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
-            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
-            t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+            t.plotAllTs(country, time, data);
         });
         this.activeTime = 'all';
     };
@@ -174,10 +147,7 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.tsCountryTitle(country, 'country-title-container');
-            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
-            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
-            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
+            t.plotAllTs(country, time, data);
         });
     };
     rtVis.prototype.dropdownClick = function (e) {
@@ -194,10 +164,7 @@ var rtVis = (function () {
         }
         this._requiredData.then(function (data) {
             var t = new ts;
-            t.tsCountryTitle(country, 'country-title-container');
-            t.plotTs(data[2], country, time, data[5], 'r0-ts-container', true);
-            t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', false);
-            t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', false);
+            t.plotAllTs(country, time, data);
         });
         d3.select('#select2-dropdown-container-container').text(this.activeArea);
     };
@@ -685,6 +652,37 @@ var ts = (function (_super) {
             .on('mouseenter', tsMouseIn)
             .on('mouseout', tsMouseOut)
             .attr('fill-opacity', '0');
+    };
+    ts.prototype.plotAllTs = function (country, time, data) {
+        var newData = this.preprocessDataSets(country, data);
+        console.log(newData);
+        this.tsCountryTitle(country, 'country-title-container');
+        this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', true);
+        this.tsDataTitle('R', 'r0-title-container');
+        this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', false);
+        this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+        this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', false);
+        this.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+    };
+    ts.prototype.preprocessDataSets = function (country, data) {
+        var parseTime = d3.timeParse("%Y-%m-%d");
+        var r0Data = data[2].filter(function (a) { return a['country'] == country; });
+        var casesInfectionData = data[3].filter(function (a) { return a['country'] == country; });
+        var casesReportData = data[4].filter(function (a) { return a['country'] == country; });
+        var casesObservedData = data[5].filter(function (a) { return a['region'] == country; });
+        var max_observed_cases = d3.max(casesObservedData, function (d) { return parseFloat(d.confirm); });
+        var threshold_date = d3.min(casesInfectionData.filter(function (a) { return a['upper_90'] >= max_observed_cases * 10; }), function (d) { return parseTime(d.date); });
+        if (typeof (threshold_date) !== 'undefined') {
+            r0Data = r0Data.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            casesInfectionData = casesInfectionData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            casesReportData = casesReportData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            casesObservedData = casesObservedData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData];
+        }
+        else {
+            var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData];
+        }
+        return (newData);
     };
     ts.prototype.tsDataTitle = function (dataset, container_id) {
         d3.select("#" + container_id).text(dataset);
