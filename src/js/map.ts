@@ -4,10 +4,12 @@ try {
 catch(err) {}
 
 class map extends rtVis {
-  constructor () {
-    super()
+  constructor (x) {
+    super(x)
   }
   setupMap (geoData, summaryData, mapClick, dropdownClick) {
+
+    //figure out where to put dropdown - absolute position in top R is best (regardless of map)
 
     var map_svg = d3.select("#map-container")
       .append('svg')
@@ -17,10 +19,16 @@ class map extends rtVis {
 
     var map_svg_dims = document.getElementById('map-container').getBoundingClientRect()
 
+    var projection = d3.geoCylindricalStereographic();
+
+    var path = d3.geoPath().projection(projection);
+
+    var scaleCenter = this.calculateScaleCenter(geoData, map_svg_dims.width, map_svg_dims.height, path);
+
     var projection = d3.geoCylindricalStereographic()
     					.translate([map_svg_dims.width/2, map_svg_dims.height/2])
-    					.scale(150)
-    					.center([0, 10]);
+    					.scale(scaleCenter.scale)
+    					.center(scaleCenter.center);
 
     var path = d3.geoPath().projection(projection);
 
@@ -59,7 +67,7 @@ class map extends rtVis {
     $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select a country', data: areaNames}).on('select2:select', dropdownClick);
 
   }
-  
+
   mapMouseIn(e) {
 
     d3.select(this)
@@ -114,6 +122,24 @@ class map extends rtVis {
 
     }
 
+  }
+  calculateScaleCenter(features, map_width, map_height, path) {
+
+    var bbox_path = path.bounds(features),
+        scale = 120 / Math.max(
+          (bbox_path[1][0] - bbox_path[0][0]) / map_width,
+          (bbox_path[1][1] - bbox_path[0][1]) / map_height
+        );
+
+    var bbox_feature = d3.geoBounds(features),
+        center = [
+            (bbox_feature[1][0] + bbox_feature[0][0]) / 2,
+            (bbox_feature[1][1] + bbox_feature[0][1]) / 2];
+
+    return {
+        'scale': scale,
+        'center': center
+        };
   }
   onlyUnique(value, index, self) {
     return self.indexOf(value) === index;

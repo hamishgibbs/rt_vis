@@ -3,177 +3,206 @@ try {
 }
 catch (err) { }
 var rtVis = (function () {
-    function rtVis() {
-        this.activeArea = 'United Kingdom';
-        this.activeData = 'R0';
-        this.activeTime = 'all';
-        this.geoUrl = 'https://raw.githubusercontent.com/hamishgibbs/rt_interactive_vis/master/geo_data/world.geojson';
-        this.summaryUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/summary_table.csv';
-        this.r0Url = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv';
-        this.casesInfectionUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_infection.csv';
-        this.casesReportUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_report.csv';
-        this.obsCasesUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/reported_cases.csv';
-        this._requiredData = Promise.all([d3.json(this.geoUrl),
-            d3.csv(this.summaryUrl),
-            d3.csv(this.r0Url),
-            d3.csv(this.casesInfectionUrl),
-            d3.csv(this.casesReportUrl),
-            d3.csv(this.obsCasesUrl)]);
-        this._dataset_ref = { 'R0': { 'index': 2, 'title': 'R' }, 'casesInfection': { 'index': 3, 'title': 'Cases by date of infection' }, 'casesReport': { 'index': 4, 'title': 'Cases by date of report' } };
-        this._subregional_ref = { 'Afghanistan': 'https://epiforecasts.io/covid/posts/national/afghanistan/',
-            'Brazil': 'https://epiforecasts.io/covid/posts/national/brazil/',
-            'Colombia': 'https://epiforecasts.io/covid/posts/national/colombia/',
-            'India': 'https://epiforecasts.io/covid/posts/national/india/',
-            'Italy': 'https://epiforecasts.io/covid/posts/national/italy/',
-            'Germany': 'https://epiforecasts.io/covid/posts/national/germany/',
-            'Russia': 'https://epiforecasts.io/covid/posts/national/russia/',
-            'United Kingdom': 'https://epiforecasts.io/covid/posts/national/united-kingdom/',
-            'United States of America': 'https://epiforecasts.io/covid/posts/national/united-states/' };
+    function rtVis(x) {
+        this._config = x;
+        this.activeArea = x['activeArea'];
+        this.activeTime = x['activeTime'];
+        this.runDate = x['runDate'];
+        this._requiredData = Promise.all([x['geoData'],
+            x['summaryData'],
+            x['rtData'],
+            x['casesInfectionData'],
+            x['casesReportData'],
+            x['obsCasesData']]);
+        this._dataset_ref = [{ 'geoData': { 'index': 0, 'title': 'Geography' } },
+            { 'summaryData': { 'index': 1, 'title': 'Summary' } },
+            { 'rt': { 'index': 2, 'title': 'R' } },
+            { 'casesInfection': { 'index': 3, 'title': 'Cases by date of infection' } },
+            { 'casesReport': { 'index': 4, 'title': 'Cases by date of report' } },
+            { 'obsCasesData': { 'index': 5, 'title': 'Observed cases' } }];
+        this._subregional_ref = x['subregional_ref'];
+        this._availableData = [];
     }
-    rtVis.prototype.setupPage = function () {
-        var eventHandlersRef = {
+    rtVis.prototype.setupFlex = function (root_element) {
+        var onlyUnique = function (value, index, self) {
+            return self.indexOf(value) === index;
+        };
+        var eventHandlers = {
             'time7ButtonClick': this.time7ButtonClick.bind(this),
             'time14ButtonClick': this.time14ButtonClick.bind(this),
             'time30ButtonClick': this.time30ButtonClick.bind(this),
             'timeAllButtonClick': this.timeAllButtonClick.bind(this),
+            'dropdownClick': this.dropdownClick.bind(this)
         };
+        var _dataset_ref = this._dataset_ref;
+        var _config = this._config;
+        var getAvailableData = this.getAvailableData;
+        var country = this.activeArea;
+        var time = this.activeTime;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var s = new setup();
-            s.setupLayout(eventHandlersRef);
+            var availableData = getAvailableData(data, _dataset_ref);
+            var s = new setup(_config);
+            var t = new ts(_config);
+            s.setupDropDown(root_element);
+            if (availableData.includes('geoData') && availableData.includes('summaryData')) {
+                s.setupMap(root_element);
+                var areaNames = data[0].features.map(function (d) { return (d.properties.sovereignt); }).filter(onlyUnique).sort();
+                $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
+            }
+            else {
+                try {
+                    var areaNames = data[2].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                }
+                catch (_a) { }
+                try {
+                    var areaNames = data[3].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                }
+                catch (_b) { }
+                try {
+                    var areaNames = data[4].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                }
+                catch (_c) { }
+                $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
+            }
+            s.setupCountryTitle(root_element);
+            t.tsCountryTitle(country, 'country-title-container');
+            console.log(data);
+            console.log(availableData);
+            if (availableData.includes('rt')) {
+                s.setupRt(root_element);
+                t.plotTs(data[2], country, time, data[5], 'r0-ts-container', runDate, true);
+                t.tsDataTitle('R', 'r0-title-container');
+            }
+            if (availableData.includes('casesInfection')) {
+                s.setupCasesInfection(root_element);
+                t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', runDate);
+                t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+            }
+            if (availableData.includes('casesReport')) {
+                s.setupCasesReport(root_element);
+                t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', runDate);
+                t.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+            }
+            if (availableData.includes('rt') || availableData.includes('casesInfection') || availableData.includes('casesReport')) {
+                s.setupControls(root_element, eventHandlers);
+            }
+            s.setupFooter(root_element);
         });
     };
+    rtVis.prototype.getAvailableData = function (data, _dataset_ref) {
+        var availableData = data.map(function (e, i) { return e !== null ? i : ''; }).filter(String);
+        availableData = availableData.map(function (item) { return _dataset_ref[item]; });
+        availableData = availableData.map(function (item) { return (Object.keys(item)); }).flat();
+        return (availableData);
+    };
+    rtVis.prototype.setupPage = function (root_element) {
+        this.setupFlex(root_element);
+    };
     rtVis.prototype.createMap = function () {
+        var _config = this._config;
         var mapClick = this.mapClick.bind(this);
         var dropdownClick = this.dropdownClick.bind(this);
+        var getAvailableData = this.getAvailableData;
         this._requiredData.then(function (data) {
-            var m = new map;
+            var m = new map(_config);
             m.setupMap(data[0], data[1], mapClick, dropdownClick);
         });
     };
     rtVis.prototype.plotRt = function (dataset) {
+        var _config = this._config;
+        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
         var time = this.activeTime;
-        var dataset_ref = this._dataset_ref;
-        if (this.activeData === 'R0') {
-            var r0 = true;
-        }
-        else {
-            var r0 = false;
-        }
+        var getAvailableData = this.getAvailableData;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var t = new ts;
-            t.plotAllTs(country, time, data);
+            var t = new ts(_config);
+            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate);
         });
     };
     rtVis.prototype.time7ButtonClick = function () {
+        var _config = this._config;
+        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var dataset = this._dataset_ref[this.activeData]['index'];
-        var dataset_title = this._dataset_ref[this.activeData]['title'];
-        if (this.activeData === 'R0') {
-            var r0 = true;
-        }
-        else {
-            var r0 = false;
-        }
+        var getAvailableData = this.getAvailableData;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var t = new ts;
+            var t = new ts(_config);
             var time = '7d';
-            t.plotAllTs(country, time, data);
+            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate);
         });
         this.activeTime = '7d';
     };
     rtVis.prototype.time14ButtonClick = function () {
+        var _config = this._config;
+        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var dataset = this._dataset_ref[this.activeData]['index'];
-        var dataset_title = this._dataset_ref[this.activeData]['title'];
-        if (this.activeData === 'R0') {
-            var r0 = true;
-        }
-        else {
-            var r0 = false;
-        }
+        var getAvailableData = this.getAvailableData;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var t = new ts;
+            var t = new ts(_config);
             var time = '14d';
-            t.plotAllTs(country, time, data);
+            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate);
         });
         this.activeTime = '14d';
     };
     rtVis.prototype.time30ButtonClick = function () {
+        var _config = this._config;
+        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var dataset = this._dataset_ref[this.activeData]['index'];
-        var dataset_title = this._dataset_ref[this.activeData]['title'];
-        if (this.activeData === 'R0') {
-            var r0 = true;
-        }
-        else {
-            var r0 = false;
-        }
+        var getAvailableData = this.getAvailableData;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var t = new ts;
+            var t = new ts(_config);
             var time = '30d';
-            t.plotAllTs(country, time, data);
+            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate);
         });
         this.activeTime = '30d';
     };
     rtVis.prototype.timeAllButtonClick = function () {
+        var _config = this._config;
+        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var dataset = this._dataset_ref[this.activeData]['index'];
-        var dataset_title = this._dataset_ref[this.activeData]['title'];
-        if (this.activeData === 'R0') {
-            var r0 = true;
-        }
-        else {
-            var r0 = false;
-        }
+        var getAvailableData = this.getAvailableData;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var t = new ts;
+            var t = new ts(_config);
             var time = 'all';
-            t.plotAllTs(country, time, data);
+            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate);
         });
         this.activeTime = 'all';
     };
     rtVis.prototype.mapClick = function (e) {
         this.activeArea = e.properties.sovereignt;
+        var _config = this._config;
+        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var dataset = this._dataset_ref[this.activeData]['index'];
-        var dataset_title = this._dataset_ref[this.activeData]['title'];
         var time = this.activeTime;
-        if (this.activeData === 'R0') {
-            var r0 = true;
-        }
-        else {
-            var r0 = false;
-        }
+        var getAvailableData = this.getAvailableData;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var t = new ts;
-            t.plotAllTs(country, time, data);
+            var t = new ts(_config);
+            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate);
         });
     };
     rtVis.prototype.dropdownClick = function (e) {
         this.activeArea = e.params.data.text;
+        var _config = this._config;
+        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var dataset = this._dataset_ref[this.activeData]['index'];
-        var dataset_title = this._dataset_ref[this.activeData]['title'];
         var time = this.activeTime;
-        if (this.activeData === 'R0') {
-            var r0 = true;
-        }
-        else {
-            var r0 = false;
-        }
+        var getAvailableData = this.getAvailableData;
+        var runDate = this.runDate;
         this._requiredData.then(function (data) {
-            var t = new ts;
-            t.plotAllTs(country, time, data);
+            var t = new ts(_config);
+            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate);
         });
         d3.select('#select2-dropdown-container-container').text(this.activeArea);
     };
     return rtVis;
 }());
-;;var vis = new rtVis();
-vis.setupPage();
-vis.createMap();
-vis.plotRt('R0');;var __extends = (this && this.__extends) || (function () {
+;;var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -192,11 +221,11 @@ try {
 catch (err) { }
 var setup = (function (_super) {
     __extends(setup, _super);
-    function setup() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    function setup(x) {
+        return _super.call(this, x) || this;
     }
-    setup.prototype.setupLayout = function (eventHandlersRef) {
-        d3.select('#root')
+    setup.prototype.setupLayout = function (root_element, eventHandlersRef) {
+        d3.select(root_element)
             .append('div')
             .attr('class', 'map-container')
             .attr('id', 'map-container');
@@ -204,42 +233,42 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'dropdown-container')
             .attr('id', 'dropdown-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'country-title-container')
             .attr('id', 'country-title-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'r0-title-container')
             .attr('id', 'r0-title-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'r0-ts-container')
             .attr('id', 'r0-ts-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'cases-infection-title-container')
             .attr('id', 'cases-infection-title-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'cases-infection-ts-container')
             .attr('id', 'cases-infection-ts-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'cases-report-title-container')
             .attr('id', 'cases-report-title-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'cases-report-ts-container')
             .attr('id', 'cases-report-ts-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'controls-container')
             .attr('id', 'controls-container');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'footer');
-        d3.select('#root')
+        d3.select(root_element)
             .append('div')
             .attr('class', 'download-container')
             .attr('id', 'download-container');
@@ -333,6 +362,154 @@ var setup = (function (_super) {
             .attr('href', this.casesReportUrl)
             .attr('target', '_blank');
     };
+    setup.prototype.setupCountryTitle = function (root_element) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'country-title-container')
+            .attr('id', 'country-title-container');
+    };
+    setup.prototype.setupMap = function (root_element) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'map-container')
+            .attr('id', 'map-container');
+    };
+    setup.prototype.setupDropDown = function (root_element) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'dropdown-container')
+            .attr('id', 'dropdown-container');
+    };
+    setup.prototype.setupRt = function (root_element) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'r0-title-container')
+            .attr('id', 'r0-title-container');
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'r0-ts-container')
+            .attr('id', 'r0-ts-container');
+    };
+    setup.prototype.setupCasesInfection = function (root_element) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'cases-infection-title-container')
+            .attr('id', 'cases-infection-title-container');
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'cases-infection-ts-container')
+            .attr('id', 'cases-infection-ts-container');
+    };
+    setup.prototype.setupCasesReport = function (root_element) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'cases-report-title-container')
+            .attr('id', 'cases-report-title-container');
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'cases-report-ts-container')
+            .attr('id', 'cases-report-ts-container');
+    };
+    setup.prototype.setupControls = function (root_element, eventHandlersRef) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'controls-container')
+            .attr('id', 'controls-container');
+        d3.select('#controls-container')
+            .append('div')
+            .attr('class', 'controls-container-legend')
+            .attr('id', 'controls-container-legend');
+        d3.select('#controls-container')
+            .append('div')
+            .attr('class', 'controls-container-time')
+            .attr('id', 'controls-container-time');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .style('width', '12px')
+            .style('height', '12px')
+            .attr('class', 'ts-legend-e');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .text('Estimate')
+            .attr('class', 'ts-legend-text');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .style('width', '12px')
+            .style('height', '12px')
+            .attr('class', 'ts-legend-eb');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .text('Estimate based on partial data')
+            .attr('class', 'ts-legend-text');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .style('width', '12px')
+            .style('height', '12px')
+            .attr('class', 'ts-legend-f');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .text('Forecast')
+            .attr('class', 'ts-legend-text');
+        d3.select('#controls-container-time')
+            .append('button')
+            .attr('class', 'control-button')
+            .attr('id', 'control-allday')
+            .text('All')
+            .on('click', eventHandlersRef['timeAllButtonClick']);
+        this.addButtonSpacer('#controls-container-time');
+        d3.select('#controls-container-time')
+            .append('button')
+            .attr('class', 'control-button')
+            .attr('id', 'control-30day')
+            .text('Previous Month')
+            .on('click', eventHandlersRef['time30ButtonClick']);
+        this.addButtonSpacer('#controls-container-time');
+        d3.select('#controls-container-time')
+            .append('button')
+            .attr('class', 'control-button')
+            .attr('id', 'control-7day')
+            .text('Previous 2 weeks')
+            .on('click', eventHandlersRef['time14ButtonClick']);
+        this.addButtonSpacer('#controls-container-time');
+        d3.select('#controls-container-time')
+            .append('button')
+            .attr('class', 'control-button')
+            .attr('id', 'control-5day')
+            .text('Previous 7 Days')
+            .on('click', eventHandlersRef['time7ButtonClick']);
+        d3.select('#download-container')
+            .append('div')
+            .text('Download data:');
+        this.addButtonSpacer('#download-container');
+        d3.select('#download-container')
+            .append('a')
+            .attr('class', 'download-button')
+            .attr('id', 'download-r0')
+            .text('R')
+            .attr('href', this.r0Url)
+            .attr('target', '_blank');
+        this.addButtonSpacer('#download-container');
+        d3.select('#download-container')
+            .append('a')
+            .attr('class', 'download-button')
+            .attr('id', 'download-casesInfection')
+            .text('Cases by date of infection')
+            .attr('href', this.casesInfectionUrl)
+            .attr('target', '_blank');
+        this.addButtonSpacer('#download-container');
+        d3.select('#download-container')
+            .append('a')
+            .attr('class', 'download-button')
+            .attr('id', 'download-casesReport')
+            .text('Cases by date of report')
+            .attr('href', this.casesReportUrl)
+            .attr('target', '_blank');
+    };
+    setup.prototype.setupFooter = function (root_element) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'footer');
+    };
     setup.prototype.addButtonSpacer = function (id) {
         d3.select(id)
             .append('div')
@@ -358,8 +535,8 @@ try {
 catch (err) { }
 var map = (function (_super) {
     __extends(map, _super);
-    function map() {
-        return _super.call(this) || this;
+    function map(x) {
+        return _super.call(this, x) || this;
     }
     map.prototype.setupMap = function (geoData, summaryData, mapClick, dropdownClick) {
         var map_svg = d3.select("#map-container")
@@ -368,10 +545,13 @@ var map = (function (_super) {
             .style("width", '100%')
             .style("height", '100%');
         var map_svg_dims = document.getElementById('map-container').getBoundingClientRect();
+        var projection = d3.geoCylindricalStereographic();
+        var path = d3.geoPath().projection(projection);
+        var scaleCenter = this.calculateScaleCenter(geoData, map_svg_dims.width, map_svg_dims.height, path);
         var projection = d3.geoCylindricalStereographic()
             .translate([map_svg_dims.width / 2, map_svg_dims.height / 2])
-            .scale(150)
-            .center([0, 10]);
+            .scale(scaleCenter.scale)
+            .center(scaleCenter.center);
         var path = d3.geoPath().projection(projection);
         var colour_ref = { 'Decreasing': '#1170aa',
             'Likely decreasing': '#5fa2ce',
@@ -451,6 +631,17 @@ var map = (function (_super) {
                 .style('font-size', '12');
         }
     };
+    map.prototype.calculateScaleCenter = function (features, map_width, map_height, path) {
+        var bbox_path = path.bounds(features), scale = 120 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / map_width, (bbox_path[1][1] - bbox_path[0][1]) / map_height);
+        var bbox_feature = d3.geoBounds(features), center = [
+            (bbox_feature[1][0] + bbox_feature[0][0]) / 2,
+            (bbox_feature[1][1] + bbox_feature[0][1]) / 2
+        ];
+        return {
+            'scale': scale,
+            'center': center
+        };
+    };
     map.prototype.onlyUnique = function (value, index, self) {
         return self.indexOf(value) === index;
     };
@@ -475,17 +666,21 @@ try {
 catch (err) { }
 var ts = (function (_super) {
     __extends(ts, _super);
-    function ts() {
-        var _this = _super.call(this) || this;
+    function ts(x) {
+        var _this = _super.call(this, x) || this;
         _this.margin = { top: 10, right: 30, bottom: 30, left: 60 };
         return _this;
     }
-    ts.prototype.plotTs = function (rtData, country, time, cases_data, container_id, r0) {
+    ts.prototype.plotTs = function (rtData, country, time, cases_data, container_id, runDate, r0) {
+        if (runDate === void 0) { runDate = undefined; }
         if (r0 === void 0) { r0 = false; }
         d3.select("#" + container_id + '-svg').remove();
         d3.select('#' + container_id + '-tooltip').remove();
         rtData = rtData.filter(function (a) { return a['country'] == country; });
-        cases_data = cases_data.filter(function (a) { return a['region'] == country; });
+        try {
+            cases_data = cases_data.filter(function (a) { return a['region'] == country; });
+        }
+        catch (_a) { }
         var parseTime = d3.timeParse("%Y-%m-%d");
         var ts_svg = d3.select("#" + container_id)
             .append('svg')
@@ -509,7 +704,10 @@ var ts = (function (_super) {
             minDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
         }
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
-        cases_data = cases_data.filter(function (a) { return d3.timeDay.offset(parseTime(a['date']), -1) >= minDate; });
+        try {
+            cases_data = cases_data.filter(function (a) { return d3.timeDay.offset(parseTime(a['date']), -1) >= minDate; });
+        }
+        catch (_b) { }
         if (rtData.length === 0) {
             ts_svg.append('text')
                 .attr('x', ts_svg_dims.width / 2)
@@ -538,15 +736,25 @@ var ts = (function (_super) {
         var poly_90 = this.plotHPoly('date', 'upper_90', 'lower_90', x, y, parseTime);
         var poly_50 = this.plotHPoly('date', 'upper_50', 'lower_50', x, y, parseTime);
         if (!r0) {
-            ts_svg.selectAll('rect')
-                .data(cases_data)
-                .enter()
-                .append('rect')
-                .attr('height', function (d, i) { return ts_svg_dims.height - y(d.confirm); })
-                .attr('y', function (d, i) { return y(d.confirm); })
-                .attr("width", function (d) { return x(d3.timeDay.offset(parseTime(d.date), 1)) - x(parseTime(d.date)); })
-                .attr('x', function (d, i) { return x(d3.timeDay.offset(parseTime(d.date), -0.5)); })
-                .attr('class', 'cases_bar');
+            try {
+                ts_svg.selectAll('rect')
+                    .data(cases_data)
+                    .enter()
+                    .append('rect')
+                    .attr('x', function (d, i) { return x(d3.timeDay.offset(parseTime(d.date), -0.5)); })
+                    .attr("width", function (d) { return 0.8 * (x(d3.timeDay.offset(parseTime(d.date), 1)) - x(parseTime(d.date))); })
+                    .attr("height", 0)
+                    .attr("y", ts_svg_dims.height)
+                    .transition()
+                    .duration(250)
+                    .delay(function (d, i) {
+                    return i * 4;
+                })
+                    .attr('height', function (d, i) { return ts_svg_dims.height - y(d.confirm); })
+                    .attr('y', function (d, i) { return y(d.confirm); })
+                    .attr('class', 'cases_bar');
+            }
+            catch (_c) { }
         }
         ts_svg.append("path")
             .datum(estimate_data)
@@ -596,6 +804,16 @@ var ts = (function (_super) {
             .attr('stroke', 'black')
             .attr('stroke-width', '1px')
             .attr('stroke-opacity', 0);
+        if (typeof (runDate) !== 'undefined') {
+            ts_svg.append('line')
+                .attr('id', 'run-date-line')
+                .attr("x1", x(parseTime(runDate)))
+                .attr("y1", 0)
+                .attr("x2", x(parseTime(runDate)))
+                .attr("y2", ts_svg_dims.height)
+                .attr('stroke', 'lightgrey')
+                .style('stroke-dasharray', "5,5");
+        }
         var tooltip = d3.select("#" + container_id)
             .append("div")
             .style("opacity", 0)
@@ -653,28 +871,52 @@ var ts = (function (_super) {
             .on('mouseout', tsMouseOut)
             .attr('fill-opacity', '0');
     };
-    ts.prototype.plotAllTs = function (country, time, data) {
-        var newData = this.preprocessDataSets(country, data);
+    ts.prototype.plotAllTs = function (country, time, data, availableData, runDate) {
+        if (runDate === void 0) { runDate = undefined; }
         this.tsCountryTitle(country, 'country-title-container');
-        this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', true);
-        this.tsDataTitle('R', 'r0-title-container');
-        this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', false);
-        this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
-        this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', false);
-        this.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+        if (availableData.includes('obsCasesData') && availableData.includes('casesInfection')) {
+            var newData = this.preprocessDataSets(country, data, availableData);
+        }
+        else {
+            var newData = data;
+        }
+        if (availableData.includes('rt')) {
+            this.plotTs(data[2], country, time, data[5], 'r0-ts-container', runDate, true);
+            this.tsDataTitle('R', 'r0-title-container');
+        }
+        if (availableData.includes('casesInfection')) {
+            this.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', runDate);
+            this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
+        }
+        if (availableData.includes('casesReport')) {
+            this.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', runDate);
+            this.tsDataTitle('Cases by date of report', 'cases-report-title-container');
+        }
     };
-    ts.prototype.preprocessDataSets = function (country, data) {
+    ts.prototype.preprocessDataSets = function (country, data, availableData) {
         var parseTime = d3.timeParse("%Y-%m-%d");
-        var r0Data = data[2].filter(function (a) { return a['country'] == country; });
-        var casesInfectionData = data[3].filter(function (a) { return a['country'] == country; });
-        var casesReportData = data[4].filter(function (a) { return a['country'] == country; });
+        if (availableData.includes('rt')) {
+            var r0Data = data[2].filter(function (a) { return a['country'] == country; });
+        }
+        if (availableData.includes('casesInfection')) {
+            var casesInfectionData = data[3].filter(function (a) { return a['country'] == country; });
+        }
+        if (availableData.includes('casesReport')) {
+            var casesReportData = data[4].filter(function (a) { return a['country'] == country; });
+        }
         var casesObservedData = data[5].filter(function (a) { return a['region'] == country; });
         var max_observed_cases = d3.max(casesObservedData, function (d) { return parseFloat(d.confirm); });
         var threshold_date = d3.min(casesInfectionData.filter(function (a) { return a['upper_90'] >= max_observed_cases * 10; }), function (d) { return parseTime(d.date); });
         if (typeof (threshold_date) !== 'undefined') {
-            r0Data = r0Data.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
-            casesInfectionData = casesInfectionData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
-            casesReportData = casesReportData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            if (availableData.includes('rt')) {
+                r0Data = r0Data.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            }
+            if (availableData.includes('casesInfection')) {
+                casesInfectionData = casesInfectionData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            }
+            if (availableData.includes('casesReport')) {
+                casesReportData = casesReportData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
+            }
             casesObservedData = casesObservedData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
             var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData];
         }
@@ -687,13 +929,20 @@ var ts = (function (_super) {
         d3.select("#" + container_id).text(dataset);
     };
     ts.prototype.tsCountryTitle = function (country, container_id) {
-        if (Object.keys(this._subregional_ref).includes(country)) {
-            var text = '<a href="' + this._subregional_ref[country] + '" target="_blank">' + country + '</a>';
+        try {
+            if (Object.keys(this._subregional_ref).includes(country)) {
+                var text = '<a href="' + this._subregional_ref[country] + '" target="_blank" style="font-size:14px;">Detailed estimates available</a>';
+            }
+            else {
+                text = '';
+            }
         }
-        else {
-            text = country;
+        catch (_a) { }
+        d3.select("#" + container_id).html(country);
+        try {
+            d3.select("#" + container_id).append('div').attr('id', 'subregional-link').html(text);
         }
-        d3.select("#" + container_id).html(text);
+        catch (_b) { }
     };
     ts.prototype.plotHPoly = function (x, y0, y1, x_scale, y_scale, parseTime) {
         if (parseTime === void 0) { parseTime = null; }
