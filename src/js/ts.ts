@@ -8,17 +8,20 @@ interface ts {
 }
 
 class ts extends rtVis {
-  constructor () {
-    super()
+  constructor (x) {
+    super(x)
     this.margin = {top: 10, right: 30, bottom: 30, left: 60}
   }
-  plotTs(rtData, country, time, cases_data, container_id, r0 = false) {
+  plotTs(rtData, country, time, cases_data, container_id, runDate = undefined, r0 = false) {
 
     d3.select("#" + container_id + '-svg').remove()
     d3.select('#' + container_id + '-tooltip').remove()
 
     rtData = rtData.filter(a=>a['country']==country)
-    cases_data = cases_data.filter(a=>a['region']==country)
+
+    try {
+      cases_data = cases_data.filter(a=>a['region']==country)
+    } catch {}
 
     var parseTime = d3.timeParse("%Y-%m-%d");
 
@@ -29,7 +32,7 @@ class ts extends rtVis {
       .style("width", '100%')
       .style("height", '100%')
       .append("g")
-      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
 
     var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect()
 
@@ -47,7 +50,11 @@ class ts extends rtVis {
     }
 
     rtData = rtData.filter(a=>parseTime(a['date'])>=minDate)
-    cases_data = cases_data.filter(a=>d3.timeDay.offset(parseTime(a['date']), -1)>=minDate)
+
+    try {
+      cases_data = cases_data.filter(a=>d3.timeDay.offset(parseTime(a['date']), -1)>=minDate)
+    } catch {}
+
 
     if (rtData.length === 0){
       ts_svg.append('text')
@@ -88,15 +95,24 @@ class ts extends rtVis {
 
 
     if (!r0){
-      ts_svg.selectAll('rect')
-        .data(cases_data)
-        .enter()
-        .append('rect')
-        .attr('height', function(d, i) {return ts_svg_dims.height - y(d.confirm);})
-        .attr('y', function(d, i) {return y(d.confirm);})
-        .attr("width", function(d) {return x(d3.timeDay.offset(parseTime(d.date), 1)) - x(parseTime(d.date))})
-        .attr('x', function(d, i) {return x(d3.timeDay.offset(parseTime(d.date), -0.5));})
-        .attr('class', 'cases_bar');
+      try {
+        ts_svg.selectAll('rect')
+          .data(cases_data)
+          .enter()
+          .append('rect')
+          .attr('x', function(d, i) {return x(d3.timeDay.offset(parseTime(d.date), -0.5));})
+          .attr("width", function(d) {return 0.8 * (x(d3.timeDay.offset(parseTime(d.date), 1)) - x(parseTime(d.date)))})
+          .attr("height", 0)
+          .attr("y", ts_svg_dims.height)
+          .transition()
+          .duration(250)
+          .delay(function (d, i) {
+  				  return i * 4;
+  			  })
+          .attr('height', function(d, i) {return ts_svg_dims.height - y(d.confirm);})
+          .attr('y', function(d, i) {return y(d.confirm);})
+          .attr('class', 'cases_bar');
+      } catch {}
     }
 
     ts_svg.append("path")
@@ -156,6 +172,17 @@ class ts extends rtVis {
       .attr('stroke', 'black')
       .attr('stroke-width', '1px')
       .attr('stroke-opacity', 0);
+
+    if(typeof(runDate) !== 'undefined'){
+      ts_svg.append('line')
+        .attr('id', 'run-date-line')
+        .attr("x1", x(parseTime(runDate)))
+        .attr("y1", 0)
+        .attr("x2", x(parseTime(runDate)))
+        .attr("y2", ts_svg_dims.height)
+        .attr('stroke', 'lightgrey')
+        .style('stroke-dasharray', "5,5")
+    }
 
     var tooltip = d3.select("#" + container_id)
       .append("div")
@@ -230,31 +257,61 @@ class ts extends rtVis {
       .attr('fill-opacity', '0')
 
   }
-  plotAllTs(country, time, data) {
-
-    var newData = this.preprocessDataSets(country, data)
+  plotAllTs(country, time, data, availableData, runDate = undefined) {
 
     this.tsCountryTitle(country, 'country-title-container')
 
-    this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', true)
-    this.tsDataTitle('R', 'r0-title-container')
+    //Threshold estimates > 10* observed cases
+    if (availableData.includes('obsCasesData') && availableData.includes('casesInfection')){
+      var newData: any = this.preprocessDataSets(country, data, availableData)
+    } else {
+      var newData: any = data
+    }
 
-    this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', false)
-    this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+    if (availableData.includes('rt')){
+      this.plotTs(data[2], country, time, data[5], 'r0-ts-container', runDate, true)
+      this.tsDataTitle('R', 'r0-title-container')
+    }
 
-    this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', false)
-    this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+    if (availableData.includes('casesInfection')){
+      this.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', runDate)
+      this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+    }
+
+    if (availableData.includes('casesReport')){
+      this.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', runDate)
+      this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+    }
+
+    //var newData = this.preprocessDataSets(country, data)
+    //var newData = data
+
+    //this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', runDate, true)
+    //this.tsDataTitle('R', 'r0-title-container')
+
+    //this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', runDate, false)
+    //this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+
+    //this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', runDate, false)
+    //this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
 
   }
-  preprocessDataSets(country, data){
-
-    //wrap this with other plot init functions and pass NewData not data
+  preprocessDataSets(country, data, availableData){
 
     var parseTime = d3.timeParse("%Y-%m-%d");
 
-    var r0Data = data[2].filter(a=>a['country']==country)
-    var casesInfectionData = data[3].filter(a=>a['country']==country)
-    var casesReportData = data[4].filter(a=>a['country']==country)
+    if (availableData.includes('rt')){
+      var r0Data = data[2].filter(a=>a['country']==country)
+    }
+
+    if (availableData.includes('casesInfection')){
+      var casesInfectionData = data[3].filter(a=>a['country']==country)
+    }
+
+    if (availableData.includes('casesReport')){
+      var casesReportData = data[4].filter(a=>a['country']==country)
+    }
+
     var casesObservedData = data[5].filter(a=>a['region']==country)
 
     var max_observed_cases = d3.max(casesObservedData, function(d) { return parseFloat(d.confirm); });
@@ -262,9 +319,19 @@ class ts extends rtVis {
     var threshold_date = d3.min(casesInfectionData.filter(a=>a['upper_90']>=max_observed_cases * 10), function(d) { return parseTime(d.date)})
 
     if (typeof(threshold_date) !== 'undefined'){
-      r0Data = r0Data.filter(a=>parseTime(a['date'])<=threshold_date)
-      casesInfectionData = casesInfectionData.filter(a=>parseTime(a['date'])<=threshold_date)
-      casesReportData = casesReportData.filter(a=>parseTime(a['date'])<=threshold_date)
+
+      if (availableData.includes('rt')){
+        r0Data = r0Data.filter(a=>parseTime(a['date'])<=threshold_date)
+      }
+
+      if (availableData.includes('casesInfection')){
+        casesInfectionData = casesInfectionData.filter(a=>parseTime(a['date'])<=threshold_date)
+      }
+
+      if (availableData.includes('casesReport')){
+        casesReportData = casesReportData.filter(a=>parseTime(a['date'])<=threshold_date)
+      }
+
       casesObservedData = casesObservedData.filter(a=>parseTime(a['date'])<=threshold_date)
 
       var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData]
@@ -281,13 +348,22 @@ class ts extends rtVis {
   }
   tsCountryTitle (country, container_id){
 
-    if (Object.keys(this._subregional_ref).includes(country)){
-      var text = '<a href="' + this._subregional_ref[country] + '" target="_blank">' + country + '</a>'
-    } else {
-      text = country
-    }
+    try {
 
-    d3.select("#" + container_id).html(text)
+      if (Object.keys(this._subregional_ref).includes(country)){
+
+        var text = '<a href="' + this._subregional_ref[country] + '" target="_blank" style="font-size:14px;">Detailed estimates available</a>'
+      } else {
+        text = ''
+      }
+    } catch {}
+
+    d3.select("#" + container_id).html(country)
+
+    try {
+      d3.select("#" + container_id).append('div').attr('id', 'subregional-link').html(text)
+    } catch {}
+
 
   }
   plotHPoly (x, y0, y1, x_scale, y_scale, parseTime = null){

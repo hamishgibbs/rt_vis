@@ -4,113 +4,191 @@ try {
 catch(err) {}
 
 interface rtVis {
+  _config: any;
   activeArea: string;
-  activeData: string;
   activeTime: string;
+  runDate: string;
   geoUrl: string;
   summaryUrl: string;
   r0Url: string;
   casesInfectionUrl: string;
   casesReportUrl: string;
   obsCasesUrl: string;
-  _requiredData: Promise<any[]>;
   _dataset_ref: any;
+  _requiredData: Promise<any[]>;
   _subregional_ref: any;
+  _availableData: any;
 }
 
 class rtVis {
-  constructor() {
-    this.activeArea = 'United Kingdom';
-    this.activeData = 'R0'
-    this.activeTime = 'all'
-    this.geoUrl = 'https://raw.githubusercontent.com/hamishgibbs/rt_interactive_vis/master/geo_data/world.geojson';
-    this.summaryUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/summary_table.csv';
-    this.r0Url = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv'
-    this.casesInfectionUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_infection.csv'
-    this.casesReportUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_report.csv'
-    this.obsCasesUrl = 'https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/reported_cases.csv'
-    this._requiredData = Promise.all([d3.json(this.geoUrl),
-      d3.csv(this.summaryUrl),
-      d3.csv(this.r0Url),
-      d3.csv(this.casesInfectionUrl),
-      d3.csv(this.casesReportUrl),
-      d3.csv(this.obsCasesUrl)])
-    //this._optionalData = Promise.all([d3.csv(this.obsCasesUrl)])
-    this._dataset_ref = {'R0':{'index':2, 'title':'R'},'casesInfection':{'index':3, 'title':'Cases by date of infection'},'casesReport':{'index':4, 'title':'Cases by date of report'}}
-    this._subregional_ref = {'Afghanistan':'https://epiforecasts.io/covid/posts/national/afghanistan/',
-                             'Brazil':'https://epiforecasts.io/covid/posts/national/brazil/',
-                             'Colombia':'https://epiforecasts.io/covid/posts/national/colombia/',
-                             'India':'https://epiforecasts.io/covid/posts/national/india/',
-                             'Italy':'https://epiforecasts.io/covid/posts/national/italy/',
-                             'Germany':'https://epiforecasts.io/covid/posts/national/germany/',
-                             'Russia':'https://epiforecasts.io/covid/posts/national/russia/',
-                             'United Kingdom':'https://epiforecasts.io/covid/posts/national/united-kingdom/',
-                             'United States of America':'https://epiforecasts.io/covid/posts/national/united-states/'}
+  constructor(x: any) {
+
+    this._config = x
+
+    this.activeArea = x['activeArea']
+    this.activeTime = x['activeTime']
+    this.runDate = x['runDate']
+
+    this._requiredData = Promise.all([x['geoData'],
+      x['summaryData'],
+      x['rtData'],
+      x['casesInfectionData'],
+      x['casesReportData'],
+      x['obsCasesData']])
+
+    this._dataset_ref = [{'geoData':{'index':0, 'title':'Geography'}},
+                         {'summaryData':{'index':1, 'title':'Summary'}},
+                         {'rt':{'index':2, 'title':'R'}},
+                         {'casesInfection':{'index':3, 'title':'Cases by date of infection'}},
+                         {'casesReport':{'index':4, 'title':'Cases by date of report'}},
+                         {'obsCasesData':{'index':5, 'title':'Observed cases'}}]
+
+
+    this._subregional_ref = x['subregional_ref']
+
+    this._availableData = []
 
   }
-  setupPage() {
+  setupFlex(root_element){
 
-    var eventHandlersRef = {
+    var onlyUnique = function(value, index, self) {
+      return self.indexOf(value) === index;
+    }
+
+    var eventHandlers = {
       'time7ButtonClick': this.time7ButtonClick.bind(this),
       'time14ButtonClick': this.time14ButtonClick.bind(this),
       'time30ButtonClick': this.time30ButtonClick.bind(this),
       'timeAllButtonClick': this.timeAllButtonClick.bind(this),
+      'dropdownClick': this.dropdownClick.bind(this)
     }
 
+    var _dataset_ref = this._dataset_ref
+    var _config = this._config
+    var getAvailableData = this.getAvailableData
+    var country = this.activeArea
+    var time = this.activeTime
+    var runDate = this.runDate
+
     this._requiredData.then(function(data: any){
-      var s = new setup();
-      s.setupLayout(eventHandlersRef)
+
+      var availableData = getAvailableData(data, _dataset_ref)
+
+      var s = new setup(_config);
+      var t = new ts(_config)
+
+      s.setupDropDown(root_element)
+
+      if (availableData.includes('geoData') && availableData.includes('summaryData')) {
+        s.setupMap(root_element)
+
+        var areaNames = data[0].features.map(function(d){return(d.properties.sovereignt)}).filter(onlyUnique).sort()
+        // @ts-ignore
+        $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select an area', data: areaNames}).on('select2:select', eventHandlers['dropdownClick']);
+
+      } else {
+        try {var areaNames = data[2].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
+        try {var areaNames = data[3].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
+        try {var areaNames = data[4].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
+
+        // @ts-ignore
+        $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select an area', data: areaNames}).on('select2:select', eventHandlers['dropdownClick']);
+
+      }
+
+      s.setupCountryTitle(root_element)
+      t.tsCountryTitle(country, 'country-title-container')
+
+      console.log(data)
+      console.log(availableData)
+
+      if (availableData.includes('rt')){
+        s.setupRt(root_element)
+        t.plotTs(data[2], country, time, data[5], 'r0-ts-container', runDate, true)
+        t.tsDataTitle('R', 'r0-title-container')
+      }
+
+      if (availableData.includes('casesInfection')){
+        s.setupCasesInfection(root_element)
+        t.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', runDate)
+        t.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
+      }
+
+      if (availableData.includes('casesReport')){
+        s.setupCasesReport(root_element)
+        t.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', runDate)
+        t.tsDataTitle('Cases by date of report', 'cases-report-title-container')
+      }
+
+      if (availableData.includes('rt') || availableData.includes('casesInfection') || availableData.includes('casesReport')) {
+        s.setupControls(root_element, eventHandlers)
+      }
+
+      s.setupFooter(root_element)
 
     });
+
+  }
+  getAvailableData(data, _dataset_ref) {
+
+    var availableData = data.map((e, i) => e !== null ? i : '').filter(String)
+
+    availableData =  availableData.map(function (item) {return _dataset_ref[item];})
+
+    availableData = availableData.map(function (item) {return(Object.keys(item));}).flat()
+
+    return(availableData)
+
+  }
+  setupPage(root_element) {
+
+    this.setupFlex(root_element)
+
   }
   createMap(){
 
+    var _config = this._config
     var mapClick = this.mapClick.bind(this)
     var dropdownClick = this.dropdownClick.bind(this)
+    var getAvailableData = this.getAvailableData
 
     this._requiredData.then(function(data: any){
-      var m = new map
+      var m = new map(_config)
       m.setupMap(data[0], data[1], mapClick, dropdownClick)
+
     });
   }
   plotRt(dataset: any) {
 
+    var _config = this._config
+    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
     var time = this.activeTime
-    var dataset_ref = this._dataset_ref
-
-    if (this.activeData === 'R0'){
-      var r0 = true
-    } else {
-      var r0 = false
-    }
+    var getAvailableData = this.getAvailableData
+    var runDate = this.runDate
 
     this._requiredData.then(function(data: any){
 
-      var t = new ts
+      var t = new ts(_config)
 
-      t.plotAllTs(country, time, data)
+      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate)
 
     });
   }
   time7ButtonClick() {
 
+    var _config = this._config
+    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var dataset = this._dataset_ref[this.activeData]['index']
-    var dataset_title = this._dataset_ref[this.activeData]['title']
-
-    if (this.activeData === 'R0'){
-      var r0 = true
-    } else {
-      var r0 = false
-    }
+    var getAvailableData = this.getAvailableData
+    var runDate = this.runDate
 
     this._requiredData.then(function(data: any){
-      var t = new ts
+      var t = new ts(_config)
 
       var time = '7d'
 
-      t.plotAllTs(country, time, data)
+      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate)
 
     });
 
@@ -120,23 +198,18 @@ class rtVis {
   time14ButtonClick() {
 
 
-
+    var _config = this._config
+    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var dataset = this._dataset_ref[this.activeData]['index']
-    var dataset_title = this._dataset_ref[this.activeData]['title']
-
-    if (this.activeData === 'R0'){
-      var r0 = true
-    } else {
-      var r0 = false
-    }
+    var getAvailableData = this.getAvailableData
+    var runDate = this.runDate
 
     this._requiredData.then(function(data: any){
-      var t = new ts
+      var t = new ts(_config)
 
       var time = '14d'
 
-      t.plotAllTs(country, time, data)
+      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate)
 
     });
 
@@ -146,23 +219,18 @@ class rtVis {
   time30ButtonClick() {
 
 
-
+    var _config = this._config
+    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var dataset = this._dataset_ref[this.activeData]['index']
-    var dataset_title = this._dataset_ref[this.activeData]['title']
-
-    if (this.activeData === 'R0'){
-      var r0 = true
-    } else {
-      var r0 = false
-    }
+    var getAvailableData = this.getAvailableData
+    var runDate = this.runDate
 
     this._requiredData.then(function(data: any){
-      var t = new ts
+      var t = new ts(_config)
 
       var time = '30d'
 
-      t.plotAllTs(country, time, data)
+      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate)
 
     });
 
@@ -172,23 +240,18 @@ class rtVis {
   timeAllButtonClick() {
 
 
-
+    var _config = this._config
+    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var dataset = this._dataset_ref[this.activeData]['index']
-    var dataset_title = this._dataset_ref[this.activeData]['title']
-
-    if (this.activeData === 'R0'){
-      var r0 = true
-    } else {
-      var r0 = false
-    }
+    var getAvailableData = this.getAvailableData
+    var runDate = this.runDate
 
     this._requiredData.then(function(data: any){
-      var t = new ts
+      var t = new ts(_config)
 
       var time = 'all'
 
-      t.plotAllTs(country, time, data)
+      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate)
 
     });
 
@@ -198,21 +261,17 @@ class rtVis {
 
     this.activeArea = e.properties.sovereignt
 
+    var _config = this._config
+    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var dataset = this._dataset_ref[this.activeData]['index']
-    var dataset_title = this._dataset_ref[this.activeData]['title']
     var time = this.activeTime
-
-    if (this.activeData === 'R0'){
-      var r0 = true
-    } else {
-      var r0 = false
-    }
+    var getAvailableData = this.getAvailableData
+    var runDate = this.runDate
 
     this._requiredData.then(function(data: any){
-      var t = new ts
+      var t = new ts(_config)
 
-      t.plotAllTs(country, time, data)
+      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate)
 
     });
 
@@ -220,21 +279,17 @@ class rtVis {
   dropdownClick(e) {
     this.activeArea = e.params.data.text
 
+    var _config = this._config
+    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var dataset = this._dataset_ref[this.activeData]['index']
-    var dataset_title = this._dataset_ref[this.activeData]['title']
     var time = this.activeTime
-
-    if (this.activeData === 'R0'){
-      var r0 = true
-    } else {
-      var r0 = false
-    }
+    var getAvailableData = this.getAvailableData
+    var runDate = this.runDate
 
     this._requiredData.then(function(data: any){
-      var t = new ts
+      var t = new ts(_config)
 
-      t.plotAllTs(country, time, data)
+      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate)
 
     });
 
