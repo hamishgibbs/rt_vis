@@ -71,7 +71,17 @@ class ts extends rtVis {
 
     var maxDate = d3.max(rtData, function(d) { return parseTime(d.date); });
 
+    try {
+      var cases_max = d3.max(cases_data, function(d) { return parseFloat(d.confirm); });
+    } catch {}
+
     var ymax = d3.max(rtData, function(d) { return parseFloat(d.upper_90); });
+
+    if (!r0){
+      try {
+        ymax = d3.max([ymax, cases_max])
+      } catch {}
+    }
 
     var y = d3.scaleLinear()
                 .domain([0,ymax])
@@ -218,6 +228,8 @@ class ts extends rtVis {
         .attr('stroke-opacity', 0)
     }
 
+    var floatFormat = /\B(?=(\d{3})+(?!\d))/g
+
     function tsMouseMove(){
 
       d3.select('#' + container_id + '-hover-line')
@@ -228,10 +240,9 @@ class ts extends rtVis {
 
       var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
           '<br>' +
-          '50% CI: ' + parseFloat(mousedata[0]['lower_50']) + ' to ' + parseFloat(mousedata[0]['upper_50']) +
+          '50% CI: ' + parseFloat(mousedata[0]['lower_50']).toString().replace(floatFormat, ",") + ' to ' + parseFloat(mousedata[0]['upper_50']).toString().replace(floatFormat, ",") +
           '<br>' +
-          '90% CI: ' + parseFloat(mousedata[0]['lower_90']) + ' to ' + parseFloat(mousedata[0]['upper_90'])
-
+          '90% CI: ' + parseFloat(mousedata[0]['lower_90']).toString().replace(floatFormat, ",") + ' to ' + parseFloat(mousedata[0]['upper_90']).toString().replace(floatFormat, ",")
 
       var x_offset
 
@@ -257,9 +268,11 @@ class ts extends rtVis {
       .attr('fill-opacity', '0')
 
   }
-  plotAllTs(country, time, data, availableData, runDate = undefined) {
+  plotAllTs(country, time, data, availableData, runDate = undefined, sourceDeaths = false) {
 
     this.tsCountryTitle(country, 'country-title-container')
+
+    console.log(availableData)
 
     //Threshold estimates > 10* observed cases
     if (availableData.includes('obsCasesData') && availableData.includes('casesInfection')){
@@ -268,32 +281,37 @@ class ts extends rtVis {
       var newData: any = data
     }
 
+    console.log(data)
+
+    console.log(newData)
+
     if (availableData.includes('rt')){
-      this.plotTs(data[2], country, time, data[5], 'r0-ts-container', runDate, true)
+      if (sourceDeaths){
+          this.plotTs(newData[6], country, time, newData[5], 'r0-ts-container', runDate, true)
+      } else {
+          this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', runDate, true)
+      }
+
       this.tsDataTitle('R', 'r0-title-container')
     }
 
     if (availableData.includes('casesInfection')){
-      this.plotTs(data[3], country, time, data[5], 'cases-infection-ts-container', runDate)
+      if (sourceDeaths){
+        this.plotTs(newData[7], country, time, newData[5], 'cases-infection-ts-container', runDate)
+      } else {
+        this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', runDate)
+      }
       this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
     }
 
     if (availableData.includes('casesReport')){
-      this.plotTs(data[4], country, time, data[5], 'cases-report-ts-container', runDate)
+      if (sourceDeaths){
+        this.plotTs(newData[8], country, time, newData[5], 'cases-report-ts-container', runDate)
+      } else {
+        this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', runDate)
+      }
       this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
     }
-
-    //var newData = this.preprocessDataSets(country, data)
-    //var newData = data
-
-    //this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', runDate, true)
-    //this.tsDataTitle('R', 'r0-title-container')
-
-    //this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', runDate, false)
-    //this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
-
-    //this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', runDate, false)
-    //this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
 
   }
   preprocessDataSets(country, data, availableData){
@@ -311,6 +329,20 @@ class ts extends rtVis {
     if (availableData.includes('casesReport')){
       var casesReportData = data[4].filter(a=>a['country']==country)
     }
+
+    if (availableData.includes('rt_Deaths')){
+      var r0Data_Deaths = data[6].filter(a=>a['country']==country)
+    }
+
+    if (availableData.includes('casesInfection_Deaths')){
+      var casesInfectionData_Deaths = data[7].filter(a=>a['country']==country)
+    }
+
+    if (availableData.includes('casesReport_Deaths')){
+      var casesReportData_Deaths = data[8].filter(a=>a['country']==country)
+    }
+
+
 
     var casesObservedData = data[5].filter(a=>a['region']==country)
 
@@ -332,11 +364,23 @@ class ts extends rtVis {
         casesReportData = casesReportData.filter(a=>parseTime(a['date'])<=threshold_date)
       }
 
+      if (availableData.includes('rt_Deaths')){
+        r0Data_Deaths = r0Data_Deaths.filter(a=>parseTime(a['date'])<=threshold_date)
+      }
+
+      if (availableData.includes('casesInfection_Deaths')){
+        casesInfectionData_Deaths = casesInfectionData_Deaths.filter(a=>parseTime(a['date'])<=threshold_date)
+      }
+
+      if (availableData.includes('casesReport_Deaths')){
+        casesReportData_Deaths = casesReportData_Deaths.filter(a=>parseTime(a['date'])<=threshold_date)
+      }
+
       casesObservedData = casesObservedData.filter(a=>parseTime(a['date'])<=threshold_date)
 
-      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData]
+      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData, r0Data_Deaths, casesInfectionData_Deaths, casesReportData_Deaths]
     } else {
-      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData]
+      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData, r0Data_Deaths, casesInfectionData_Deaths, casesReportData_Deaths]
     }
 
     return(newData)
@@ -345,6 +389,7 @@ class ts extends rtVis {
   tsDataTitle (dataset, container_id) {
 
     d3.select("#" + container_id).text(dataset)
+
   }
   tsCountryTitle (country, container_id){
 

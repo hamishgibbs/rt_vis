@@ -194,7 +194,7 @@ class setup extends rtVis {
   }
   setupCountryTitle(root_element) {
 
-    d3.select(root_element)
+    var ct = d3.select(root_element)
       .append('div')
       .attr('class', 'country-title-container')
       .attr('id', 'country-title-container')
@@ -273,36 +273,52 @@ class setup extends rtVis {
         .attr('class', 'controls-container-time')
         .attr('id', 'controls-container-time')
 
-      //legend items
+      //legend item containers
       d3.select('#controls-container-legend')
+        .append('div')
+        .attr('class', 'legend-e')
+        .attr('id', 'legend-e')
+
+      d3.select('#controls-container-legend')
+        .append('div')
+        .attr('class', 'legend-eb')
+        .attr('id', 'legend-eb')
+
+      d3.select('#controls-container-legend')
+        .append('div')
+        .attr('class', 'legend-f')
+        .attr('id', 'legend-f')
+
+      //Legend items
+      d3.select('#legend-e')
         .append('div')
         .style('width', '12px')
         .style('height', '12px')
         .attr('class', 'ts-legend-e')
 
-      d3.select('#controls-container-legend')
+      d3.select('#legend-e')
         .append('div')
         .text('Estimate')
         .attr('class', 'ts-legend-text')
 
-      d3.select('#controls-container-legend')
+      d3.select('#legend-eb')
         .append('div')
         .style('width', '12px')
         .style('height', '12px')
         .attr('class', 'ts-legend-eb')
 
-      d3.select('#controls-container-legend')
+      d3.select('#legend-eb')
         .append('div')
         .text('Estimate based on partial data')
         .attr('class', 'ts-legend-text')
 
-      d3.select('#controls-container-legend')
+      d3.select('#legend-f')
         .append('div')
         .style('width', '12px')
         .style('height', '12px')
         .attr('class', 'ts-legend-f')
 
-      d3.select('#controls-container-legend')
+      d3.select('#legend-f')
         .append('div')
         .text('Forecast')
         .attr('class', 'ts-legend-text')
@@ -382,6 +398,32 @@ class setup extends rtVis {
     d3.select(root_element)
       .append('div')
       .attr('class', 'footer')
+
+  }
+  addSourceToggle(root_element, id, eventhandler){
+
+    var div = d3.select(root_element)
+      .append('div')
+      .attr('class', 'onoffswitch')
+
+    div.append('input')
+      .attr('type', 'checkbox')
+      .attr('name', 'onoffswitch')
+      .attr('class', 'onoffswitch-checkbox')
+      .attr('id', id)
+      .attr('tabindex', '0')
+      .property('checked', true)
+      .on('click', eventhandler)
+
+    var label = div.append('label')
+      .attr('class', 'onoffswitch-label')
+      .attr('for', id)
+
+    label.append('span')
+      .attr('class', 'onoffswitch-inner')
+
+    label.append('span')
+      .attr('class', 'onoffswitch-switch')
 
   }
   addButtonSpacer(id) {
