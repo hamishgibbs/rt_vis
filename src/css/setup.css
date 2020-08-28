@@ -88,7 +88,7 @@
   height: 20px;
   display: flex;
   padding-left: 30px;
-  justify-content: space-between;
+  justify-content: space-around;
 }
 
 .legend-e {
@@ -110,6 +110,7 @@
 .ts-legend-text {
   padding-left: 10px;
   padding-right: 20px;
+  font-size: 14px;
 }
 
 .ts-legend-e {
@@ -172,4 +173,16 @@
 .source-select {
   position: absolute;
   right: 90px;
+  border-radius: 8px;
+  font-size: 14px;
+  background-color: #e7e7e7;
+  border: none;
+  padding-right: 5px;
+  padding-left: 10px;
+  padding-bottom: 5px;
+  padding-top: 5px;
+}
+
+.source-select:hover {
+  background-color: #C3C3C3;
 }

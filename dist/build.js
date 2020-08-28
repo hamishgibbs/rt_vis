@@ -517,7 +517,7 @@ var map = (function (_super) {
             .on('click', mapClick)
             .style('stroke', 'black')
             .style('stroke-width', '0.2px')
-            .style('opacity', 0)
+            .style('opacity', 0.5)
             .transition()
             .delay(50)
             .style('opacity', 1);
@@ -536,37 +536,58 @@ var map = (function (_super) {
             .style('stroke-width', '0.5px');
     };
     map.prototype.createLegend = function (map_svg, map_svg_dims, colour_ref) {
+        var dragHandler = d3.drag()
+            .on("drag", function () {
+            d3.select(this)
+                .attr("x", d3.event.x)
+                .attr("y", d3.event.y);
+        });
         var legend_height = 200;
         var legend_x = map_svg_dims.width / 30;
         var legend_y = map_svg_dims.height / 2;
-        map_svg.append("rect")
-            .attr("x", legend_x)
-            .attr("y", legend_y)
-            .attr("width", 185)
-            .attr("height", legend_height)
-            .attr('fill', 'white')
-            .attr('stroke', 'black')
-            .attr('stroke-width', '0.5px')
-            .attr('rx', 8);
-        map_svg.append('text')
-            .attr("x", legend_x + 6)
-            .attr("y", legend_y + 20)
-            .text('Expected change in cases')
-            .style('font-size', '10pt')
-            .style('font-weight', 'bold');
+        var legend = d3.select('#map-container')
+            .append('div')
+            .attr('class', 'legend-button-container')
+            .attr('id', 'legend-button-container');
+        legend.append('button')
+            .text('Hide')
+            .attr('class', 'legend-button')
+            .attr('id', 'legend-button')
+            .on('click', function () {
+            this.classList.toggle("active");
+            var content = this.nextElementSibling;
+            if (content.style.display === "block") {
+                content.style.display = "none";
+                this.innerHTML = 'Legend';
+            }
+            else {
+                content.style.display = "block";
+                this.innerHTML = 'Hide';
+            }
+        });
+        var legend_contents = legend.append('div')
+            .style('display', 'block');
+        legend_contents.append('div').text('Expected change in cases')
+            .style('font-size', '14px')
+            .style('padding-top', '10px');
+        var legend_items = legend_contents.append('div');
+        dragHandler(d3.selectAll("#legend-button"));
         var i;
         for (i = 0; i < Object.entries(colour_ref).length; i++) {
-            map_svg.append("rect")
-                .attr("x", legend_x + 6)
-                .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 5)
-                .attr("width", 12)
-                .attr("height", 12)
-                .attr('fill', Object.entries(colour_ref)[i][1]);
-            map_svg.append('text')
+            var legend_entry = legend_items.append('div')
+                .style('display', 'flex')
+                .style('align-items', 'center')
+                .style('padding-top', '10px');
+            legend_entry.append('div')
+                .style("width", '12px')
+                .style("height", '12px')
+                .style('background-color', Object.entries(colour_ref)[i][1]);
+            legend_entry.append('text')
                 .attr("x", legend_x + 23)
                 .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 15)
                 .text(Object.entries(colour_ref)[i][0])
-                .style('font-size', '12');
+                .style('font-size', '12px')
+                .style('padding-left', '10px');
         }
     };
     map.prototype.calculateScaleCenter = function (features, map_width, map_height, path) {
