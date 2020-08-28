@@ -23,6 +23,17 @@ class ts extends rtVis {
       cases_data = cases_data.filter(a=>a['region']==country)
     } catch {}
 
+    try {
+      if (!r0){
+          var max_observed_cases = d3.max(cases_data, function(d) { return parseFloat(d.confirm); });
+      } else {
+          var max_observed_cases = null;
+      }
+    } catch {
+      var max_observed_cases = null;
+    }
+
+
     var parseTime = d3.timeParse("%Y-%m-%d");
 
     var ts_svg = d3.select("#" + container_id)
@@ -79,7 +90,7 @@ class ts extends rtVis {
 
     if (!r0){
       try {
-        ymax = d3.max([ymax, cases_max])
+        ymax = this.gt_max_observed_cases(d3.max([ymax, cases_max]), max_observed_cases)
       } catch {}
     }
 
@@ -100,8 +111,10 @@ class ts extends rtVis {
     var estimate_b_data = rtData.filter(a=>a['type']=='estimate based on partial data')
     var forecast_data = rtData.filter(a=>a['type']=='forecast')
 
-    var poly_90 = this.plotHPoly('date', 'upper_90', 'lower_90', x, y, parseTime)
-    var poly_50 = this.plotHPoly('date', 'upper_50', 'lower_50', x, y, parseTime)
+
+
+    var poly_90 = this.plotHPoly('date', 'upper_90', 'lower_90', x, y, parseTime, max_observed_cases, this.gt_max_observed_cases)
+    var poly_50 = this.plotHPoly('date', 'upper_50', 'lower_50', x, y, parseTime, max_observed_cases, this.gt_max_observed_cases)
 
 
     if (!r0){
@@ -229,6 +242,7 @@ class ts extends rtVis {
     }
 
     var floatFormat = /\B(?=(\d{3})+(?!\d))/g
+    var gt_max_observed_cases = this.gt_max_observed_cases
 
     function tsMouseMove(){
 
@@ -240,9 +254,9 @@ class ts extends rtVis {
 
       var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
           '<br>' +
-          '50% CI: ' + parseFloat(mousedata[0]['lower_50']).toString().replace(floatFormat, ",") + ' to ' + parseFloat(mousedata[0]['upper_50']).toString().replace(floatFormat, ",") +
+          '50% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_50'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_50'], max_observed_cases)).toString().replace(floatFormat, ",") +
           '<br>' +
-          '90% CI: ' + parseFloat(mousedata[0]['lower_90']).toString().replace(floatFormat, ",") + ' to ' + parseFloat(mousedata[0]['upper_90']).toString().replace(floatFormat, ",")
+          '90% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_90'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_90'], max_observed_cases)).toString().replace(floatFormat, ",")
 
       var x_offset
 
@@ -272,78 +286,20 @@ class ts extends rtVis {
 
     this.tsCountryTitle(country, 'country-title-container')
 
-    //Threshold estimates > 10* observed cases
-    if (data['rtData'][activeSource]['obsCasesData'] !== null && data['rtData'][activeSource]['casesInfectionData'] !== null){
-      var newData: any = this.preprocessDataSets(country, data, activeSource)
-    } else {
-      var newData: any = data
-    }
-
-    if (newData['rtData'][activeSource]['rtData'] !== null){
-      this.plotTs(newData['rtData'][activeSource]['rtData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'r0-ts-container', runDate, true)
+    if (data['rtData'][activeSource]['rtData'] !== null){
+      this.plotTs(data['rtData'][activeSource]['rtData'], country, time, data['rtData'][activeSource]['obsCasesData'], 'r0-ts-container', runDate, true)
       this.tsDataTitle('R', 'r0-title-container')
     }
 
-    if (newData['rtData'][activeSource]['casesInfectionData'] !== null){
-      this.plotTs(newData['rtData'][activeSource]['casesInfectionData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'cases-infection-ts-container', runDate, false)
+    if (data['rtData'][activeSource]['casesInfectionData'] !== null){
+      this.plotTs(data['rtData'][activeSource]['casesInfectionData'], country, time, data['rtData'][activeSource]['obsCasesData'], 'cases-infection-ts-container', runDate, false)
       this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
     }
 
-    if (newData['rtData'][activeSource]['casesReportData'] !== null){
-      this.plotTs(newData['rtData'][activeSource]['casesReportData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'cases-report-ts-container', runDate, false)
+    if (data['rtData'][activeSource]['casesReportData'] !== null){
+      this.plotTs(data['rtData'][activeSource]['casesReportData'], country, time, data['rtData'][activeSource]['obsCasesData'], 'cases-report-ts-container', runDate, false)
       this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
     }
-
-  }
-  preprocessDataSets(country, data, activeSource){
-
-    var parseTime = d3.timeParse("%Y-%m-%d");
-
-    if (data['rtData'][activeSource]['rtData'] !== null){
-      var r0Data = data['rtData'][activeSource]['rtData'].filter(a=>a['country']==country)
-    }
-
-    if (data['rtData'][activeSource]['casesInfectionData'] !== null){
-      var casesInfectionData = data['rtData'][activeSource]['casesInfectionData'].filter(a=>a['country']==country)
-    }
-
-    if (data['rtData'][activeSource]['casesReportData'] !== null){
-      var casesReportData = data['rtData'][activeSource]['casesReportData'].filter(a=>a['country']==country)
-    }
-
-    var casesObservedData = data['rtData'][activeSource]['obsCasesData'].filter(a=>a['region']==country)
-
-    var max_observed_cases = d3.max(casesObservedData, function(d) { return parseFloat(d.confirm); });
-
-    var threshold_date = d3.min(casesInfectionData.filter(a=>a['upper_90']>=max_observed_cases * 10), function(d) { return parseTime(d.date)})
-
-    if (typeof(threshold_date) !== 'undefined'){
-
-      if (data['rtData'][activeSource]['rtData'] !== null){
-        r0Data = r0Data.filter(a=>parseTime(a['date'])<=threshold_date)
-      }
-
-      if (data['rtData'][activeSource]['casesInfectionData'] !== null){
-        casesInfectionData = casesInfectionData.filter(a=>parseTime(a['date'])<=threshold_date)
-      }
-
-      if (data['rtData'][activeSource]['casesReportData'] !== null){
-        casesReportData = casesReportData.filter(a=>parseTime(a['date'])<=threshold_date)
-      }
-
-      casesObservedData = casesObservedData.filter(a=>parseTime(a['date'])<=threshold_date)
-
-    }
-
-    var newData = {'geoData':data['geoData'],
-                   'summaryData':data['summaryData'],
-                   'rtData':{[activeSource]:{'rtData':r0Data,
-                                            'casesInfectionData':casesInfectionData,
-                                            'casesReportData':casesReportData,
-                                            'obsCasesData':casesObservedData}}
-    }
-
-    return(newData)
 
   }
   tsDataTitle (dataset, container_id) {
@@ -371,20 +327,31 @@ class ts extends rtVis {
 
 
   }
-  plotHPoly (x, y0, y1, x_scale, y_scale, parseTime = null){
+  plotHPoly (x, y0, y1, x_scale, y_scale, parseTime = null, max_observed_cases, gt_max_observed_cases){
 
       if (parseTime !== null) {
         var poly = d3.area()
             .x(function(d) { return x_scale(parseTime(d[x])) })
-            .y0(function(d) { return y_scale(d[y0]) })
-            .y1(function(d) { return y_scale(d[y1]) })
+            .y0(function(d) { return y_scale(gt_max_observed_cases(d[y0], max_observed_cases)) })
+            .y1(function(d) { return y_scale(gt_max_observed_cases(d[y1], max_observed_cases)) })
       } else {
         var poly = d3.area()
             .x(function(d) { return x_scale(d[x]) })
-            .y0(function(d) { return y_scale(d[y0]) })
-            .y1(function(d) { return y_scale(d[y1]) })
+            .y0(function(d) { return y_scale(gt_max_observed_cases(d[y0], max_observed_cases)) })
+            .y1(function(d) { return y_scale(gt_max_observed_cases(d[y1], max_observed_cases)) })
       }
 
       return(poly)
+  }
+  gt_max_observed_cases(x, max_observed_cases){
+    if (max_observed_cases !== null) {
+      if (x >=  max_observed_cases * 10){
+        return (max_observed_cases * 10)
+      } else {
+        return (x)
+      }
+    } else {
+      return(x)
+    }
   }
 };
