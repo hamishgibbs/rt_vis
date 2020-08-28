@@ -9,25 +9,28 @@ var rtVis = (function () {
         this.activeTime = x['activeTime'];
         this.runDate = x['runDate'];
         this.sourceDeaths = false;
-        this._requiredData = Promise.all([x['geoData'],
-            x['summaryData'],
-            x['rtData'],
-            x['casesInfectionData'],
-            x['casesReportData'],
-            x['obsCasesData'],
-            x['rtData_Deaths'],
-            x['casesInfectionData_Deaths'],
-            x['casesReportData_Deaths']
-        ]);
+        this.activeSource = Object.keys(x['rtData'])[0];
+        var available_rt_data = Object.values(x['rtData'][this.activeSource]).filter(function (x) { return x !== null; });
+        if (!available_rt_data[0].then) {
+            this._requiredData = Promise.all([{ 'geoData': x['geoData'],
+                    'summaryData': x['summaryData'],
+                    'rtData': x['rtData'],
+                    'obsCasesData': x['obsCasesData'] }
+            ]);
+        }
+        else {
+            this._requiredData = this.recursiveObjectPromiseAll([{ 'geoData': x['geoData'],
+                    'summaryData': x['summaryData'],
+                    'rtData': x['rtData'],
+                    'obsCasesData': x['obsCasesData'],
+                }]);
+        }
         this._dataset_ref = [{ 'geoData': { 'index': 0, 'title': 'Geography' } },
             { 'summaryData': { 'index': 1, 'title': 'Summary' } },
-            { 'rt': { 'index': 2, 'title': 'R' } },
-            { 'casesInfection': { 'index': 3, 'title': 'Cases by date of infection' } },
-            { 'casesReport': { 'index': 4, 'title': 'Cases by date of report' } },
+            { 'rtData': { 'rtData': { 'index': 0, 'title': 'R' },
+                    'casesInfectionData': { 'index': 1, 'title': 'Cases by date of infection' },
+                    'casesReportData': { 'index': 2, 'title': 'Cases by date of report' } } },
             { 'obsCasesData': { 'index': 5, 'title': 'Observed cases' } },
-            { 'rt_Deaths': { 'index': 6, 'title': 'R' } },
-            { 'casesInfection_Deaths': { 'index': 7, 'title': 'Cases by date of infection' } },
-            { 'casesReport_Deaths': { 'index': 8, 'title': 'Cases by date of report' } },
         ];
         this._subregional_ref = x['subregional_ref'];
         this._availableData = [];
@@ -43,7 +46,7 @@ var rtVis = (function () {
             'time30ButtonClick': this.time30ButtonClick.bind(this),
             'timeAllButtonClick': this.timeAllButtonClick.bind(this),
             'dropdownClick': this.dropdownClick.bind(this),
-            'sourceToggleClick': this.sourceToggleClick.bind(this)
+            'sourceSelectClick': this.sourceSelectClick.bind(this)
         };
         var _dataset_ref = this._dataset_ref;
         var _config = this._config;
@@ -51,53 +54,47 @@ var rtVis = (function () {
         var country = this.activeArea;
         var time = this.activeTime;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
-            var availableData = getAvailableData(data, _dataset_ref);
+            data = data[0];
             var s = new setup(_config);
             var t = new ts(_config);
             s.setupDropDown(root_element);
-            if (availableData.includes('geoData') && availableData.includes('summaryData')) {
+            if (data['geoData'] !== null && data['summaryData'] !== null) {
                 s.setupMap(root_element);
             }
             try {
-                var areaNames = data[2].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                var areaNames = data['rtData'][activeSource]['rtData'].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
             }
             catch (_a) { }
             try {
-                var areaNames = data[3].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                var areaNames = data['rtData'][activeSource]['casesInfectionData'].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
             }
             catch (_b) { }
             try {
-                var areaNames = data[4].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                var areaNames = data['rtData'][activeSource]['casesReportData'].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
             }
             catch (_c) { }
             $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
-            console.log(this._config);
-            console.log(availableData);
-            console.log('Contains all = ' + containsAll(availableData, ['rt', 'casesInfection', 'casesReport', 'rt_Deaths', 'casesInfection_Deaths', 'casesReport_Deaths']));
-            if (containsAll(availableData, ['rt', 'casesInfection', 'casesReport', 'rt_Deaths', 'casesInfection_Deaths', 'casesReport_Deaths'])) {
-                s.addSourceToggle(root_element, 'source-toggle', eventHandlers['sourceToggleClick']);
+            if (Object.keys(data['rtData']).length > 1) {
+                s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick']);
             }
             s.setupCountryTitle(root_element);
             t.tsCountryTitle(country, 'country-title-container');
-            console.log(data);
-            console.log(availableData);
-            if (availableData.includes('rt')) {
+            if (data['rtData'][activeSource]['rtData'] !== null) {
                 s.setupRt(root_element);
             }
-            if (availableData.includes('casesInfection')) {
+            if (data['rtData'][activeSource]['casesInfectionData'] !== null) {
                 s.setupCasesInfection(root_element);
             }
-            if (availableData.includes('casesReport')) {
+            if (data['rtData'][activeSource]['casesReportData'] !== null) {
                 s.setupCasesReport(root_element);
             }
-            console.log(availableData);
-            if (availableData.includes('rt') || availableData.includes('casesInfection') || availableData.includes('casesReport')) {
+            if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
                 s.setupControls(root_element, eventHandlers);
             }
             s.setupFooter(root_element);
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data, activeSource, runDate);
         });
     };
     rtVis.prototype.getAvailableData = function (data, _dataset_ref) {
@@ -116,7 +113,7 @@ var rtVis = (function () {
         var getAvailableData = this.getAvailableData;
         this._requiredData.then(function (data) {
             var m = new map(_config);
-            m.setupMap(data[0], data[1], mapClick, dropdownClick);
+            m.setupMap(data[0]['geoData'], data[0]['summaryData'], mapClick, dropdownClick);
         });
     };
     rtVis.prototype.plotRt = function (dataset) {
@@ -126,10 +123,10 @@ var rtVis = (function () {
         var time = this.activeTime;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
     };
     rtVis.prototype.time7ButtonClick = function () {
@@ -138,11 +135,11 @@ var rtVis = (function () {
         var country = this.activeArea;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
             var time = '7d';
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
         this.activeTime = '7d';
     };
@@ -152,11 +149,11 @@ var rtVis = (function () {
         var country = this.activeArea;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
             var time = '14d';
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
         this.activeTime = '14d';
     };
@@ -166,11 +163,11 @@ var rtVis = (function () {
         var country = this.activeArea;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
             var time = '30d';
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
         this.activeTime = '30d';
     };
@@ -180,11 +177,11 @@ var rtVis = (function () {
         var country = this.activeArea;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
             var time = 'all';
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
         this.activeTime = 'all';
     };
@@ -196,10 +193,10 @@ var rtVis = (function () {
         var time = this.activeTime;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
     };
     rtVis.prototype.dropdownClick = function (e) {
@@ -210,33 +207,48 @@ var rtVis = (function () {
         var time = this.activeTime;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
         d3.select('#select2-dropdown-container-container').text(this.activeArea);
     };
-    rtVis.prototype.sourceToggleClick = function (e) {
-        if (this.sourceDeaths) {
-            this.sourceDeaths = false;
-        }
-        else {
-            this.sourceDeaths = true;
-        }
+    rtVis.prototype.sourceSelectClick = function (e) {
+        this.activeSource = d3.select('#source-select :checked').text();
         var _config = this._config;
         var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
         var time = this.activeTime;
         var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
-        var sourceDeaths = this.sourceDeaths;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
-            t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
-        console.log(this.sourceDeaths);
     };
+    rtVis.prototype.zipObject = function (keys, values) {
+        var result = {};
+        keys.forEach(function (key, i) {
+            result[key] = values[i];
+        });
+        return result;
+    };
+    ;
+    rtVis.prototype.recursiveObjectPromiseAll = function (obj) {
+        var _this = this;
+        var keys = Object.keys(obj);
+        return Promise.all(keys.map(function (key) {
+            var value = obj[key];
+            if (typeof value === 'object' && !value.then) {
+                return _this.recursiveObjectPromiseAll(value);
+            }
+            return value;
+        }))
+            .then(function (result) { return _this.zipObject(keys, result); });
+    };
+    ;
     return rtVis;
 }());
 ;;var __extends = (this && this.__extends) || (function () {
@@ -559,25 +571,17 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'footer');
     };
-    setup.prototype.addSourceToggle = function (root_element, id, eventhandler) {
+    setup.prototype.addSourceSelect = function (root_element, id, elements, eventhandler) {
         var div = d3.select(root_element)
-            .append('div')
-            .attr('class', 'onoffswitch');
-        div.append('input')
-            .attr('type', 'checkbox')
-            .attr('name', 'onoffswitch')
-            .attr('class', 'onoffswitch-checkbox')
+            .append('select')
+            .attr('class', id)
             .attr('id', id)
-            .attr('tabindex', '0')
-            .property('checked', true)
-            .on('click', eventhandler);
-        var label = div.append('label')
-            .attr('class', 'onoffswitch-label')
-            .attr('for', id);
-        label.append('span')
-            .attr('class', 'onoffswitch-inner');
-        label.append('span')
-            .attr('class', 'onoffswitch-switch');
+            .on('change', eventhandler);
+        var i;
+        for (i = 0; i < elements.length; i++) {
+            div.append('option')
+                .text(elements[i]);
+        }
     };
     setup.prototype.addButtonSpacer = function (id) {
         d3.select(id)
@@ -951,95 +955,62 @@ var ts = (function (_super) {
             .on('mouseout', tsMouseOut)
             .attr('fill-opacity', '0');
     };
-    ts.prototype.plotAllTs = function (country, time, data, availableData, runDate, sourceDeaths) {
+    ts.prototype.plotAllTs = function (country, time, data, activeSource, runDate) {
         if (runDate === void 0) { runDate = undefined; }
-        if (sourceDeaths === void 0) { sourceDeaths = false; }
         this.tsCountryTitle(country, 'country-title-container');
-        console.log(availableData);
-        if (availableData.includes('obsCasesData') && availableData.includes('casesInfection')) {
-            var newData = this.preprocessDataSets(country, data, availableData);
+        if (data['obsCasesData'] !== null && data['rtData'][activeSource]['casesInfectionData'] !== null) {
+            var newData = this.preprocessDataSets(country, data, activeSource);
         }
         else {
             var newData = data;
         }
-        console.log(data);
-        console.log(newData);
-        if (availableData.includes('rt')) {
-            if (sourceDeaths) {
-                this.plotTs(newData[6], country, time, newData[5], 'r0-ts-container', runDate, true);
-            }
-            else {
-                this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', runDate, true);
-            }
+        var newData = data;
+        if (data['rtData'][activeSource]['rtData'] !== null) {
+            this.plotTs(data['rtData'][activeSource]['rtData'], country, time, data['obsCasesData'], 'r0-ts-container', runDate, true);
             this.tsDataTitle('R', 'r0-title-container');
         }
-        if (availableData.includes('casesInfection')) {
-            if (sourceDeaths) {
-                this.plotTs(newData[7], country, time, newData[5], 'cases-infection-ts-container', runDate);
-            }
-            else {
-                this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', runDate);
-            }
+        if (data['rtData'][activeSource]['casesInfectionData'] !== null) {
+            this.plotTs(data['rtData'][activeSource]['casesInfectionData'], country, time, data['obsCasesData'], 'cases-infection-ts-container', runDate, false);
             this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
         }
-        if (availableData.includes('casesReport')) {
-            if (sourceDeaths) {
-                this.plotTs(newData[8], country, time, newData[5], 'cases-report-ts-container', runDate);
-            }
-            else {
-                this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', runDate);
-            }
+        if (data['rtData'][activeSource]['casesReportData'] !== null) {
+            this.plotTs(data['rtData'][activeSource]['casesReportData'], country, time, data['obsCasesData'], 'cases-report-ts-container', runDate, false);
             this.tsDataTitle('Cases by date of report', 'cases-report-title-container');
         }
     };
-    ts.prototype.preprocessDataSets = function (country, data, availableData) {
+    ts.prototype.preprocessDataSets = function (country, data, activeSource) {
         var parseTime = d3.timeParse("%Y-%m-%d");
-        if (availableData.includes('rt')) {
-            var r0Data = data[2].filter(function (a) { return a['country'] == country; });
+        if (data['rtData'][activeSource]['rtData'] !== null) {
+            var r0Data = data['rtData'][activeSource]['rtData'].filter(function (a) { return a['country'] == country; });
         }
-        if (availableData.includes('casesInfection')) {
-            var casesInfectionData = data[3].filter(function (a) { return a['country'] == country; });
+        if (data['rtData'][activeSource]['casesInfectionData'] !== null) {
+            var casesInfectionData = data['rtData'][activeSource]['casesInfectionData'].filter(function (a) { return a['country'] == country; });
         }
-        if (availableData.includes('casesReport')) {
-            var casesReportData = data[4].filter(function (a) { return a['country'] == country; });
+        if (data['rtData'][activeSource]['casesReportData'] !== null) {
+            var casesReportData = data['rtData'][activeSource]['casesReportData'].filter(function (a) { return a['country'] == country; });
         }
-        if (availableData.includes('rt_Deaths')) {
-            var r0Data_Deaths = data[6].filter(function (a) { return a['country'] == country; });
-        }
-        if (availableData.includes('casesInfection_Deaths')) {
-            var casesInfectionData_Deaths = data[7].filter(function (a) { return a['country'] == country; });
-        }
-        if (availableData.includes('casesReport_Deaths')) {
-            var casesReportData_Deaths = data[8].filter(function (a) { return a['country'] == country; });
-        }
-        var casesObservedData = data[5].filter(function (a) { return a['region'] == country; });
+        var casesObservedData = data['obsCasesData'].filter(function (a) { return a['region'] == country; });
         var max_observed_cases = d3.max(casesObservedData, function (d) { return parseFloat(d.confirm); });
         var threshold_date = d3.min(casesInfectionData.filter(function (a) { return a['upper_90'] >= max_observed_cases * 10; }), function (d) { return parseTime(d.date); });
         if (typeof (threshold_date) !== 'undefined') {
-            if (availableData.includes('rt')) {
+            if (data['rtData'][activeSource]['rtData'] !== null) {
                 r0Data = r0Data.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
             }
-            if (availableData.includes('casesInfection')) {
+            if (data['rtData'][activeSource]['casesInfectionData'] !== null) {
                 casesInfectionData = casesInfectionData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
             }
-            if (availableData.includes('casesReport')) {
+            if (data['rtData'][activeSource]['casesReportData'] !== null) {
                 casesReportData = casesReportData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
             }
-            if (availableData.includes('rt_Deaths')) {
-                r0Data_Deaths = r0Data_Deaths.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
-            }
-            if (availableData.includes('casesInfection_Deaths')) {
-                casesInfectionData_Deaths = casesInfectionData_Deaths.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
-            }
-            if (availableData.includes('casesReport_Deaths')) {
-                casesReportData_Deaths = casesReportData_Deaths.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
-            }
             casesObservedData = casesObservedData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
-            var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData, r0Data_Deaths, casesInfectionData_Deaths, casesReportData_Deaths];
         }
-        else {
-            var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData, r0Data_Deaths, casesInfectionData_Deaths, casesReportData_Deaths];
-        }
+        var newData = { 'geoData': data['geoData'],
+            'summaryData': data['summaryData'],
+            'rtData': { activeSource: { 'rtData': r0Data,
+                    'casesInfectionData': casesInfectionData,
+                    'casesReportData': casesReportData } },
+            'obsCasesData': casesObservedData
+        };
         return (newData);
     };
     ts.prototype.tsDataTitle = function (dataset, container_id) {

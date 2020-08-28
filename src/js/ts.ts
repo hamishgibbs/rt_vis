@@ -268,83 +268,52 @@ class ts extends rtVis {
       .attr('fill-opacity', '0')
 
   }
-  plotAllTs(country, time, data, availableData, runDate = undefined, sourceDeaths = false) {
+  plotAllTs(country, time, data, activeSource, runDate = undefined) {
 
     this.tsCountryTitle(country, 'country-title-container')
 
-    console.log(availableData)
-
     //Threshold estimates > 10* observed cases
-    if (availableData.includes('obsCasesData') && availableData.includes('casesInfection')){
-      var newData: any = this.preprocessDataSets(country, data, availableData)
+    if (data['obsCasesData'] !== null && data['rtData'][activeSource]['casesInfectionData'] !== null){
+      var newData: any = this.preprocessDataSets(country, data, activeSource)
     } else {
       var newData: any = data
     }
 
-    console.log(data)
+    var newData = data
 
-    console.log(newData)
-
-    if (availableData.includes('rt')){
-      if (sourceDeaths){
-          this.plotTs(newData[6], country, time, newData[5], 'r0-ts-container', runDate, true)
-      } else {
-          this.plotTs(newData[2], country, time, newData[5], 'r0-ts-container', runDate, true)
-      }
-
+    if (data['rtData'][activeSource]['rtData'] !== null){
+      this.plotTs(data['rtData'][activeSource]['rtData'], country, time, data['obsCasesData'], 'r0-ts-container', runDate, true)
       this.tsDataTitle('R', 'r0-title-container')
     }
 
-    if (availableData.includes('casesInfection')){
-      if (sourceDeaths){
-        this.plotTs(newData[7], country, time, newData[5], 'cases-infection-ts-container', runDate)
-      } else {
-        this.plotTs(newData[3], country, time, newData[5], 'cases-infection-ts-container', runDate)
-      }
+    if (data['rtData'][activeSource]['casesInfectionData'] !== null){
+      this.plotTs(data['rtData'][activeSource]['casesInfectionData'], country, time, data['obsCasesData'], 'cases-infection-ts-container', runDate, false)
       this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
     }
 
-    if (availableData.includes('casesReport')){
-      if (sourceDeaths){
-        this.plotTs(newData[8], country, time, newData[5], 'cases-report-ts-container', runDate)
-      } else {
-        this.plotTs(newData[4], country, time, newData[5], 'cases-report-ts-container', runDate)
-      }
+    if (data['rtData'][activeSource]['casesReportData'] !== null){
+      this.plotTs(data['rtData'][activeSource]['casesReportData'], country, time, data['obsCasesData'], 'cases-report-ts-container', runDate, false)
       this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
     }
 
   }
-  preprocessDataSets(country, data, availableData){
+  preprocessDataSets(country, data, activeSource){
 
     var parseTime = d3.timeParse("%Y-%m-%d");
 
-    if (availableData.includes('rt')){
-      var r0Data = data[2].filter(a=>a['country']==country)
+    if (data['rtData'][activeSource]['rtData'] !== null){
+      var r0Data = data['rtData'][activeSource]['rtData'].filter(a=>a['country']==country)
     }
 
-    if (availableData.includes('casesInfection')){
-      var casesInfectionData = data[3].filter(a=>a['country']==country)
+    if (data['rtData'][activeSource]['casesInfectionData'] !== null){
+      var casesInfectionData = data['rtData'][activeSource]['casesInfectionData'].filter(a=>a['country']==country)
     }
 
-    if (availableData.includes('casesReport')){
-      var casesReportData = data[4].filter(a=>a['country']==country)
+    if (data['rtData'][activeSource]['casesReportData'] !== null){
+      var casesReportData = data['rtData'][activeSource]['casesReportData'].filter(a=>a['country']==country)
     }
 
-    if (availableData.includes('rt_Deaths')){
-      var r0Data_Deaths = data[6].filter(a=>a['country']==country)
-    }
-
-    if (availableData.includes('casesInfection_Deaths')){
-      var casesInfectionData_Deaths = data[7].filter(a=>a['country']==country)
-    }
-
-    if (availableData.includes('casesReport_Deaths')){
-      var casesReportData_Deaths = data[8].filter(a=>a['country']==country)
-    }
-
-
-
-    var casesObservedData = data[5].filter(a=>a['region']==country)
+    var casesObservedData = data['obsCasesData'].filter(a=>a['region']==country)
 
     var max_observed_cases = d3.max(casesObservedData, function(d) { return parseFloat(d.confirm); });
 
@@ -352,35 +321,28 @@ class ts extends rtVis {
 
     if (typeof(threshold_date) !== 'undefined'){
 
-      if (availableData.includes('rt')){
+      if (data['rtData'][activeSource]['rtData'] !== null){
         r0Data = r0Data.filter(a=>parseTime(a['date'])<=threshold_date)
       }
 
-      if (availableData.includes('casesInfection')){
+      if (data['rtData'][activeSource]['casesInfectionData'] !== null){
         casesInfectionData = casesInfectionData.filter(a=>parseTime(a['date'])<=threshold_date)
       }
 
-      if (availableData.includes('casesReport')){
+      if (data['rtData'][activeSource]['casesReportData'] !== null){
         casesReportData = casesReportData.filter(a=>parseTime(a['date'])<=threshold_date)
-      }
-
-      if (availableData.includes('rt_Deaths')){
-        r0Data_Deaths = r0Data_Deaths.filter(a=>parseTime(a['date'])<=threshold_date)
-      }
-
-      if (availableData.includes('casesInfection_Deaths')){
-        casesInfectionData_Deaths = casesInfectionData_Deaths.filter(a=>parseTime(a['date'])<=threshold_date)
-      }
-
-      if (availableData.includes('casesReport_Deaths')){
-        casesReportData_Deaths = casesReportData_Deaths.filter(a=>parseTime(a['date'])<=threshold_date)
       }
 
       casesObservedData = casesObservedData.filter(a=>parseTime(a['date'])<=threshold_date)
 
-      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData, r0Data_Deaths, casesInfectionData_Deaths, casesReportData_Deaths]
-    } else {
-      var newData = [data[0], data[1], r0Data, casesInfectionData, casesReportData, casesObservedData, r0Data_Deaths, casesInfectionData_Deaths, casesReportData_Deaths]
+    }
+
+    var newData = {'geoData':data['geoData'],
+                   'summaryData':data['summaryData'],
+                   'rtData':{activeSource:{'rtData':r0Data,
+                                            'casesInfectionData':casesInfectionData,
+                                            'casesReportData':casesReportData}},
+                  'obsCasesData':casesObservedData
     }
 
     return(newData)

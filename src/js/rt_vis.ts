@@ -11,6 +11,7 @@ interface rtVis {
   activeTime: string;
   runDate: string;
   sourceDeaths: boolean;
+  activeSource: string;
   geoUrl: string;
   summaryUrl: string;
   r0Url: string;
@@ -19,6 +20,7 @@ interface rtVis {
   obsCasesUrl: string;
   _dataset_ref: any;
   _requiredData: Promise<any[]>;
+  _geoData: Promise<any[]>;
   _subregional_ref: any;
   _availableData: any;
 }
@@ -32,29 +34,31 @@ class rtVis {
     this.activeTime = x['activeTime']
     this.runDate = x['runDate']
     this.sourceDeaths = false
+    this.activeSource = Object.keys(x['rtData'])[0]
 
-    this._requiredData = Promise.all([x['geoData'],
-      x['summaryData'],
-      x['rtData'],
-      x['casesInfectionData'],
-      x['casesReportData'],
-      x['obsCasesData'],
-      x['rtData_Deaths'],
-      x['casesInfectionData_Deaths'],
-      x['casesReportData_Deaths']
-    ])
+    var available_rt_data: any = Object.values(x['rtData'][this.activeSource]).filter(x => x !== null )
+
+    if(!available_rt_data[0].then){
+      this._requiredData = Promise.all([{'geoData':x['geoData'],
+        'summaryData':x['summaryData'],
+        'rtData':x['rtData'],
+        'obsCasesData':x['obsCasesData']}
+      ])
+    } else {
+      this._requiredData = this.recursiveObjectPromiseAll([{'geoData':x['geoData'],
+        'summaryData':x['summaryData'],
+        'rtData':x['rtData'],
+        'obsCasesData':x['obsCasesData'],
+      }])
+    }
 
     this._dataset_ref = [{'geoData':{'index':0, 'title':'Geography'}},
                          {'summaryData':{'index':1, 'title':'Summary'}},
-                         {'rt':{'index':2, 'title':'R'}},
-                         {'casesInfection':{'index':3, 'title':'Cases by date of infection'}},
-                         {'casesReport':{'index':4, 'title':'Cases by date of report'}},
+                         {'rtData':{'rtData':{'index':0, 'title':'R'},
+                                    'casesInfectionData':{'index':1, 'title':'Cases by date of infection'},
+                                    'casesReportData':{'index':2, 'title':'Cases by date of report'}}},
                          {'obsCasesData':{'index':5, 'title':'Observed cases'}},
-                         {'rt_Deaths':{'index':6, 'title':'R'}},
-                         {'casesInfection_Deaths':{'index':7, 'title':'Cases by date of infection'}},
-                         {'casesReport_Deaths':{'index':8, 'title':'Cases by date of report'}},
                        ]
-
 
     this._subregional_ref = x['subregional_ref']
 
@@ -75,7 +79,7 @@ class rtVis {
       'time30ButtonClick': this.time30ButtonClick.bind(this),
       'timeAllButtonClick': this.timeAllButtonClick.bind(this),
       'dropdownClick': this.dropdownClick.bind(this),
-      'sourceToggleClick': this.sourceToggleClick.bind(this)
+      'sourceSelectClick': this.sourceSelectClick.bind(this)
     }
 
     var _dataset_ref = this._dataset_ref
@@ -84,66 +88,54 @@ class rtVis {
     var country = this.activeArea
     var time = this.activeTime
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
-
-      var availableData = getAvailableData(data, _dataset_ref)
+      data = data[0]
 
       var s = new setup(_config);
       var t = new ts(_config)
 
       s.setupDropDown(root_element)
 
-      if (availableData.includes('geoData') && availableData.includes('summaryData')) {
+      if (data['geoData'] !== null && data['summaryData'] !== null){
         s.setupMap(root_element)
       }
 
-      try {var areaNames = data[2].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
-      try {var areaNames = data[3].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
-      try {var areaNames = data[4].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
+      try {var areaNames = data['rtData'][activeSource]['rtData'].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
+      try {var areaNames = data['rtData'][activeSource]['casesInfectionData'].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
+      try {var areaNames = data['rtData'][activeSource]['casesReportData'].map(function(d){return(d.country)}).filter(onlyUnique).sort()} catch {}
 
       // @ts-ignore
       $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select an area', data: areaNames}).on('select2:select', eventHandlers['dropdownClick']);
 
-      console.log(this._config)
-
-      console.log(availableData)
-      console.log('Contains all = ' + containsAll(availableData, ['rt','casesInfection','casesReport','rt_Deaths','casesInfection_Deaths','casesReport_Deaths']))
-
-      if (containsAll(availableData, ['rt','casesInfection','casesReport','rt_Deaths','casesInfection_Deaths','casesReport_Deaths'])){
-        s.addSourceToggle(root_element, 'source-toggle', eventHandlers['sourceToggleClick'])
+      if (Object.keys(data['rtData']).length > 1){
+        s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'])
       }
 
       s.setupCountryTitle(root_element)
       t.tsCountryTitle(country, 'country-title-container')
 
-      console.log(data)
-      console.log(availableData)
-
-      //plot all ts here - not this
-
-      if (availableData.includes('rt')){
+      if (data['rtData'][activeSource]['rtData'] !== null){
         s.setupRt(root_element)
       }
 
-      if (availableData.includes('casesInfection')){
+      if (data['rtData'][activeSource]['casesInfectionData'] !== null){
         s.setupCasesInfection(root_element)
       }
 
-      if (availableData.includes('casesReport')){
+      if (data['rtData'][activeSource]['casesReportData'] !== null){
         s.setupCasesReport(root_element)
       }
 
-      console.log(availableData)
-
-      if (availableData.includes('rt') || availableData.includes('casesInfection') || availableData.includes('casesReport')) {
+      if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
         s.setupControls(root_element, eventHandlers)
       }
 
       s.setupFooter(root_element)
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+
+      t.plotAllTs(country, time, data, activeSource, runDate)
 
     });
 
@@ -173,7 +165,7 @@ class rtVis {
 
     this._requiredData.then(function(data: any){
       var m = new map(_config)
-      m.setupMap(data[0], data[1], mapClick, dropdownClick)
+      m.setupMap(data[0]['geoData'], data[0]['summaryData'], mapClick, dropdownClick)
 
     });
   }
@@ -185,13 +177,13 @@ class rtVis {
     var time = this.activeTime
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
 
       var t = new ts(_config)
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
   }
@@ -202,14 +194,14 @@ class rtVis {
     var country = this.activeArea
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
       var time = '7d'
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
@@ -224,14 +216,14 @@ class rtVis {
     var country = this.activeArea
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
       var time = '14d'
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
@@ -246,14 +238,14 @@ class rtVis {
     var country = this.activeArea
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
       var time = '30d'
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
@@ -268,14 +260,14 @@ class rtVis {
     var country = this.activeArea
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
       var time = 'all'
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
@@ -291,12 +283,12 @@ class rtVis {
     var time = this.activeTime
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
@@ -310,25 +302,21 @@ class rtVis {
     var time = this.activeTime
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
     d3.select('#select2-dropdown-container-container').text(this.activeArea)
 
   }
-  sourceToggleClick(e) {
+  sourceSelectClick(e) {
 
-    if (this.sourceDeaths){
-      this.sourceDeaths = false
-    } else {
-      this.sourceDeaths = true
-    }
+    this.activeSource = d3.select('#source-select :checked').text()
 
     var _config = this._config
     var _dataset_ref = this._dataset_ref
@@ -336,16 +324,37 @@ class rtVis {
     var time = this.activeTime
     var getAvailableData = this.getAvailableData
     var runDate = this.runDate
-    var sourceDeaths = this.sourceDeaths
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
-      t.plotAllTs(country, time, data, getAvailableData(data, _dataset_ref), runDate, sourceDeaths)
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
-    console.log(this.sourceDeaths)
-
   }
+  zipObject(keys, values) {
+    const result = {};
+
+    keys.forEach((key, i) => {
+      result[key] = values[i];
+    });
+
+    return result;
+  };
+
+  recursiveObjectPromiseAll(obj) {
+    const keys = Object.keys(obj);
+    return Promise.all(keys.map(key => {
+      const value = obj[key];
+      // Promise.resolve(value) !== value should work, but !value.then always works
+      if (typeof value === 'object' && !value.then) {
+        return this.recursiveObjectPromiseAll(value);
+      }
+      return value;
+    }))
+      .then(result => this.zipObject(keys, result));
+  };
+
 };

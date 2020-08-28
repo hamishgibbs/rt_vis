@@ -400,30 +400,20 @@ class setup extends rtVis {
       .attr('class', 'footer')
 
   }
-  addSourceToggle(root_element, id, eventhandler){
+  addSourceSelect(root_element, id, elements, eventhandler){
 
     var div = d3.select(root_element)
-      .append('div')
-      .attr('class', 'onoffswitch')
-
-    div.append('input')
-      .attr('type', 'checkbox')
-      .attr('name', 'onoffswitch')
-      .attr('class', 'onoffswitch-checkbox')
+      .append('select')
+      .attr('class', id)
       .attr('id', id)
-      .attr('tabindex', '0')
-      .property('checked', true)
-      .on('click', eventhandler)
+      .on('change', eventhandler)
 
-    var label = div.append('label')
-      .attr('class', 'onoffswitch-label')
-      .attr('for', id)
+    var i
+    for (i = 0; i < elements.length; i++) {
+      div.append('option')
+        .text(elements[i])
+    }
 
-    label.append('span')
-      .attr('class', 'onoffswitch-inner')
-
-    label.append('span')
-      .attr('class', 'onoffswitch-switch')
 
   }
   addButtonSpacer(id) {
