@@ -57,7 +57,11 @@ class map extends rtVis {
         .on("mouseout", this.mapMouseOut)
         .on('click', mapClick)
         .style('stroke', 'black')
-        .style('stroke-width', '0.2px');
+        .style('stroke-width', '0.2px')
+        .style('opacity', 0)
+        .transition()
+        .delay(50)
+        .style('opacity', 1);
 
     this.createLegend(map_svg, map_svg_dims, colour_ref)
 

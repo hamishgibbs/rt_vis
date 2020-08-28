@@ -21,8 +21,7 @@ var rtVis = (function () {
         else {
             this._requiredData = this.recursiveObjectPromiseAll([{ 'geoData': x['geoData'],
                     'summaryData': x['summaryData'],
-                    'rtData': x['rtData'],
-                    'obsCasesData': x['obsCasesData'],
+                    'rtData': x['rtData']
                 }]);
         }
         this._dataset_ref = [{ 'geoData': { 'index': 0, 'title': 'Geography' } },
@@ -655,7 +654,11 @@ var map = (function (_super) {
             .on("mouseout", this.mapMouseOut)
             .on('click', mapClick)
             .style('stroke', 'black')
-            .style('stroke-width', '0.2px');
+            .style('stroke-width', '0.2px')
+            .style('opacity', 0)
+            .transition()
+            .delay(50)
+            .style('opacity', 1);
         this.createLegend(map_svg, map_svg_dims, colour_ref);
         var areaNames = geoData.features.map(function (d) { return (d.properties.sovereignt); }).filter(this.onlyUnique).sort();
         $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select a country', data: areaNames }).on('select2:select', dropdownClick);
@@ -958,27 +961,27 @@ var ts = (function (_super) {
     ts.prototype.plotAllTs = function (country, time, data, activeSource, runDate) {
         if (runDate === void 0) { runDate = undefined; }
         this.tsCountryTitle(country, 'country-title-container');
-        if (data['obsCasesData'] !== null && data['rtData'][activeSource]['casesInfectionData'] !== null) {
+        if (data['rtData'][activeSource]['obsCasesData'] !== null && data['rtData'][activeSource]['casesInfectionData'] !== null) {
             var newData = this.preprocessDataSets(country, data, activeSource);
         }
         else {
             var newData = data;
         }
-        var newData = data;
-        if (data['rtData'][activeSource]['rtData'] !== null) {
-            this.plotTs(data['rtData'][activeSource]['rtData'], country, time, data['obsCasesData'], 'r0-ts-container', runDate, true);
+        if (newData['rtData'][activeSource]['rtData'] !== null) {
+            this.plotTs(newData['rtData'][activeSource]['rtData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'r0-ts-container', runDate, true);
             this.tsDataTitle('R', 'r0-title-container');
         }
-        if (data['rtData'][activeSource]['casesInfectionData'] !== null) {
-            this.plotTs(data['rtData'][activeSource]['casesInfectionData'], country, time, data['obsCasesData'], 'cases-infection-ts-container', runDate, false);
+        if (newData['rtData'][activeSource]['casesInfectionData'] !== null) {
+            this.plotTs(newData['rtData'][activeSource]['casesInfectionData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'cases-infection-ts-container', runDate, false);
             this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container');
         }
-        if (data['rtData'][activeSource]['casesReportData'] !== null) {
-            this.plotTs(data['rtData'][activeSource]['casesReportData'], country, time, data['obsCasesData'], 'cases-report-ts-container', runDate, false);
+        if (newData['rtData'][activeSource]['casesReportData'] !== null) {
+            this.plotTs(newData['rtData'][activeSource]['casesReportData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'cases-report-ts-container', runDate, false);
             this.tsDataTitle('Cases by date of report', 'cases-report-title-container');
         }
     };
     ts.prototype.preprocessDataSets = function (country, data, activeSource) {
+        var _a;
         var parseTime = d3.timeParse("%Y-%m-%d");
         if (data['rtData'][activeSource]['rtData'] !== null) {
             var r0Data = data['rtData'][activeSource]['rtData'].filter(function (a) { return a['country'] == country; });
@@ -989,7 +992,7 @@ var ts = (function (_super) {
         if (data['rtData'][activeSource]['casesReportData'] !== null) {
             var casesReportData = data['rtData'][activeSource]['casesReportData'].filter(function (a) { return a['country'] == country; });
         }
-        var casesObservedData = data['obsCasesData'].filter(function (a) { return a['region'] == country; });
+        var casesObservedData = data['rtData'][activeSource]['obsCasesData'].filter(function (a) { return a['region'] == country; });
         var max_observed_cases = d3.max(casesObservedData, function (d) { return parseFloat(d.confirm); });
         var threshold_date = d3.min(casesInfectionData.filter(function (a) { return a['upper_90'] >= max_observed_cases * 10; }), function (d) { return parseTime(d.date); });
         if (typeof (threshold_date) !== 'undefined') {
@@ -1005,11 +1008,10 @@ var ts = (function (_super) {
             casesObservedData = casesObservedData.filter(function (a) { return parseTime(a['date']) <= threshold_date; });
         }
         var newData = { 'geoData': data['geoData'],
-            'summaryData': data['summaryData'],
-            'rtData': { activeSource: { 'rtData': r0Data,
-                    'casesInfectionData': casesInfectionData,
-                    'casesReportData': casesReportData } },
-            'obsCasesData': casesObservedData
+            'summaryData': data['summaryData'], 'rtData': (_a = {}, _a[activeSource] = { 'rtData': r0Data,
+                'casesInfectionData': casesInfectionData,
+                'casesReportData': casesReportData,
+                'obsCasesData': casesObservedData }, _a)
         };
         return (newData);
     };

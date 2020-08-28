@@ -47,8 +47,7 @@ class rtVis {
     } else {
       this._requiredData = this.recursiveObjectPromiseAll([{'geoData':x['geoData'],
         'summaryData':x['summaryData'],
-        'rtData':x['rtData'],
-        'obsCasesData':x['obsCasesData'],
+        'rtData':x['rtData']
       }])
     }
 

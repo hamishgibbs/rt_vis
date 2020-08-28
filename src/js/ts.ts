@@ -273,26 +273,24 @@ class ts extends rtVis {
     this.tsCountryTitle(country, 'country-title-container')
 
     //Threshold estimates > 10* observed cases
-    if (data['obsCasesData'] !== null && data['rtData'][activeSource]['casesInfectionData'] !== null){
+    if (data['rtData'][activeSource]['obsCasesData'] !== null && data['rtData'][activeSource]['casesInfectionData'] !== null){
       var newData: any = this.preprocessDataSets(country, data, activeSource)
     } else {
       var newData: any = data
     }
 
-    var newData = data
-
-    if (data['rtData'][activeSource]['rtData'] !== null){
-      this.plotTs(data['rtData'][activeSource]['rtData'], country, time, data['obsCasesData'], 'r0-ts-container', runDate, true)
+    if (newData['rtData'][activeSource]['rtData'] !== null){
+      this.plotTs(newData['rtData'][activeSource]['rtData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'r0-ts-container', runDate, true)
       this.tsDataTitle('R', 'r0-title-container')
     }
 
-    if (data['rtData'][activeSource]['casesInfectionData'] !== null){
-      this.plotTs(data['rtData'][activeSource]['casesInfectionData'], country, time, data['obsCasesData'], 'cases-infection-ts-container', runDate, false)
+    if (newData['rtData'][activeSource]['casesInfectionData'] !== null){
+      this.plotTs(newData['rtData'][activeSource]['casesInfectionData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'cases-infection-ts-container', runDate, false)
       this.tsDataTitle('Cases by date of infection', 'cases-infection-title-container')
     }
 
-    if (data['rtData'][activeSource]['casesReportData'] !== null){
-      this.plotTs(data['rtData'][activeSource]['casesReportData'], country, time, data['obsCasesData'], 'cases-report-ts-container', runDate, false)
+    if (newData['rtData'][activeSource]['casesReportData'] !== null){
+      this.plotTs(newData['rtData'][activeSource]['casesReportData'], country, time, newData['rtData'][activeSource]['obsCasesData'], 'cases-report-ts-container', runDate, false)
       this.tsDataTitle('Cases by date of report', 'cases-report-title-container')
     }
 
@@ -313,7 +311,7 @@ class ts extends rtVis {
       var casesReportData = data['rtData'][activeSource]['casesReportData'].filter(a=>a['country']==country)
     }
 
-    var casesObservedData = data['obsCasesData'].filter(a=>a['region']==country)
+    var casesObservedData = data['rtData'][activeSource]['obsCasesData'].filter(a=>a['region']==country)
 
     var max_observed_cases = d3.max(casesObservedData, function(d) { return parseFloat(d.confirm); });
 
@@ -339,10 +337,10 @@ class ts extends rtVis {
 
     var newData = {'geoData':data['geoData'],
                    'summaryData':data['summaryData'],
-                   'rtData':{activeSource:{'rtData':r0Data,
+                   'rtData':{[activeSource]:{'rtData':r0Data,
                                             'casesInfectionData':casesInfectionData,
-                                            'casesReportData':casesReportData}},
-                  'obsCasesData':casesObservedData
+                                            'casesReportData':casesReportData,
+                                            'obsCasesData':casesObservedData}}
     }
 
     return(newData)
