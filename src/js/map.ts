@@ -92,58 +92,87 @@ class map extends rtVis {
     var legend_x = map_svg_dims.width / 30
     var legend_y = map_svg_dims.height / 2
 
-    var legend = d3.select('#map-container')
-      .append('div')
-      .attr('class', 'legend-button-container')
-      .attr('id', 'legend-button-container')
-      .style('top', (map_svg_dims.y + 220) + 'px')
-      .style('left', (map_svg_dims.x - 350) + 'px')
+    var legendClick = function(x){
 
-    legend.append('button')
-      .text('Hide')
-      .attr('class', 'legend-button')
-      .attr('id', 'legend-button')
-      .on('click', function(){
-        this.classList.toggle("active")
-        var content = this.nextElementSibling;
-        if (content.style.display === "block") {
-          content.style.display = "none";
-          this.innerHTML = 'Legend'
-        } else {
-          content.style.display = "block";
-          this.innerHTML = 'Hide'
-        }})
+      console.log(this)
+      console.log(d3.selectAll('#map-legend-text').style('opacity'))
+      console.log(typeof(d3.selectAll('#map-legend-text').style('opacity')))
+      console.log(d3.selectAll('#map-legend-text').style('opacity') === '1')
 
-    var legend_contents = legend.append('div')
-      .style('display', 'block')
+      if(d3.selectAll('#map-legend-text').style('opacity') === '1'){
+        d3.selectAll('#map-legend-text').style('opacity', 0)
+        d3.selectAll('#map-legend-item').style('opacity', 0)
+        d3.selectAll('#map-legend-rect').attr('width', '68px')
+        d3.selectAll('#map-legend-rect').attr('height', '25px')
+
+        legend.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title')
+
+      } else {
+        d3.selectAll('#map-legend-text').style('opacity', 1)
+        d3.selectAll('#map-legend-item').style('opacity', 1)
+        d3.selectAll('#map-legend-rect').attr('width', '185px')
+        d3.selectAll('#map-legend-rect').attr('height', '200px')
+        d3.selectAll('#map-legend-rect').text('Legend')
+
+        d3.select('#map-legend-title').remove()
+      }
+
+    }
+
+    var legend = map_svg.append('g')
+      .attr('class', 'map-legend')
+      .attr('id', 'map-legend')
+      .on('click', legendClick)
+
+    legend.append('rect')
+      .attr('x', legend_x - 10)
+      .attr('y', legend_y - 20)
+      .attr('width', '185px')
+      .attr('height', '200px')
+      .attr('class', 'map-legend-rect')
+      .attr('id', 'map-legend-rect')
+      .style('stroke', 'black')
+      .style('fill', 'white')
+      .style('rx', '8px')
 
 
-    legend_contents.append('div').text('Expected change in cases')
+    legend.append('text')
       .style('font-size', '14px')
       .style('padding-top', '10px')
+      .style('color', 'lightgrey')
+      .attr('class', 'map-legend-text')
+      .attr('id', 'map-legend-text')
+      .attr('x', legend_x)
+      .attr('y', legend_y - 20)
 
-    var legend_items = legend_contents.append('div')
+    legend.append('text').text('Expected change in cases')
+      .style('font-size', '14px')
+      .style('padding-top', '10px')
+      .attr('class', 'map-legend-text')
+      .attr('id', 'map-legend-text')
+      .attr('x', legend_x)
+      .attr('y', legend_y)
 
     var i;
     for (i = 0; i < Object.entries(colour_ref).length; i++) {
 
-      var legend_entry = legend_items.append('div')
-          .style('display', 'flex')
-          .style('align-items', 'center')
-          .style('padding-top', '10px')
-
-
-      legend_entry.append('div')
+      legend.append('rect')
+        .attr("x", legend_x)
+        .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 5 - 20)
         .style("width", '12px')
         .style("height", '12px')
-        .style('background-color', Object.entries(colour_ref)[i][1])
+        .style('fill', Object.entries(colour_ref)[i][1])
+        .attr('class', 'map-legend-item')
+        .attr('id', 'map-legend-item')
 
-      legend_entry.append('text')
+      legend.append('text')
         .attr("x", legend_x + 23)
-        .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 15)
+        .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 15 - 20)
         .text(Object.entries(colour_ref)[i][0])
         .style('font-size', '12px')
         .style('padding-left', '10px')
+        .attr('class', 'map-legend-item')
+        .attr('id', 'map-legend-item')
 
     }
 
