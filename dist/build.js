@@ -536,19 +536,16 @@ var map = (function (_super) {
             .style('stroke-width', '0.5px');
     };
     map.prototype.createLegend = function (map_svg, map_svg_dims, colour_ref) {
-        var dragHandler = d3.drag()
-            .on("drag", function () {
-            d3.select(this)
-                .attr("x", d3.event.x)
-                .attr("y", d3.event.y);
-        });
+        console.log(map_svg_dims);
         var legend_height = 200;
         var legend_x = map_svg_dims.width / 30;
         var legend_y = map_svg_dims.height / 2;
         var legend = d3.select('#map-container')
             .append('div')
             .attr('class', 'legend-button-container')
-            .attr('id', 'legend-button-container');
+            .attr('id', 'legend-button-container')
+            .style('top', (map_svg_dims.y + 220) + 'px')
+            .style('left', (map_svg_dims.x - 350) + 'px');
         legend.append('button')
             .text('Hide')
             .attr('class', 'legend-button')
@@ -571,7 +568,6 @@ var map = (function (_super) {
             .style('font-size', '14px')
             .style('padding-top', '10px');
         var legend_items = legend_contents.append('div');
-        dragHandler(d3.selectAll("#legend-button"));
         var i;
         for (i = 0; i < Object.entries(colour_ref).length; i++) {
             var legend_entry = legend_items.append('div')
