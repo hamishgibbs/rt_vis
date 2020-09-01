@@ -13,26 +13,15 @@ var rtVis = (function () {
         var available_rt_data = Object.values(x['rtData'][this.activeSource]).filter(function (x) { return x !== null; });
         if (!available_rt_data[0].then) {
             this._requiredData = Promise.all([{ 'geoData': x['geoData'],
-                    'summaryData': x['summaryData'],
-                    'rtData': x['rtData'],
-                    'obsCasesData': x['obsCasesData'] }
+                    'rtData': x['rtData'] }
             ]);
         }
         else {
             this._requiredData = this.recursiveObjectPromiseAll([{ 'geoData': x['geoData'],
-                    'summaryData': x['summaryData'],
                     'rtData': x['rtData']
                 }]);
         }
-        this._dataset_ref = [{ 'geoData': { 'index': 0, 'title': 'Geography' } },
-            { 'summaryData': { 'index': 1, 'title': 'Summary' } },
-            { 'rtData': { 'rtData': { 'index': 0, 'title': 'R' },
-                    'casesInfectionData': { 'index': 1, 'title': 'Cases by date of infection' },
-                    'casesReportData': { 'index': 2, 'title': 'Cases by date of report' } } },
-            { 'obsCasesData': { 'index': 5, 'title': 'Observed cases' } },
-        ];
         this._subregional_ref = x['subregional_ref'];
-        this._availableData = [];
     }
     rtVis.prototype.setupFlex = function (root_element) {
         var onlyUnique = function (value, index, self) {
@@ -47,9 +36,7 @@ var rtVis = (function () {
             'dropdownClick': this.dropdownClick.bind(this),
             'sourceSelectClick': this.sourceSelectClick.bind(this)
         };
-        var _dataset_ref = this._dataset_ref;
         var _config = this._config;
-        var getAvailableData = this.getAvailableData;
         var country = this.activeArea;
         var time = this.activeTime;
         var runDate = this.runDate;
@@ -59,7 +46,7 @@ var rtVis = (function () {
             var s = new setup(_config);
             var t = new ts(_config);
             s.setupDropDown(root_element);
-            if (data['geoData'] !== null && data['summaryData'] !== null) {
+            if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null) {
                 s.setupMap(root_element);
             }
             try {
@@ -96,12 +83,6 @@ var rtVis = (function () {
             t.plotAllTs(country, time, data, activeSource, runDate);
         });
     };
-    rtVis.prototype.getAvailableData = function (data, _dataset_ref) {
-        var availableData = data.map(function (e, i) { return e !== null ? i : ''; }).filter(String);
-        availableData = availableData.map(function (item) { return _dataset_ref[item]; });
-        availableData = availableData.map(function (item) { return (Object.keys(item)); }).flat();
-        return (availableData);
-    };
     rtVis.prototype.setupPage = function (root_element) {
         this.setupFlex(root_element);
     };
@@ -109,18 +90,16 @@ var rtVis = (function () {
         var _config = this._config;
         var mapClick = this.mapClick.bind(this);
         var dropdownClick = this.dropdownClick.bind(this);
-        var getAvailableData = this.getAvailableData;
+        var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var m = new map(_config);
-            m.setupMap(data[0]['geoData'], data[0]['summaryData'], mapClick, dropdownClick);
+            m.setupMap(data[0]['geoData'], data[0]['rtData'][activeSource]['summaryData'], mapClick, dropdownClick);
         });
     };
     rtVis.prototype.plotRt = function (dataset) {
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
         var time = this.activeTime;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
@@ -130,9 +109,7 @@ var rtVis = (function () {
     };
     rtVis.prototype.time7ButtonClick = function () {
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
@@ -144,9 +121,7 @@ var rtVis = (function () {
     };
     rtVis.prototype.time14ButtonClick = function () {
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
@@ -158,9 +133,7 @@ var rtVis = (function () {
     };
     rtVis.prototype.time30ButtonClick = function () {
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
@@ -172,9 +145,7 @@ var rtVis = (function () {
     };
     rtVis.prototype.timeAllButtonClick = function () {
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
@@ -187,10 +158,8 @@ var rtVis = (function () {
     rtVis.prototype.mapClick = function (e) {
         this.activeArea = e.properties.sovereignt;
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
         var time = this.activeTime;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
@@ -201,10 +170,8 @@ var rtVis = (function () {
     rtVis.prototype.dropdownClick = function (e) {
         this.activeArea = e.params.data.text;
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
         var time = this.activeTime;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
@@ -216,12 +183,11 @@ var rtVis = (function () {
     rtVis.prototype.sourceSelectClick = function (e) {
         this.activeSource = d3.select('#source-select :checked').text();
         var _config = this._config;
-        var _dataset_ref = this._dataset_ref;
         var country = this.activeArea;
         var time = this.activeTime;
-        var getAvailableData = this.getAvailableData;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
+        this.createMap();
         this._requiredData.then(function (data) {
             var t = new ts(_config);
             t.plotAllTs(country, time, data[0], activeSource, runDate);
@@ -473,9 +439,11 @@ var map = (function (_super) {
         return _super.call(this, x) || this;
     }
     map.prototype.setupMap = function (geoData, summaryData, mapClick, dropdownClick) {
+        d3.select("#map-svg").remove();
         var map_svg = d3.select("#map-container")
             .append('svg')
             .attr('class', 'map-svg')
+            .attr('id', 'map-svg')
             .style("width", '100%')
             .style("height", '100%');
         var map_svg_dims = document.getElementById('map-container').getBoundingClientRect();
@@ -503,7 +471,7 @@ var map = (function (_super) {
             .attr("stroke", "white")
             .attr("summary", function (d) {
             try {
-                return summaryData.filter(function (a) { return a['Country'] == d.properties.sovereignt; })[0]['Expected change in daily cases'];
+                return summaryData.filter(function (a) { return a['Region'] == d.properties.sovereignt; })[0]['Expected change in daily cases'];
             }
             catch (_a) {
                 return 'No Data';
@@ -655,7 +623,7 @@ var ts = (function (_super) {
         if (r0 === void 0) { r0 = false; }
         d3.select("#" + container_id + '-svg').remove();
         d3.select('#' + container_id + '-tooltip').remove();
-        rtData = rtData.filter(function (a) { return a['country'] == country; });
+        rtData = rtData.filter(function (a) { return a['region'] == country; });
         try {
             cases_data = cases_data.filter(function (a) { return a['region'] == country; });
         }

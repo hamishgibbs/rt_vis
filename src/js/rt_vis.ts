@@ -22,7 +22,6 @@ interface rtVis {
   _requiredData: Promise<any[]>;
   _geoData: Promise<any[]>;
   _subregional_ref: any;
-  _availableData: any;
 }
 
 class rtVis {
@@ -40,28 +39,15 @@ class rtVis {
 
     if(!available_rt_data[0].then){
       this._requiredData = Promise.all([{'geoData':x['geoData'],
-        'summaryData':x['summaryData'],
-        'rtData':x['rtData'],
-        'obsCasesData':x['obsCasesData']}
+        'rtData':x['rtData']}
       ])
     } else {
       this._requiredData = this.recursiveObjectPromiseAll([{'geoData':x['geoData'],
-        'summaryData':x['summaryData'],
         'rtData':x['rtData']
       }])
     }
 
-    this._dataset_ref = [{'geoData':{'index':0, 'title':'Geography'}},
-                         {'summaryData':{'index':1, 'title':'Summary'}},
-                         {'rtData':{'rtData':{'index':0, 'title':'R'},
-                                    'casesInfectionData':{'index':1, 'title':'Cases by date of infection'},
-                                    'casesReportData':{'index':2, 'title':'Cases by date of report'}}},
-                         {'obsCasesData':{'index':5, 'title':'Observed cases'}},
-                       ]
-
     this._subregional_ref = x['subregional_ref']
-
-    this._availableData = []
 
   }
   setupFlex(root_element){
@@ -81,9 +67,7 @@ class rtVis {
       'sourceSelectClick': this.sourceSelectClick.bind(this)
     }
 
-    var _dataset_ref = this._dataset_ref
     var _config = this._config
-    var getAvailableData = this.getAvailableData
     var country = this.activeArea
     var time = this.activeTime
     var runDate = this.runDate
@@ -97,7 +81,7 @@ class rtVis {
 
       s.setupDropDown(root_element)
 
-      if (data['geoData'] !== null && data['summaryData'] !== null){
+      if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null){
         s.setupMap(root_element)
       }
 
@@ -139,17 +123,6 @@ class rtVis {
     });
 
   }
-  getAvailableData(data, _dataset_ref) {
-
-    var availableData = data.map((e, i) => e !== null ? i : '').filter(String)
-
-    availableData =  availableData.map(function (item) {return _dataset_ref[item];})
-
-    availableData = availableData.map(function (item) {return(Object.keys(item));}).flat()
-
-    return(availableData)
-
-  }
   setupPage(root_element) {
 
     this.setupFlex(root_element)
@@ -160,21 +133,19 @@ class rtVis {
     var _config = this._config
     var mapClick = this.mapClick.bind(this)
     var dropdownClick = this.dropdownClick.bind(this)
-    var getAvailableData = this.getAvailableData
+    var activeSource = this.activeSource
 
     this._requiredData.then(function(data: any){
       var m = new map(_config)
-      m.setupMap(data[0]['geoData'], data[0]['summaryData'], mapClick, dropdownClick)
+      m.setupMap(data[0]['geoData'], data[0]['rtData'][activeSource]['summaryData'], mapClick, dropdownClick)
 
     });
   }
   plotRt(dataset: any) {
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
     var time = this.activeTime
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
 
@@ -189,9 +160,7 @@ class rtVis {
   time7ButtonClick() {
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
 
@@ -211,9 +180,7 @@ class rtVis {
 
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
 
@@ -233,9 +200,7 @@ class rtVis {
 
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
 
@@ -255,9 +220,7 @@ class rtVis {
 
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
 
@@ -277,10 +240,8 @@ class rtVis {
     this.activeArea = e.properties.sovereignt
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
     var time = this.activeTime
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
 
@@ -296,10 +257,8 @@ class rtVis {
     this.activeArea = e.params.data.text
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
     var time = this.activeTime
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
 
@@ -318,12 +277,12 @@ class rtVis {
     this.activeSource = d3.select('#source-select :checked').text()
 
     var _config = this._config
-    var _dataset_ref = this._dataset_ref
     var country = this.activeArea
     var time = this.activeTime
-    var getAvailableData = this.getAvailableData
     var runDate = this.runDate
     var activeSource = this.activeSource
+
+    this.createMap()
 
     this._requiredData.then(function(data: any){
       var t = new ts(_config)

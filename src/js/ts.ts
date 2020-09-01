@@ -17,7 +17,7 @@ class ts extends rtVis {
     d3.select("#" + container_id + '-svg').remove()
     d3.select('#' + container_id + '-tooltip').remove()
 
-    rtData = rtData.filter(a=>a['country']==country)
+    rtData = rtData.filter(a=>a['region']==country)
 
     try {
       cases_data = cases_data.filter(a=>a['region']==country)

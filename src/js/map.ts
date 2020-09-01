@@ -10,10 +10,12 @@ class map extends rtVis {
   setupMap (geoData, summaryData, mapClick, dropdownClick) {
 
     //figure out where to put dropdown - absolute position in top R is best (regardless of map)
+    d3.select("#map-svg").remove()
 
     var map_svg = d3.select("#map-container")
       .append('svg')
       .attr('class', 'map-svg')
+      .attr('id', 'map-svg')
       .style("width", '100%')
       .style("height", '100%')
 
@@ -48,7 +50,7 @@ class map extends rtVis {
 	      .attr("d", path)
       	.attr("stroke", "white")
       	.attr("summary", function(d){ try {
-          return summaryData.filter(a=>a['Country']==d.properties.sovereignt)[0]['Expected change in daily cases']
+          return summaryData.filter(a=>a['Region']==d.properties.sovereignt)[0]['Expected change in daily cases']
         } catch {
           return 'No Data'};})
       	.attr("country-name", function(d){ return d.properties.sovereignt; })
