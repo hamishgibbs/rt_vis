@@ -50,15 +50,15 @@ var rtVis = (function () {
                 s.setupMap(root_element);
             }
             try {
-                var areaNames = data['rtData'][activeSource]['rtData'].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                var areaNames = data['rtData'][activeSource]['rtData'].map(function (d) { return (d.region); }).filter(onlyUnique).sort();
             }
             catch (_a) { }
             try {
-                var areaNames = data['rtData'][activeSource]['casesInfectionData'].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                var areaNames = data['rtData'][activeSource]['casesInfectionData'].map(function (d) { return (d.region); }).filter(onlyUnique).sort();
             }
             catch (_b) { }
             try {
-                var areaNames = data['rtData'][activeSource]['casesReportData'].map(function (d) { return (d.country); }).filter(onlyUnique).sort();
+                var areaNames = data['rtData'][activeSource]['casesReportData'].map(function (d) { return (d.region); }).filter(onlyUnique).sort();
             }
             catch (_c) { }
             $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
