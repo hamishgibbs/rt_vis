@@ -189,7 +189,7 @@ class setup extends rtVis {
         .attr('class', 'download-button')
         .attr('id', 'download-r0')
         .text('R')
-        .attr('href', this.r0Url)
+        //.attr('href', this.r0Url)
         .attr('target', '_blank')
 
       this.addButtonSpacer('#download-container')
@@ -199,7 +199,7 @@ class setup extends rtVis {
         .attr('class', 'download-button')
         .attr('id', 'download-casesInfection')
         .text('Cases by date of infection')
-        .attr('href', this.casesInfectionUrl)
+        //.attr('href', this.casesInfectionUrl)
         .attr('target', '_blank')
 
       this.addButtonSpacer('#download-container')
@@ -209,7 +209,7 @@ class setup extends rtVis {
         .attr('class', 'download-button')
         .attr('id', 'download-casesReport')
         .text('Cases by date of report')
-        .attr('href', this.casesReportUrl)
+        //.attr('href', this.casesReportUrl)
         .attr('target', '_blank')
   }
   setupFooter(root_element){

@@ -8,7 +8,6 @@ var rtVis = (function () {
         this.activeArea = x['activeArea'];
         this.activeTime = x['activeTime'];
         this.runDate = x['runDate'];
-        this.sourceDeaths = false;
         this.activeSource = Object.keys(x['rtData'])[0];
         var available_rt_data = Object.values(x['rtData'][this.activeSource]).filter(function (x) { return x !== null; });
         if (!available_rt_data[0].then) {
@@ -28,13 +27,14 @@ var rtVis = (function () {
             return self.indexOf(value) === index;
         };
         var containsAll = function (arr, target) { return target.every(function (v) { return arr.includes(v); }); };
+        var i = new interact(this._config);
         var eventHandlers = {
-            'time7ButtonClick': this.time7ButtonClick.bind(this),
-            'time14ButtonClick': this.time14ButtonClick.bind(this),
-            'time30ButtonClick': this.time30ButtonClick.bind(this),
-            'timeAllButtonClick': this.timeAllButtonClick.bind(this),
-            'dropdownClick': this.dropdownClick.bind(this),
-            'sourceSelectClick': this.sourceSelectClick.bind(this)
+            'time7ButtonClick': i.time7ButtonClick.bind(this),
+            'time14ButtonClick': i.time14ButtonClick.bind(this),
+            'time30ButtonClick': i.time30ButtonClick.bind(this),
+            'timeAllButtonClick': i.timeAllButtonClick.bind(this),
+            'dropdownClick': i.dropdownClick.bind(this),
+            'sourceSelectClick': i.sourceSelectClick.bind(this)
         };
         var _config = this._config;
         var country = this.activeArea;
@@ -87,9 +87,10 @@ var rtVis = (function () {
         this.setupFlex(root_element);
     };
     rtVis.prototype.createMap = function () {
+        var i = new interact(this._config);
         var _config = this._config;
-        var mapClick = this.mapClick.bind(this);
-        var dropdownClick = this.dropdownClick.bind(this);
+        var mapClick = i.mapClick.bind(this);
+        var dropdownClick = i.dropdownClick.bind(this);
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var m = new map(_config);
@@ -102,92 +103,6 @@ var rtVis = (function () {
         var time = this.activeTime;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-    };
-    rtVis.prototype.time7ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '7d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '7d';
-    };
-    rtVis.prototype.time14ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '14d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '14d';
-    };
-    rtVis.prototype.time30ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '30d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '30d';
-    };
-    rtVis.prototype.timeAllButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = 'all';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = 'all';
-    };
-    rtVis.prototype.mapClick = function (e) {
-        this.activeArea = e.properties.sovereignt;
-        var _config = this._config;
-        var country = this.activeArea;
-        var time = this.activeTime;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-    };
-    rtVis.prototype.dropdownClick = function (e) {
-        this.activeArea = e.params.data.text;
-        var _config = this._config;
-        var country = this.activeArea;
-        var time = this.activeTime;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        d3.select('#select2-dropdown-container-container').text(this.activeArea);
-    };
-    rtVis.prototype.sourceSelectClick = function (e) {
-        this.activeSource = d3.select('#source-select :checked').text();
-        var _config = this._config;
-        var country = this.activeArea;
-        var time = this.activeTime;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this.createMap();
         this._requiredData.then(function (data) {
             var t = new ts(_config);
             t.plotAllTs(country, time, data[0], activeSource, runDate);
@@ -217,6 +132,115 @@ var rtVis = (function () {
     return rtVis;
 }());
 ;;var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+try {
+    var d3 = require('d3');
+}
+catch (err) { }
+var interact = (function (_super) {
+    __extends(interact, _super);
+    function interact(x) {
+        return _super.call(this, x) || this;
+    }
+    interact.prototype.mapClick = function (e) {
+        this.activeArea = e.properties.sovereignt;
+        var _config = this._config;
+        var country = this.activeArea;
+        var time = this.activeTime;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+    };
+    interact.prototype.dropdownClick = function (e) {
+        this.activeArea = e.params.data.text;
+        var _config = this._config;
+        var country = this.activeArea;
+        var time = this.activeTime;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+        d3.select('#select2-dropdown-container-container').text(this.activeArea);
+    };
+    interact.prototype.time7ButtonClick = function () {
+        var _config = this._config;
+        var country = this.activeArea;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            var time = '7d';
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+        this.activeTime = '7d';
+    };
+    interact.prototype.time14ButtonClick = function () {
+        var _config = this._config;
+        var country = this.activeArea;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            var time = '14d';
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+        this.activeTime = '14d';
+    };
+    interact.prototype.time30ButtonClick = function () {
+        var _config = this._config;
+        var country = this.activeArea;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            var time = '30d';
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+        this.activeTime = '30d';
+    };
+    interact.prototype.timeAllButtonClick = function () {
+        var _config = this._config;
+        var country = this.activeArea;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            var time = 'all';
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+        this.activeTime = 'all';
+    };
+    interact.prototype.sourceSelectClick = function (e) {
+        this.activeSource = d3.select('#source-select :checked').text();
+        var _config = this._config;
+        var country = this.activeArea;
+        var time = this.activeTime;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this.createMap();
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+    };
+    return interact;
+}(rtVis));;var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
             ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
@@ -374,7 +398,6 @@ var setup = (function (_super) {
             .attr('class', 'download-button')
             .attr('id', 'download-r0')
             .text('R')
-            .attr('href', this.r0Url)
             .attr('target', '_blank');
         this.addButtonSpacer('#download-container');
         d3.select('#download-container')
@@ -382,7 +405,6 @@ var setup = (function (_super) {
             .attr('class', 'download-button')
             .attr('id', 'download-casesInfection')
             .text('Cases by date of infection')
-            .attr('href', this.casesInfectionUrl)
             .attr('target', '_blank');
         this.addButtonSpacer('#download-container');
         d3.select('#download-container')
@@ -390,7 +412,6 @@ var setup = (function (_super) {
             .attr('class', 'download-button')
             .attr('id', 'download-casesReport')
             .text('Cases by date of report')
-            .attr('href', this.casesReportUrl)
             .attr('target', '_blank');
     };
     setup.prototype.setupFooter = function (root_element) {
