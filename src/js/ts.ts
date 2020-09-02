@@ -255,12 +255,20 @@ class ts extends rtVis {
         .attr('x2', d3.mouse(this)[0])
 
       var mousedata = rtData.filter(a=>parseTime(a['date']).toDateString()==x.invert(d3.mouse(this)[0]).toDateString());
+      var mousecasesdata = cases_data.filter(a=>parseTime(a['date']).toDateString()==x.invert(d3.mouse(this)[0]).toDateString());
 
       var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
           '<br>' +
           '50% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_50'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_50'], max_observed_cases)).toString().replace(floatFormat, ",") +
           '<br>' +
           '90% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_90'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_90'], max_observed_cases)).toString().replace(floatFormat, ",")
+
+
+      if (!r0){
+        try {
+          tooltip_str = tooltip_str + '<br>' + 'Confirmed: ' + parseFloat(mousecasesdata[0]['confirm'])
+        } catch {}
+      }
 
       var x_offset
 

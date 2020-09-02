@@ -99,7 +99,6 @@ class map extends rtVis {
         d3.selectAll('#map-legend-item').style('opacity', 0)
         d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '64px').attr('height', '25px')
 
-
         legend.append('text')
           .text('Legend')
           .attr('x', legend_x - 2)
