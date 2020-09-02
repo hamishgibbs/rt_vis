@@ -114,7 +114,6 @@ class map extends rtVis {
         d3.selectAll('#map-legend-item').style('opacity', 1)
         d3.selectAll('#map-legend-rect').attr('width', '185px')
         d3.selectAll('#map-legend-rect').attr('height', '200px')
-        d3.selectAll('#map-legend-rect').text('Legend')
 
         d3.select('#map-legend-title').remove()
       }
@@ -129,14 +128,15 @@ class map extends rtVis {
     legend.append('rect')
       .attr('x', legend_x - 10)
       .attr('y', legend_y - 20)
-      .attr('width', '185px')
-      .attr('height', '200px')
+      .attr('width', '68px')
+      .attr('height', '25px')
       .attr('class', 'map-legend-rect')
       .attr('id', 'map-legend-rect')
       .style('stroke', 'black')
       .style('fill', 'white')
       .style('rx', '8px')
 
+    legend.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title')
 
     legend.append('text')
       .style('font-size', '14px')
@@ -177,6 +177,9 @@ class map extends rtVis {
         .attr('id', 'map-legend-item')
 
     }
+
+    d3.selectAll('#map-legend-text').style('opacity', 0)
+    d3.selectAll('#map-legend-item').style('opacity', 0)
 
   }
   calculateScaleCenter(features, map_width, map_height, path) {

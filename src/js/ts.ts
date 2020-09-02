@@ -80,7 +80,11 @@ class ts extends rtVis {
 
     }
 
-    var maxDate = d3.max(rtData, function(d) { return parseTime(d.date); });
+    if (time !== 'all'){
+      var maxDate: any = new Date(Date.now());
+    } else {
+      var maxDate = d3.max(rtData, function(d) { return parseTime(d.date); });
+    }
 
     try {
       var cases_max = d3.max(cases_data, function(d) { return parseFloat(d.confirm); });

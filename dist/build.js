@@ -525,7 +525,6 @@ var map = (function (_super) {
                 d3.selectAll('#map-legend-item').style('opacity', 1);
                 d3.selectAll('#map-legend-rect').attr('width', '185px');
                 d3.selectAll('#map-legend-rect').attr('height', '200px');
-                d3.selectAll('#map-legend-rect').text('Legend');
                 d3.select('#map-legend-title').remove();
             }
         };
@@ -536,13 +535,14 @@ var map = (function (_super) {
         legend.append('rect')
             .attr('x', legend_x - 10)
             .attr('y', legend_y - 20)
-            .attr('width', '185px')
-            .attr('height', '200px')
+            .attr('width', '68px')
+            .attr('height', '25px')
             .attr('class', 'map-legend-rect')
             .attr('id', 'map-legend-rect')
             .style('stroke', 'black')
             .style('fill', 'white')
             .style('rx', '8px');
+        legend.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title');
         legend.append('text')
             .style('font-size', '14px')
             .style('padding-top', '10px')
@@ -577,6 +577,8 @@ var map = (function (_super) {
                 .attr('class', 'map-legend-item')
                 .attr('id', 'map-legend-item');
         }
+        d3.selectAll('#map-legend-text').style('opacity', 0);
+        d3.selectAll('#map-legend-item').style('opacity', 0);
     };
     map.prototype.calculateScaleCenter = function (features, map_width, map_height, path) {
         var bbox_path = path.bounds(features), scale = 120 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / map_width, (bbox_path[1][1] - bbox_path[0][1]) / map_height);
@@ -676,7 +678,12 @@ var ts = (function (_super) {
                 .style('fill', 'gray');
             return;
         }
-        var maxDate = d3.max(rtData, function (d) { return parseTime(d.date); });
+        if (time !== 'all') {
+            var maxDate = new Date(Date.now());
+        }
+        else {
+            var maxDate = d3.max(rtData, function (d) { return parseTime(d.date); });
+        }
         try {
             var cases_max = d3.max(cases_data, function (d) { return parseFloat(d.confirm); });
         }
