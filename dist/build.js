@@ -504,28 +504,28 @@ var map = (function (_super) {
             .style('stroke-width', '0.5px');
     };
     map.prototype.createLegend = function (map_svg, map_svg_dims, colour_ref) {
-        console.log(map_svg_dims);
         var legend_height = 200;
         var legend_x = map_svg_dims.width / 30;
         var legend_y = map_svg_dims.height / 2;
         var legendClick = function (x) {
-            console.log(this);
-            console.log(d3.selectAll('#map-legend-text').style('opacity'));
-            console.log(typeof (d3.selectAll('#map-legend-text').style('opacity')));
-            console.log(d3.selectAll('#map-legend-text').style('opacity') === '1');
             if (d3.selectAll('#map-legend-text').style('opacity') === '1') {
                 d3.selectAll('#map-legend-text').style('opacity', 0);
                 d3.selectAll('#map-legend-item').style('opacity', 0);
-                d3.selectAll('#map-legend-rect').attr('width', '68px');
-                d3.selectAll('#map-legend-rect').attr('height', '25px');
-                legend.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title');
+                d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '64px').attr('height', '25px');
+                legend.append('text')
+                    .text('Legend')
+                    .attr('x', legend_x - 2)
+                    .attr('y', legend_y - 2.5)
+                    .style('font-size', '14px')
+                    .attr('id', 'map-legend-title')
+                    .style('opacity', 0)
+                    .transition().duration(250)
+                    .style('opacity', 1);
             }
             else {
-                d3.selectAll('#map-legend-text').style('opacity', 1);
-                d3.selectAll('#map-legend-item').style('opacity', 1);
-                d3.selectAll('#map-legend-rect').attr('width', '185px');
-                d3.selectAll('#map-legend-rect').attr('height', '200px');
-                d3.selectAll('#map-legend-rect').text('Legend');
+                d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1);
+                d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1);
+                d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '185px').attr('height', '200px');
                 d3.select('#map-legend-title').remove();
             }
         };
@@ -536,13 +536,14 @@ var map = (function (_super) {
         legend.append('rect')
             .attr('x', legend_x - 10)
             .attr('y', legend_y - 20)
-            .attr('width', '185px')
-            .attr('height', '200px')
+            .attr('width', '64px')
+            .attr('height', '25px')
             .attr('class', 'map-legend-rect')
             .attr('id', 'map-legend-rect')
             .style('stroke', 'black')
             .style('fill', 'white')
             .style('rx', '8px');
+        legend.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title');
         legend.append('text')
             .style('font-size', '14px')
             .style('padding-top', '10px')
@@ -577,6 +578,8 @@ var map = (function (_super) {
                 .attr('class', 'map-legend-item')
                 .attr('id', 'map-legend-item');
         }
+        d3.selectAll('#map-legend-text').style('opacity', 0);
+        d3.selectAll('#map-legend-item').style('opacity', 0);
     };
     map.prototype.calculateScaleCenter = function (features, map_width, map_height, path) {
         var bbox_path = path.bounds(features), scale = 120 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / map_width, (bbox_path[1][1] - bbox_path[0][1]) / map_height);
@@ -676,7 +679,12 @@ var ts = (function (_super) {
                 .style('fill', 'gray');
             return;
         }
-        var maxDate = d3.max(rtData, function (d) { return parseTime(d.date); });
+        if (time !== 'all') {
+            var maxDate = new Date(Date.now());
+        }
+        else {
+            var maxDate = d3.max(rtData, function (d) { return parseTime(d.date); });
+        }
         try {
             var cases_max = d3.max(cases_data, function (d) { return parseFloat(d.confirm); });
         }
@@ -816,11 +824,18 @@ var ts = (function (_super) {
                 .attr('x1', d3.mouse(this)[0])
                 .attr('x2', d3.mouse(this)[0]);
             var mousedata = rtData.filter(function (a) { return parseTime(a['date']).toDateString() == x.invert(d3.mouse(_this)[0]).toDateString(); });
+            var mousecasesdata = cases_data.filter(function (a) { return parseTime(a['date']).toDateString() == x.invert(d3.mouse(_this)[0]).toDateString(); });
             var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
                 '<br>' +
                 '50% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_50'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_50'], max_observed_cases)).toString().replace(floatFormat, ",") +
                 '<br>' +
                 '90% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_90'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_90'], max_observed_cases)).toString().replace(floatFormat, ",");
+            if (!r0) {
+                try {
+                    tooltip_str = tooltip_str + '<br>' + 'Confirmed: ' + parseFloat(mousecasesdata[0]['confirm']);
+                }
+                catch (_a) { }
+            }
             var x_offset;
             if (ts_svg_dims.width - d3.mouse(this)[0] < 80) {
                 x_offset = -70;
