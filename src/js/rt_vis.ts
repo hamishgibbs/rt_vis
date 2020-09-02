@@ -12,6 +12,7 @@ interface rtVis {
   runDate: string;
   sourceDeaths: boolean;
   activeSource: string;
+  activeMapData: string;
   geoUrl: string;
   summaryUrl: string;
   r0Url: string;
