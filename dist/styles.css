@@ -185,6 +185,18 @@
 .source-select:hover {
   background-color: #C3C3C3;
 }
+
+.tooltip {
+  background-color: white;
+  border: solid;
+  border-width: 2px;
+  border-radius: 5px;
+  padding: 5px;
+  font-size: 9pt;
+  overflow: visible;
+  position: relative;
+  display: inline-block;
+}
 ;.phony {}
   
 ;.phony {}

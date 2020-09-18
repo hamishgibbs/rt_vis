@@ -3,6 +3,12 @@ try {
 }
 catch(err) {}
 
+interface map {
+  projection: any
+  map_svg_dims: any
+  summaryData: any
+}
+
 class map extends rtVis {
   constructor (x) {
     super(x)
@@ -19,6 +25,12 @@ class map extends rtVis {
       .style("width", '100%')
       .style("height", '100%')
 
+    var tooltip = d3.select("#map-container")
+      .append("div")
+      .style("opacity", 0)
+      .attr("class", 'tooltip')
+      .attr('id', 'map-container-tooltip')
+
     var map_svg_dims = document.getElementById('map-container').getBoundingClientRect()
 
     var projection = d3.geoCylindricalStereographic();
@@ -31,6 +43,10 @@ class map extends rtVis {
     					.translate([map_svg_dims.width/2, map_svg_dims.height/2])
     					.scale(scaleCenter.scale)
     					.center(scaleCenter.center);
+
+    this.projection = projection
+    this.map_svg_dims = map_svg_dims
+    this.summaryData = summaryData
 
     var path = d3.geoPath().projection(projection);
 
@@ -55,8 +71,9 @@ class map extends rtVis {
           return 'No Data'};})
       	.attr("country-name", function(d){ return d.properties.sovereignt; })
         .attr("fill", function(d){ return colour_ref[d3.select(this).attr('summary')]; })
-      	.on("mouseover", this.mapMouseIn)
+        .on('mouseenter', this.mapMouseIn.bind(this))
         .on("mouseout", this.mapMouseOut)
+        .on("mouseover", this.mapMouseOver)
         .on('click', mapClick)
         .style('stroke', 'black')
         .style('stroke-width', '0.2px')
@@ -73,8 +90,52 @@ class map extends rtVis {
     $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select a country', data: areaNames}).on('select2:select', dropdownClick);
 
   }
-
   mapMouseIn(e) {
+      var x_coords = e.geometry.coordinates[0][0].map(function(x){return(x[0])})
+      var y_coords = e.geometry.coordinates[0][0].map(function(x){return(x[1])})
+
+      var x_coord = d3.mean(x_coords)
+      var y_coord = d3.max(y_coords)
+
+      var tooltip = d3.select('#map-container-tooltip')
+
+      tooltip
+        .style("opacity", 1)
+
+      var tooltip_position = this.projection([x_coord, y_coord])
+
+      x_coord = tooltip_position[0] + 50
+      y_coord = tooltip_position[1] - this.map_svg_dims.height - 50
+
+      tooltip
+        .style("left", x_coord + "px")
+        .style("top", y_coord + "px")
+
+      console.log(e.properties.sovereignt)
+
+      var tooltip_data = this.summaryData.filter(a => a.region == e.properties.sovereignt)[0]
+
+      try {
+        var tooltip_str = '<b>' + e.properties.sovereignt + '</b>' + '</br>' + '</br>' +
+                Object.keys(tooltip_data).map(function (key) {
+                  if (key !== 'region'){
+                    return "" + key + ": " + tooltip_data[key];
+                  }
+                }).join("</br> </br>");
+      } catch {
+        var tooltip_str = ''
+      }
+
+      if (tooltip_str === ''){
+        tooltip
+          .style("opacity", 0)
+      } else {
+        tooltip.html(tooltip_str)
+      }
+
+      console.log(tooltip_str)
+  }
+  mapMouseOver(e) {
 
     d3.select(this)
       .style('stroke', 'black')
@@ -83,7 +144,12 @@ class map extends rtVis {
   mapMouseOut(e) {
     d3.select(this)
       .style('stroke', 'black')
-      .style('stroke-width', '0.5px')
+      .style('stroke-width', '0.2px')
+
+    var tooltip = d3.select('#map-container-tooltip')
+
+    tooltip
+      .style("opacity", 0)
   }
   createLegend(map_svg, map_svg_dims, colour_ref) {
 
