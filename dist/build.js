@@ -56,7 +56,10 @@ var rtVis = (function () {
             data['rtData']['Deaths']['casesReportData'] = data['rtData']['Deaths']['casesReportData'].map(subRegion);
             var s = new setup(_config);
             var t = new ts(_config);
-            s.setupDropDown(root_element);
+            var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null;
+            if (!ts_null) {
+                s.setupDropDown(root_element);
+            }
             if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null) {
                 s.setupMap(root_element);
             }
@@ -72,12 +75,14 @@ var rtVis = (function () {
                 var areaNames = data['rtData'][activeSource]['casesReportData'].map(function (d) { return (d.region); }).filter(onlyUnique).sort();
             }
             catch (_c) { }
-            $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
+            if (!ts_null) {
+                $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
+                s.setupCountryTitle(root_element);
+                t.tsCountryTitle(country, 'country-title-container');
+            }
             if (Object.keys(data['rtData']).length > 1) {
                 s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth);
             }
-            s.setupCountryTitle(root_element);
-            t.tsCountryTitle(country, 'country-title-container');
             if (data['rtData'][activeSource]['rtData'] !== null) {
                 s.setupRt(root_element);
             }
