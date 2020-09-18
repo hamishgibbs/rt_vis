@@ -46,7 +46,7 @@ class rtVis {
 
   }
   setupFlex(root_element){
-    
+
     var onlyUnique = function(value, index, self) {
       return self.indexOf(value) === index;
     }

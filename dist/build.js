@@ -767,6 +767,7 @@ var ts = (function (_super) {
         var forecast_data = rtData.filter(function (a) { return a['type'] == 'forecast'; });
         var poly_90 = this.plotHPoly('date', 'upper_90', 'lower_90', x, y, parseTime, max_observed_cases, this.gt_max_observed_cases);
         var poly_50 = this.plotHPoly('date', 'upper_50', 'lower_50', x, y, parseTime, max_observed_cases, this.gt_max_observed_cases);
+        var poly_20 = this.plotHPoly('date', 'upper_20', 'lower_20', x, y, parseTime, max_observed_cases, this.gt_max_observed_cases);
         if (!r0) {
             try {
                 ts_svg.selectAll('rect')
@@ -788,30 +789,15 @@ var ts = (function (_super) {
             }
             catch (_f) { }
         }
-        ts_svg.append("path")
-            .datum(estimate_data)
-            .attr("d", poly_90)
-            .attr("class", 'poly_90_e');
-        ts_svg.append("path")
-            .datum(estimate_b_data)
-            .attr("d", poly_90)
-            .attr("class", 'poly_90_eb');
-        ts_svg.append("path")
-            .datum(forecast_data)
-            .attr("d", poly_90)
-            .attr("class", 'poly_90_f');
-        ts_svg.append("path")
-            .datum(estimate_data)
-            .attr("d", poly_50)
-            .attr("class", 'poly_50_e');
-        ts_svg.append("path")
-            .datum(estimate_b_data)
-            .attr("d", poly_50)
-            .attr("class", 'poly_50_eb');
-        ts_svg.append("path")
-            .datum(forecast_data)
-            .attr("d", poly_50)
-            .attr("class", 'poly_50_f');
+        this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e');
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb');
+        this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f');
+        this.addEstimatePolys(ts_svg, estimate_data, poly_50, 'poly_50_e');
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_50, 'poly_50_eb');
+        this.addEstimatePolys(ts_svg, forecast_data, poly_50, 'poly_50_f');
+        this.addEstimatePolys(ts_svg, estimate_data, poly_20, 'poly_20_e');
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_20, 'poly_20_eb');
+        this.addEstimatePolys(ts_svg, forecast_data, poly_20, 'poly_20_f');
         if (r0) {
             ts_svg.append("path")
                 .datum(rtData)
@@ -883,6 +869,8 @@ var ts = (function (_super) {
             var mousecasesdata = cases_data.filter(function (a) { return parseTime(a['date']).toDateString() == x.invert(d3.mouse(_this)[0]).toDateString(); });
             var tooltip_str = '<b>' + parseTime(mousedata[0]['date']).toDateString() + '</b>' +
                 '<br>' +
+                '20% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_20'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_20'], max_observed_cases)).toString().replace(floatFormat, ",") +
+                '<br>' +
                 '50% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_50'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_50'], max_observed_cases)).toString().replace(floatFormat, ",") +
                 '<br>' +
                 '90% CI: ' + parseFloat(gt_max_observed_cases(mousedata[0]['lower_90'], max_observed_cases)).toString().replace(floatFormat, ",") + ' to ' + parseFloat(gt_max_observed_cases(mousedata[0]['upper_90'], max_observed_cases)).toString().replace(floatFormat, ",");
@@ -911,6 +899,12 @@ var ts = (function (_super) {
             .on('mouseenter', tsMouseIn)
             .on('mouseout', tsMouseOut)
             .attr('fill-opacity', '0');
+    };
+    ts.prototype.addEstimatePolys = function (svg, data, poly, id) {
+        svg.append("path")
+            .datum(data)
+            .attr("d", poly)
+            .attr("class", id);
     };
     ts.prototype.plotAllTs = function (country, time, data, activeSource, runDate) {
         if (runDate === void 0) { runDate = undefined; }
