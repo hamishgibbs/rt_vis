@@ -50,7 +50,7 @@ class map extends rtVis {
 	      .attr("d", path)
       	.attr("stroke", "white")
       	.attr("summary", function(d){ try {
-          return summaryData.filter(a=>a['Region']==d.properties.sovereignt)[0]['Expected change in daily cases']
+          return summaryData.filter(a=>a['region']==d.properties.sovereignt)[0]['Expected change in daily cases']
         } catch {
           return 'No Data'};})
       	.attr("country-name", function(d){ return d.properties.sovereignt; })

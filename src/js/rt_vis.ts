@@ -42,9 +42,11 @@ class rtVis {
 
     this._subregional_ref = x['subregional_ref']
 
+    this.fullWidth = x['fullWidth']
+
   }
   setupFlex(root_element){
-
+    
     var onlyUnique = function(value, index, self) {
       return self.indexOf(value) === index;
     }
@@ -67,9 +69,24 @@ class rtVis {
     var time = this.activeTime
     var runDate = this.runDate
     var activeSource = this.activeSource
+    var subRegion = this.subRegion
+    var fullWidth = this.fullWidth
 
     this._requiredData.then(function(data: any){
       data = data[0]
+
+      /*
+
+      */
+      // For development until EpiNow2 changes
+      data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
+      data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
+      data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
+      data['rtData']['Cases']['casesReportData'] = data['rtData']['Cases']['casesReportData'].map(subRegion);
+      data['rtData']['Deaths']['summaryData'] = data['rtData']['Deaths']['summaryData'].map(subRegion);
+      data['rtData']['Deaths']['rtData'] = data['rtData']['Deaths']['rtData'].map(subRegion);
+      data['rtData']['Deaths']['casesInfectionData'] = data['rtData']['Deaths']['casesInfectionData'].map(subRegion);
+      data['rtData']['Deaths']['casesReportData'] = data['rtData']['Deaths']['casesReportData'].map(subRegion);
 
       var s = new setup(_config);
       var t = new ts(_config)
@@ -88,7 +105,7 @@ class rtVis {
       $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select an area', data: areaNames}).on('select2:select', eventHandlers['dropdownClick']);
 
       if (Object.keys(data['rtData']).length > 1){
-        s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'])
+        s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth)
       }
 
       s.setupCountryTitle(root_element)
@@ -153,6 +170,25 @@ class rtVis {
       t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
+  }
+  subRegion(s) {
+
+    if ( s.hasOwnProperty("Country") ){
+         s.region = s.Country;
+         delete s.Country;
+         return(s)
+    } else if ( s.hasOwnProperty("country") ){
+         s.region = s.country;
+         delete s.country;
+         return(s)
+    } else if ( s.hasOwnProperty("Region") ){
+         s.region = s.Region;
+         delete s.Region;
+         return(s)
+    } else {
+      return(s)
+    }
+
   }
   zipObject(keys, values) {
     const result = {};

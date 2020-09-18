@@ -219,12 +219,17 @@ class setup extends rtVis {
       .attr('class', 'footer')
 
   }
-  addSourceSelect(root_element, id, elements, eventhandler){
+  addSourceSelect(root_element, id, elements, eventhandler, fullWidth){
+
+    if (fullWidth === undefined){
+      fullWidth = 1000
+    }
 
     var div = d3.select(root_element)
       .append('select')
       .attr('class', id)
       .attr('id', id)
+      .style('left', fullWidth + 'px')
       .on('change', eventhandler)
 
     var i

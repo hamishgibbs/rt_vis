@@ -16,25 +16,18 @@
     <script src="dist/build.min.js"></script>
     <script>
 
-    /*
+
       var x = {
         'activeArea':'United Kingdom',
-        'activeData':'R0',
         'activeTime':'all',
         'geoData':d3.json('https://raw.githubusercontent.com/hamishgibbs/rt_interactive_vis/master/geo_data/world2.geojson'),
-        'summaryData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/summary_table.csv'),
-        //'rtData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv'),
-        //'casesInfectionData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_infection.csv'),
-        //'casesReportData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_report.csv'),
-        //'obsCasesData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/reported_cases.csv'),
-        //'rtData_Deaths':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/rt.csv'),
-        //'casesInfectionData_Deaths':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/cases_by_infection.csv'),
-        //'casesReportData_Deaths':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/cases_by_report.csv'),
-        'rtData': {'Cases':{'rtData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv'),
+        'rtData': {'Cases':{'summaryData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/summary_table.csv'),
+                            'rtData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv'),
                             'casesInfectionData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_infection.csv'),
                             'casesReportData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_report.csv'),
                             'obsCasesData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/reported_cases.csv')},
-                   'Deaths':{'rtData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/rt.csv'),
+                   'Deaths':{'summaryData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/summary_table.csv'),
+                             'rtData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/rt.csv'),
                              'casesInfectionData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/cases_by_infection.csv'),
                              'casesReportData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/cases_by_report.csv'),
                              'obsCasesData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/reported_cases.csv')}},
@@ -46,10 +39,11 @@
                            'Germany':'https://epiforecasts.io/covid/posts/national/germany/',
                            'Russia':'https://epiforecasts.io/covid/posts/national/russia/',
                            'United Kingdom':'https://epiforecasts.io/covid/posts/national/united-kingdom/',
-                           'United States of America':'https://epiforecasts.io/covid/posts/national/united-states/'}
+                           'United States of America':'https://epiforecasts.io/covid/posts/national/united-states/'},
+        'fullWidth':900
       }
-      */
 
+      /*
       var x = {
         'activeArea':'Sikkim',
         'activeData':'R0',
@@ -71,7 +65,7 @@
                            'United States of America':'https://epiforecasts.io/covid/posts/national/united-states/'}
       }
 
-
+      */
       //console.log(x)
 
       var vis = new rtVis(x, 100, 100);

@@ -21,6 +21,7 @@ var rtVis = (function () {
                 }]);
         }
         this._subregional_ref = x['subregional_ref'];
+        this.fullWidth = x['fullWidth'];
     }
     rtVis.prototype.setupFlex = function (root_element) {
         var onlyUnique = function (value, index, self) {
@@ -41,8 +42,18 @@ var rtVis = (function () {
         var time = this.activeTime;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
+        var subRegion = this.subRegion;
+        var fullWidth = this.fullWidth;
         this._requiredData.then(function (data) {
             data = data[0];
+            data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
+            data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
+            data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
+            data['rtData']['Cases']['casesReportData'] = data['rtData']['Cases']['casesReportData'].map(subRegion);
+            data['rtData']['Deaths']['summaryData'] = data['rtData']['Deaths']['summaryData'].map(subRegion);
+            data['rtData']['Deaths']['rtData'] = data['rtData']['Deaths']['rtData'].map(subRegion);
+            data['rtData']['Deaths']['casesInfectionData'] = data['rtData']['Deaths']['casesInfectionData'].map(subRegion);
+            data['rtData']['Deaths']['casesReportData'] = data['rtData']['Deaths']['casesReportData'].map(subRegion);
             var s = new setup(_config);
             var t = new ts(_config);
             s.setupDropDown(root_element);
@@ -63,7 +74,7 @@ var rtVis = (function () {
             catch (_c) { }
             $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
             if (Object.keys(data['rtData']).length > 1) {
-                s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick']);
+                s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth);
             }
             s.setupCountryTitle(root_element);
             t.tsCountryTitle(country, 'country-title-container');
@@ -107,6 +118,26 @@ var rtVis = (function () {
             var t = new ts(_config);
             t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
+    };
+    rtVis.prototype.subRegion = function (s) {
+        if (s.hasOwnProperty("Country")) {
+            s.region = s.Country;
+            delete s.Country;
+            return (s);
+        }
+        else if (s.hasOwnProperty("country")) {
+            s.region = s.country;
+            delete s.country;
+            return (s);
+        }
+        else if (s.hasOwnProperty("Region")) {
+            s.region = s.Region;
+            delete s.Region;
+            return (s);
+        }
+        else {
+            return (s);
+        }
     };
     rtVis.prototype.zipObject = function (keys, values) {
         var result = {};
@@ -419,11 +450,15 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'footer');
     };
-    setup.prototype.addSourceSelect = function (root_element, id, elements, eventhandler) {
+    setup.prototype.addSourceSelect = function (root_element, id, elements, eventhandler, fullWidth) {
+        if (fullWidth === undefined) {
+            fullWidth = 1000;
+        }
         var div = d3.select(root_element)
             .append('select')
             .attr('class', id)
             .attr('id', id)
+            .style('left', fullWidth + 'px')
             .on('change', eventhandler);
         var i;
         for (i = 0; i < elements.length; i++) {
@@ -492,7 +527,7 @@ var map = (function (_super) {
             .attr("stroke", "white")
             .attr("summary", function (d) {
             try {
-                return summaryData.filter(function (a) { return a['Region'] == d.properties.sovereignt; })[0]['Expected change in daily cases'];
+                return summaryData.filter(function (a) { return a['region'] == d.properties.sovereignt; })[0]['Expected change in daily cases'];
             }
             catch (_a) {
                 return 'No Data';
