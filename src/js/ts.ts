@@ -197,18 +197,8 @@ class ts extends rtVis {
     var tooltip = d3.select("#" + container_id)
       .append("div")
       .style("opacity", 0)
-      .attr("class", container_id + '-tooltip')
+      .attr("class", 'tooltip')
       .attr('id', container_id + '-tooltip')
-      .style("background-color", "white")
-      .style("border", "solid")
-      .style("border-width", "2px")
-      .style("border-radius", "5px")
-      .style("padding", "5px")
-      .style('font-size', '9pt')
-      .style('overflow', 'visible')
-      .style('position', 'relative')
-      .style('display', 'inline-block')
-      //.style('border-bottom', '2px black')
 
     function tsMouseIn(e) {
 
