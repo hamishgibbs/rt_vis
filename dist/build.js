@@ -25,6 +25,10 @@ var rtVis = (function () {
         this._subregional_ref = x['subregional_ref'];
         this.fullWidth = x['fullWidth'];
     }
+    rtVis.prototype.summaryWidget = function () {
+        this.setupPage('#root');
+        this.createMap();
+    };
     rtVis.prototype.setupFlex = function (root_element) {
         var onlyUnique = this.onlyUnique;
         var containsAll = function (arr, target) { return target.every(function (v) { return arr.includes(v); }); };

@@ -48,6 +48,12 @@ class rtVis {
     this.fullWidth = x['fullWidth']
 
   }
+  summaryWidget() {
+
+    this.setupPage('#root')
+    this.createMap()
+
+  }
   setupFlex(root_element){
 
     var onlyUnique = this.onlyUnique
