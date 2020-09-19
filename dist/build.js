@@ -106,7 +106,7 @@ var rtVis = (function () {
     rtVis.prototype.getDateLims = function (data, onlyUnique) {
         var parseTime = d3.timeParse("%Y-%m-%d");
         var dates = data.map(function (d) { return (d['date']); }).filter(onlyUnique).map(function (d) { return (parseTime(d)); });
-        return (d3.min(dates), d3.max(dates));
+        return ([d3.min(dates), d3.max(dates)]);
     };
     rtVis.prototype.onlyUnique = function (value, index, self) {
         return self.indexOf(value) === index;
@@ -315,7 +315,7 @@ var setup = (function (_super) {
     __extends(setup, _super);
     function setup(x) {
         var _this = _super.call(this, x) || this;
-        _this.margin = { top: 10, right: 30, bottom: 30, left: 60 };
+        _this.margin = { top: 0, right: 30, bottom: 18, left: 50 };
         return _this;
     }
     setup.prototype.setupCountryTitle = function (root_element) {
@@ -418,7 +418,7 @@ var setup = (function (_super) {
             .append('div')
             .text('Forecast')
             .attr('class', 'ts-legend-text');
-        this.setupTimeControls(date_lims, '#controls-container-time');
+        this.setupTimeControls(date_lims, 'controls-container-time');
         d3.select('#download-container')
             .append('div')
             .text('Download data:');
@@ -448,7 +448,39 @@ var setup = (function (_super) {
         var svg_dims = document.getElementById(container_id).getBoundingClientRect();
         svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
         svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
+        var svg = d3.select('#' + 'controls-container-time')
+            .append('svg')
+            .attr('class', container_id + '-svg')
+            .attr('id', container_id + '-svg')
+            .style("width", '100%')
+            .style("height", '100%')
+            .append("g")
+            .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+        var x = d3.scaleTime()
+            .domain([date_lims[0], date_lims[1]])
+            .range([0, svg_dims.width]);
+        var y = d3.scaleLinear()
+            .domain([0, 1])
+            .range([svg_dims.height, 0]);
+        svg.append("g")
+            .attr("transform", "translate(0," + svg_dims.height + ")")
+            .call(d3.axisBottom(x))
+            .attr("class", 'time-xaxis');
+        svg.append("g")
+            .call(d3.axisLeft(y))
+            .attr("class", 'r0-yaxis')
+            .style('display', 'none');
         console.log(svg_dims);
+        svg.append("rect")
+            .attr("class", "overlay")
+            .attr("width", svg_dims.width)
+            .attr("height", svg_dims.height)
+            .on('mousemove', timeMouseMove)
+            .attr('fill-opacity', '0');
+        function timeMouseMove(e) {
+            console.log(e);
+            console.log(this);
+        }
     };
     setup.prototype.setupFooter = function (root_element) {
         d3.select(root_element)

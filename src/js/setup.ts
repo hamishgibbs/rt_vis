@@ -12,7 +12,7 @@ class setup extends rtVis {
   constructor (x) {
     super(x)
 
-    this.margin = {top: 10, right: 30, bottom: 30, left: 60}
+    this.margin = {top: 0, right: 30, bottom: 18, left: 50}
   }
   setupCountryTitle(root_element) {
 
@@ -146,7 +146,7 @@ class setup extends rtVis {
         .attr('class', 'ts-legend-text')
 
       //controls buttons
-      this.setupTimeControls(date_lims, '#controls-container-time')
+      this.setupTimeControls(date_lims, 'controls-container-time')
 
       /*
       d3.select('#controls-container-time')
@@ -220,12 +220,52 @@ class setup extends rtVis {
         .attr('target', '_blank')
   }
   setupTimeControls(date_lims, container_id){
+
     var svg_dims = document.getElementById(container_id).getBoundingClientRect()
 
     svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
     svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
 
+    var svg = d3.select('#' + 'controls-container-time')
+      .append('svg')
+      .attr('class', container_id + '-svg')
+      .attr('id', container_id + '-svg')
+      .style("width", '100%')
+      .style("height", '100%')
+      .append("g")
+      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
+
+
+    var x = d3.scaleTime()
+      .domain([date_lims[0], date_lims[1]])
+      .range([0, svg_dims.width]);
+
+    var y = d3.scaleLinear()
+      .domain([0,1])
+      .range([svg_dims.height, 0]);
+
+    svg.append("g")
+       .attr("transform","translate(0,"+ svg_dims.height +")")
+       .call(d3.axisBottom(x))
+       .attr("class",'time-xaxis');
+
+    svg.append("g")
+      .call(d3.axisLeft(y))
+      .attr("class", 'r0-yaxis')
+      .style('display', 'none');
+
     console.log(svg_dims)
+    svg.append("rect")
+      .attr("class", "overlay")
+      .attr("width", svg_dims.width)
+      .attr("height", svg_dims.height)
+      .on('mousemove', timeMouseMove)
+      .attr('fill-opacity', '0')
+
+      function timeMouseMove (e) {
+        console.log(e)
+        console.log(this)
+      }
 
   }
   setupFooter(root_element){

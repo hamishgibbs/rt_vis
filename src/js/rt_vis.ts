@@ -152,7 +152,7 @@ class rtVis {
 
     var dates = data.map(function(d){return(d['date'])}).filter(onlyUnique).map(function(d){return(parseTime(d))})
 
-    return(d3.min(dates), d3.max(dates));
+    return([d3.min(dates), d3.max(dates)]);
 
   }
   onlyUnique(value, index, self) {
