@@ -5,11 +5,14 @@ catch(err) {}
 
 interface setup {
   setupLayout(string, any): void;
+  margin: any;
 }
 
 class setup extends rtVis {
   constructor (x) {
     super(x)
+
+    this.margin = {top: 10, right: 30, bottom: 30, left: 60}
   }
   setupCountryTitle(root_element) {
 
@@ -74,7 +77,7 @@ class setup extends rtVis {
       .attr('id', 'cases-report-ts-container')
 
   }
-  setupControls(root_element, eventHandlersRef){
+  setupControls(root_element, eventHandlersRef, date_lims){
 
     d3.select(root_element)
       .append('div')
@@ -143,6 +146,9 @@ class setup extends rtVis {
         .attr('class', 'ts-legend-text')
 
       //controls buttons
+      this.setupTimeControls(date_lims, '#controls-container-time')
+
+      /*
       d3.select('#controls-container-time')
         .append('button')
         .attr('class', 'control-button')
@@ -176,6 +182,7 @@ class setup extends rtVis {
         .attr('id', 'control-5day')
         .text('Previous 7 Days')
         .on('click',  eventHandlersRef['time7ButtonClick'])
+      */
 
       //Download buttons
       d3.select('#download-container')
@@ -211,6 +218,15 @@ class setup extends rtVis {
         .text('Cases by date of report')
         //.attr('href', this.casesReportUrl)
         .attr('target', '_blank')
+  }
+  setupTimeControls(date_lims, container_id){
+    var svg_dims = document.getElementById(container_id).getBoundingClientRect()
+
+    svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
+    svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
+
+    console.log(svg_dims)
+
   }
   setupFooter(root_element){
 

@@ -25,9 +25,7 @@ var rtVis = (function () {
         this.fullWidth = x['fullWidth'];
     }
     rtVis.prototype.setupFlex = function (root_element) {
-        var onlyUnique = function (value, index, self) {
-            return self.indexOf(value) === index;
-        };
+        var onlyUnique = this.onlyUnique;
         var containsAll = function (arr, target) { return target.every(function (v) { return arr.includes(v); }); };
         var i = new interact(this._config);
         var eventHandlers = {
@@ -45,8 +43,10 @@ var rtVis = (function () {
         var activeSource = this.activeSource;
         var subRegion = this.subRegion;
         var fullWidth = this.fullWidth;
+        var getDateLims = this.getDateLims;
         this._requiredData.then(function (data) {
             data = data[0];
+            var date_lims = null;
             data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
             data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
             data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
@@ -86,19 +86,30 @@ var rtVis = (function () {
             }
             if (data['rtData'][activeSource]['rtData'] !== null) {
                 s.setupRt(root_element);
+                date_lims = getDateLims(data['rtData'][activeSource]['rtData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['casesInfectionData'] !== null) {
                 s.setupCasesInfection(root_element);
+                date_lims = getDateLims(data['rtData'][activeSource]['casesInfectionData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['casesReportData'] !== null) {
                 s.setupCasesReport(root_element);
+                date_lims = getDateLims(data['rtData'][activeSource]['casesReportData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
-                s.setupControls(root_element, eventHandlers);
+                s.setupControls(root_element, eventHandlers, date_lims);
             }
             s.setupFooter(root_element);
             t.plotAllTs(country, time, data, activeSource, runDate);
         });
+    };
+    rtVis.prototype.getDateLims = function (data, onlyUnique) {
+        var parseTime = d3.timeParse("%Y-%m-%d");
+        var dates = data.map(function (d) { return (d['date']); }).filter(onlyUnique).map(function (d) { return (parseTime(d)); });
+        return (d3.min(dates), d3.max(dates));
+    };
+    rtVis.prototype.onlyUnique = function (value, index, self) {
+        return self.indexOf(value) === index;
     };
     rtVis.prototype.setupPage = function (root_element) {
         this.setupFlex(root_element);
@@ -303,7 +314,9 @@ catch (err) { }
 var setup = (function (_super) {
     __extends(setup, _super);
     function setup(x) {
-        return _super.call(this, x) || this;
+        var _this = _super.call(this, x) || this;
+        _this.margin = { top: 10, right: 30, bottom: 30, left: 60 };
+        return _this;
     }
     setup.prototype.setupCountryTitle = function (root_element) {
         var ct = d3.select(root_element)
@@ -353,7 +366,7 @@ var setup = (function (_super) {
             .attr('class', 'cases-report-ts-container')
             .attr('id', 'cases-report-ts-container');
     };
-    setup.prototype.setupControls = function (root_element, eventHandlersRef) {
+    setup.prototype.setupControls = function (root_element, eventHandlersRef, date_lims) {
         d3.select(root_element)
             .append('div')
             .attr('class', 'controls-container')
@@ -405,33 +418,7 @@ var setup = (function (_super) {
             .append('div')
             .text('Forecast')
             .attr('class', 'ts-legend-text');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-allday')
-            .text('All')
-            .on('click', eventHandlersRef['timeAllButtonClick']);
-        this.addButtonSpacer('#controls-container-time');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-30day')
-            .text('Previous Month')
-            .on('click', eventHandlersRef['time30ButtonClick']);
-        this.addButtonSpacer('#controls-container-time');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-7day')
-            .text('Previous 2 weeks')
-            .on('click', eventHandlersRef['time14ButtonClick']);
-        this.addButtonSpacer('#controls-container-time');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-5day')
-            .text('Previous 7 Days')
-            .on('click', eventHandlersRef['time7ButtonClick']);
+        this.setupTimeControls(date_lims, '#controls-container-time');
         d3.select('#download-container')
             .append('div')
             .text('Download data:');
@@ -456,6 +443,12 @@ var setup = (function (_super) {
             .attr('id', 'download-casesReport')
             .text('Cases by date of report')
             .attr('target', '_blank');
+    };
+    setup.prototype.setupTimeControls = function (date_lims, container_id) {
+        var svg_dims = document.getElementById(container_id).getBoundingClientRect();
+        svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
+        svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
+        console.log(svg_dims);
     };
     setup.prototype.setupFooter = function (root_element) {
         d3.select(root_element)

@@ -48,9 +48,7 @@ class rtVis {
   }
   setupFlex(root_element){
 
-    var onlyUnique = function(value, index, self) {
-      return self.indexOf(value) === index;
-    }
+    var onlyUnique = this.onlyUnique
 
     var containsAll = (arr, target) => target.every(v => arr.includes(v));
 
@@ -72,9 +70,12 @@ class rtVis {
     var activeSource = this.activeSource
     var subRegion = this.subRegion
     var fullWidth = this.fullWidth
+    var getDateLims = this.getDateLims
 
     this._requiredData.then(function(data: any){
       data = data[0]
+
+      var date_lims = null
 
       /*
 
@@ -121,18 +122,21 @@ class rtVis {
 
       if (data['rtData'][activeSource]['rtData'] !== null){
         s.setupRt(root_element)
+        date_lims = getDateLims(data['rtData'][activeSource]['rtData'], onlyUnique)
       }
 
       if (data['rtData'][activeSource]['casesInfectionData'] !== null){
         s.setupCasesInfection(root_element)
+        date_lims = getDateLims(data['rtData'][activeSource]['casesInfectionData'], onlyUnique)
       }
 
       if (data['rtData'][activeSource]['casesReportData'] !== null){
         s.setupCasesReport(root_element)
+        date_lims = getDateLims(data['rtData'][activeSource]['casesReportData'], onlyUnique)
       }
 
       if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
-        s.setupControls(root_element, eventHandlers)
+        s.setupControls(root_element, eventHandlers, date_lims)
       }
 
       s.setupFooter(root_element)
@@ -142,6 +146,17 @@ class rtVis {
 
     });
 
+  }
+  getDateLims(data, onlyUnique){
+    var parseTime = d3.timeParse("%Y-%m-%d");
+
+    var dates = data.map(function(d){return(d['date'])}).filter(onlyUnique).map(function(d){return(parseTime(d))})
+
+    return(d3.min(dates), d3.max(dates));
+
+  }
+  onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
   }
   setupPage(root_element) {
 
