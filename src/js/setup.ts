@@ -229,7 +229,7 @@ class setup extends rtVis {
       var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x')
 
 
-      if ((maxDate - minDate) === 0){
+      if ((maxDate - minDate) <= 4){
         date_handler([date_lims[0], date_lims[1]])
       } else {
         date_handler([x.invert(minDate), x.invert(maxDate)])

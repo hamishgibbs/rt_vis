@@ -241,7 +241,7 @@ var interact = (function (_super) {
             var t = new ts(_config);
             t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
-        this.activeTime = '7d';
+        this.activeTime = time;
     };
     interact.prototype.sourceSelectClick = function (e) {
         this.activeSource = d3.select('#source-select :checked').text();
@@ -441,7 +441,7 @@ var setup = (function (_super) {
         function brushed(e) {
             var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x');
             var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x');
-            if ((maxDate - minDate) === 0) {
+            if ((maxDate - minDate) <= 4) {
                 date_handler([date_lims[0], date_lims[1]]);
             }
             else {

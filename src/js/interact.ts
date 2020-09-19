@@ -72,7 +72,7 @@ class interact extends rtVis {
 
     });
 
-    this.activeTime = '7d'
+    this.activeTime = time
 
   }
   sourceSelectClick(e) {
