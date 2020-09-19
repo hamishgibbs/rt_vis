@@ -54,6 +54,7 @@ class ts extends rtVis {
     var maxDate = time[1]
 
     rtData = rtData.filter(a=>parseTime(a['date'])>=minDate)
+    rtData = rtData.filter(a=>parseTime(a['date'])<=maxDate)
 
     try {
       cases_data = cases_data.filter(a=>d3.timeDay.offset(parseTime(a['date']), -1)>=minDate)
@@ -325,8 +326,8 @@ class ts extends rtVis {
   }
   gt_max_observed_cases(x, max_observed_cases){
     if (max_observed_cases !== null) {
-      if (x >=  max_observed_cases * 10){
-        return (max_observed_cases * 10)
+      if (x >=  max_observed_cases * 5){
+        return (max_observed_cases * 5)
       } else {
         return (x)
       }
