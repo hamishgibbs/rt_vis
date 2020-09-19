@@ -315,7 +315,7 @@ var setup = (function (_super) {
     __extends(setup, _super);
     function setup(x) {
         var _this = _super.call(this, x) || this;
-        _this.margin = { top: 0, right: 30, bottom: 18, left: 50 };
+        _this.margin = { top: 0, right: 40, bottom: 5, left: 50 };
         return _this;
     }
     setup.prototype.setupCountryTitle = function (root_element) {
@@ -464,22 +464,40 @@ var setup = (function (_super) {
             .range([svg_dims.height, 0]);
         svg.append("g")
             .attr("transform", "translate(0," + svg_dims.height + ")")
-            .call(d3.axisBottom(x))
+            .call(d3.axisBottom(x).tickSize([0]))
             .attr("class", 'time-xaxis');
         svg.append("g")
             .call(d3.axisLeft(y))
             .attr("class", 'r0-yaxis')
             .style('display', 'none');
-        console.log(svg_dims);
-        svg.append("rect")
-            .attr("class", "overlay")
-            .attr("width", svg_dims.width)
-            .attr("height", svg_dims.height)
-            .on('mousemove', timeMouseMove)
-            .attr('fill-opacity', '0');
+        var brush = d3.brushX()
+            .extent([[this.margin.left, this.margin.top], [svg_dims.width - this.margin.right, svg_dims.height - this.margin.bottom]])
+            .on("start brush end", brushed);
+        svg.append("g")
+            .call(brush)
+            .call(brush.move, [3, 5].map(x))
+            .call(function (g) { return g.select(".overlay")
+            .datum({ type: "selection" })
+            .on("mousedown touchstart", beforebrushstarted); });
+        function beforebrushstarted(event) {
+            var dx = x(1) - x(0);
+            var cx = d3.pointers(event)[0][0];
+            var _a = [cx - dx / 2, cx + dx / 2], x0 = _a[0], x1 = _a[1];
+            var _b = x.range(), X0 = _b[0], X1 = _b[1];
+            console.log(dx);
+        }
+        function brushed(event) {
+            var selection = event.selection;
+            if (selection === null) {
+                console.log(selection);
+            }
+            else {
+                var _a = selection.map(x.invert), x0 = _a[0], x1 = _a[1];
+            }
+        }
         function timeMouseMove(e) {
             console.log(e);
-            console.log(this);
+            console.log(d3.mouse(this));
         }
     };
     setup.prototype.setupFooter = function (root_element) {

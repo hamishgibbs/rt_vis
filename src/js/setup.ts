@@ -12,7 +12,7 @@ class setup extends rtVis {
   constructor (x) {
     super(x)
 
-    this.margin = {top: 0, right: 30, bottom: 18, left: 50}
+    this.margin = {top: 0, right: 40, bottom: 5, left: 50}
   }
   setupCountryTitle(root_element) {
 
@@ -246,7 +246,7 @@ class setup extends rtVis {
 
     svg.append("g")
        .attr("transform","translate(0,"+ svg_dims.height +")")
-       .call(d3.axisBottom(x))
+       .call(d3.axisBottom(x).tickSize([0]))
        .attr("class",'time-xaxis');
 
     svg.append("g")
@@ -254,17 +254,37 @@ class setup extends rtVis {
       .attr("class", 'r0-yaxis')
       .style('display', 'none');
 
-    console.log(svg_dims)
-    svg.append("rect")
-      .attr("class", "overlay")
-      .attr("width", svg_dims.width)
-      .attr("height", svg_dims.height)
-      .on('mousemove', timeMouseMove)
-      .attr('fill-opacity', '0')
+    const brush = d3.brushX()
+      .extent([[this.margin.left, this.margin.top], [svg_dims.width - this.margin.right, svg_dims.height - this.margin.bottom]])
+      .on("start brush end", brushed);
+
+    svg.append("g")
+      .call(brush)
+      .call(brush.move, [3, 5].map(x))
+      .call(g => g.select(".overlay")
+          .datum({type: "selection"})
+          .on("mousedown touchstart", beforebrushstarted));
+
+    function beforebrushstarted(event) {
+        var dx = x(1) - x(0); // Use a fixed width when recentering.
+        const [[cx]] = d3.pointers(event);
+        const [x0, x1] = [cx - dx / 2, cx + dx / 2];
+        const [X0, X1] = x.range();
+        console.log(dx)
+      }
+
+      function brushed(event) {
+        const selection = event.selection;
+        if (selection === null) {
+          console.log(selection)
+        } else {
+          const [x0, x1] = selection.map(x.invert);
+        }
+      }
 
       function timeMouseMove (e) {
         console.log(e)
-        console.log(this)
+        console.log(d3.mouse(this))
       }
 
   }
