@@ -145,44 +145,8 @@ class setup extends rtVis {
         .text('Forecast')
         .attr('class', 'ts-legend-text')
 
-      //controls buttons
+      //time buttons
       this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush'])
-
-      /*
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-allday')
-        .text('All')
-        .on('click',  eventHandlersRef['timeAllButtonClick'])
-
-      this.addButtonSpacer('#controls-container-time')
-
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-30day')
-        .text('Previous Month')
-        .on('click',  eventHandlersRef['time30ButtonClick'])
-
-      this.addButtonSpacer('#controls-container-time')
-
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-7day')
-        .text('Previous 2 weeks')
-        .on('click',  eventHandlersRef['time14ButtonClick'])
-
-      this.addButtonSpacer('#controls-container-time')
-
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-5day')
-        .text('Previous 7 Days')
-        .on('click',  eventHandlersRef['time7ButtonClick'])
-      */
 
       //Download buttons
       d3.select('#download-container')

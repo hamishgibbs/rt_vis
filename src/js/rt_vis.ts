@@ -55,11 +55,7 @@ class rtVis {
     var i = new interact(this._config)
 
     var eventHandlers = {
-      'time7ButtonClick': i.time7ButtonClick.bind(this),
-      'time14ButtonClick': i.time14ButtonClick.bind(this),
-      'time30ButtonClick': i.time30ButtonClick.bind(this),
       'timeBrush':i.timeBrush.bind(this),
-      'timeAllButtonClick': i.timeAllButtonClick.bind(this),
       'dropdownClick': i.dropdownClick.bind(this),
       'sourceSelectClick': i.sourceSelectClick.bind(this)
     }

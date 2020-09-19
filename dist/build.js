@@ -29,11 +29,7 @@ var rtVis = (function () {
         var containsAll = function (arr, target) { return target.every(function (v) { return arr.includes(v); }); };
         var i = new interact(this._config);
         var eventHandlers = {
-            'time7ButtonClick': i.time7ButtonClick.bind(this),
-            'time14ButtonClick': i.time14ButtonClick.bind(this),
-            'time30ButtonClick': i.time30ButtonClick.bind(this),
             'timeBrush': i.timeBrush.bind(this),
-            'timeAllButtonClick': i.timeAllButtonClick.bind(this),
             'dropdownClick': i.dropdownClick.bind(this),
             'sourceSelectClick': i.sourceSelectClick.bind(this)
         };
@@ -246,54 +242,6 @@ var interact = (function (_super) {
             t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
         this.activeTime = '7d';
-    };
-    interact.prototype.time7ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '7d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '7d';
-    };
-    interact.prototype.time14ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '14d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '14d';
-    };
-    interact.prototype.time30ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '30d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '30d';
-    };
-    interact.prototype.timeAllButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = 'all';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = 'all';
     };
     interact.prototype.sourceSelectClick = function (e) {
         this.activeSource = d3.select('#source-select :checked').text();
