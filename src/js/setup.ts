@@ -146,7 +146,7 @@ class setup extends rtVis {
         .attr('class', 'ts-legend-text')
 
       //controls buttons
-      this.setupTimeControls(date_lims, 'controls-container-time')
+      this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush'])
 
       /*
       d3.select('#controls-container-time')
@@ -219,7 +219,7 @@ class setup extends rtVis {
         //.attr('href', this.casesReportUrl)
         .attr('target', '_blank')
   }
-  setupTimeControls(date_lims, container_id){
+  setupTimeControls(date_lims, container_id, date_handler){
 
     var svg_dims = document.getElementById(container_id).getBoundingClientRect()
 
@@ -256,36 +256,16 @@ class setup extends rtVis {
 
     const brush = d3.brushX()
       .extent([[this.margin.left, this.margin.top], [svg_dims.width - this.margin.right, svg_dims.height - this.margin.bottom]])
-      .on("start brush end", brushed);
+      .on("start end", brushed);
 
-    svg.append("g")
-      .call(brush)
-      .call(brush.move, [3, 5].map(x))
-      .call(g => g.select(".overlay")
-          .datum({type: "selection"})
-          .on("mousedown touchstart", beforebrushstarted));
+    svg.call(d3.brushX()
+        .extent( [ [0,0], [svg_dims.width, svg_dims.height] ] ).on("start brush end", brushed))
 
-    function beforebrushstarted(event) {
-        var dx = x(1) - x(0); // Use a fixed width when recentering.
-        const [[cx]] = d3.pointers(event);
-        const [x0, x1] = [cx - dx / 2, cx + dx / 2];
-        const [X0, X1] = x.range();
-        console.log(dx)
-      }
-
-      function brushed(event) {
-        const selection = event.selection;
-        if (selection === null) {
-          console.log(selection)
-        } else {
-          const [x0, x1] = selection.map(x.invert);
-        }
-      }
-
-      function timeMouseMove (e) {
+    function brushed(e) {
         console.log(e)
-        console.log(d3.mouse(this))
-      }
+        console.log(x.invert(d3.mouse(this)[0]))
+        date_handler([x.invert(d3.mouse(this)[0]), x.invert(d3.mouse(this)[1])])
+    }
 
   }
   setupFooter(root_element){

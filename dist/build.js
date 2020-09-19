@@ -32,6 +32,7 @@ var rtVis = (function () {
             'time7ButtonClick': i.time7ButtonClick.bind(this),
             'time14ButtonClick': i.time14ButtonClick.bind(this),
             'time30ButtonClick': i.time30ButtonClick.bind(this),
+            'timeBrush': i.timeBrush.bind(this),
             'timeAllButtonClick': i.timeAllButtonClick.bind(this),
             'dropdownClick': i.dropdownClick.bind(this),
             'sourceSelectClick': i.sourceSelectClick.bind(this)
@@ -232,6 +233,18 @@ var interact = (function (_super) {
         });
         d3.select('#select2-dropdown-container-container').text(this.activeArea);
     };
+    interact.prototype.timeBrush = function (date_lims) {
+        var time = date_lims;
+        var _config = this._config;
+        var country = this.activeArea;
+        var runDate = this.runDate;
+        var activeSource = this.activeSource;
+        this._requiredData.then(function (data) {
+            var t = new ts(_config);
+            t.plotAllTs(country, time, data[0], activeSource, runDate);
+        });
+        this.activeTime = '7d';
+    };
     interact.prototype.time7ButtonClick = function () {
         var _config = this._config;
         var country = this.activeArea;
@@ -418,7 +431,7 @@ var setup = (function (_super) {
             .append('div')
             .text('Forecast')
             .attr('class', 'ts-legend-text');
-        this.setupTimeControls(date_lims, 'controls-container-time');
+        this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush']);
         d3.select('#download-container')
             .append('div')
             .text('Download data:');
@@ -444,7 +457,7 @@ var setup = (function (_super) {
             .text('Cases by date of report')
             .attr('target', '_blank');
     };
-    setup.prototype.setupTimeControls = function (date_lims, container_id) {
+    setup.prototype.setupTimeControls = function (date_lims, container_id, date_handler) {
         var svg_dims = document.getElementById(container_id).getBoundingClientRect();
         svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
         svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
@@ -472,32 +485,13 @@ var setup = (function (_super) {
             .style('display', 'none');
         var brush = d3.brushX()
             .extent([[this.margin.left, this.margin.top], [svg_dims.width - this.margin.right, svg_dims.height - this.margin.bottom]])
-            .on("start brush end", brushed);
-        svg.append("g")
-            .call(brush)
-            .call(brush.move, [3, 5].map(x))
-            .call(function (g) { return g.select(".overlay")
-            .datum({ type: "selection" })
-            .on("mousedown touchstart", beforebrushstarted); });
-        function beforebrushstarted(event) {
-            var dx = x(1) - x(0);
-            var cx = d3.pointers(event)[0][0];
-            var _a = [cx - dx / 2, cx + dx / 2], x0 = _a[0], x1 = _a[1];
-            var _b = x.range(), X0 = _b[0], X1 = _b[1];
-            console.log(dx);
-        }
-        function brushed(event) {
-            var selection = event.selection;
-            if (selection === null) {
-                console.log(selection);
-            }
-            else {
-                var _a = selection.map(x.invert), x0 = _a[0], x1 = _a[1];
-            }
-        }
-        function timeMouseMove(e) {
+            .on("start end", brushed);
+        svg.call(d3.brushX()
+            .extent([[0, 0], [svg_dims.width, svg_dims.height]]).on("start brush end", brushed));
+        function brushed(e) {
             console.log(e);
-            console.log(d3.mouse(this));
+            console.log(x.invert(d3.mouse(this)[0]));
+            date_handler([x.invert(d3.mouse(this)[0]), x.invert(d3.mouse(this)[1])]);
         }
     };
     setup.prototype.setupFooter = function (root_element) {

@@ -57,6 +57,24 @@ class interact extends rtVis {
     d3.select('#select2-dropdown-container-container').text(this.activeArea)
 
   }
+  timeBrush(date_lims){
+
+    var time = date_lims
+    var _config = this._config
+    var country = this.activeArea
+    var runDate = this.runDate
+    var activeSource = this.activeSource
+
+    this._requiredData.then(function(data: any){
+      var t = new ts(_config)
+
+      t.plotAllTs(country, time, data[0], activeSource, runDate)
+
+    });
+
+    this.activeTime = '7d'
+
+  }
   time7ButtonClick() {
 
     var _config = this._config
