@@ -51,6 +51,7 @@ class ts extends rtVis {
     ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
 
     var minDate = time[0]
+    var maxDate = time[1]
 
     rtData = rtData.filter(a=>parseTime(a['date'])>=minDate)
 
@@ -71,10 +72,6 @@ class ts extends rtVis {
       return
 
     }
-
-    var maxDate = time[1]
-
-    console.log([minDate, maxDate])
 
     try {
       var cases_max = d3.max(cases_data, function(d) { return parseFloat(d.confirm); });

@@ -12,7 +12,7 @@ class setup extends rtVis {
   constructor (x) {
     super(x)
 
-    this.margin = {top: 0, right: 40, bottom: 5, left: 50}
+    this.margin = {top: 0, right: 40, bottom: 10, left: 50}
   }
   setupCountryTitle(root_element) {
 
@@ -261,9 +261,11 @@ class setup extends rtVis {
         .extent( [ [0,0], [svg_dims.width, svg_dims.height] ] ).on("start brush end", brushed))
 
     function brushed(e) {
+      var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x')
+      var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x')
+      console.log(d3.mouse(this))
 
-      console.log(x.invert(d3.mouse(this)[0]))
-      date_handler([x.invert(d3.mouse(this)[0]), x.invert(d3.mouse(this)[1])])
+      date_handler([x.invert(minDate), x.invert(maxDate)])
     }
 
   }

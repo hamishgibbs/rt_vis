@@ -330,7 +330,7 @@ var setup = (function (_super) {
     __extends(setup, _super);
     function setup(x) {
         var _this = _super.call(this, x) || this;
-        _this.margin = { top: 0, right: 40, bottom: 5, left: 50 };
+        _this.margin = { top: 0, right: 40, bottom: 10, left: 50 };
         return _this;
     }
     setup.prototype.setupCountryTitle = function (root_element) {
@@ -491,8 +491,10 @@ var setup = (function (_super) {
         svg.call(d3.brushX()
             .extent([[0, 0], [svg_dims.width, svg_dims.height]]).on("start brush end", brushed));
         function brushed(e) {
-            console.log(x.invert(d3.mouse(this)[0]));
-            date_handler([x.invert(d3.mouse(this)[0]), x.invert(d3.mouse(this)[1])]);
+            var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x');
+            var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x');
+            console.log(d3.mouse(this));
+            date_handler([x.invert(minDate), x.invert(maxDate)]);
         }
     };
     setup.prototype.setupFooter = function (root_element) {
@@ -956,6 +958,7 @@ var ts = (function (_super) {
         ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
         ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
         var minDate = time[0];
+        var maxDate = time[1];
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
         try {
             cases_data = cases_data.filter(function (a) { return d3.timeDay.offset(parseTime(a['date']), -1) >= minDate; });
@@ -971,8 +974,6 @@ var ts = (function (_super) {
                 .style('fill', 'gray');
             return;
         }
-        var maxDate = time[1];
-        console.log([minDate, maxDate]);
         try {
             var cases_max = d3.max(cases_data, function (d) { return parseFloat(d.confirm); });
         }
