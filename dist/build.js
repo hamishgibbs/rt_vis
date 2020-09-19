@@ -25,16 +25,11 @@ var rtVis = (function () {
         this.fullWidth = x['fullWidth'];
     }
     rtVis.prototype.setupFlex = function (root_element) {
-        var onlyUnique = function (value, index, self) {
-            return self.indexOf(value) === index;
-        };
+        var onlyUnique = this.onlyUnique;
         var containsAll = function (arr, target) { return target.every(function (v) { return arr.includes(v); }); };
         var i = new interact(this._config);
         var eventHandlers = {
-            'time7ButtonClick': i.time7ButtonClick.bind(this),
-            'time14ButtonClick': i.time14ButtonClick.bind(this),
-            'time30ButtonClick': i.time30ButtonClick.bind(this),
-            'timeAllButtonClick': i.timeAllButtonClick.bind(this),
+            'timeBrush': i.timeBrush.bind(this),
             'dropdownClick': i.dropdownClick.bind(this),
             'sourceSelectClick': i.sourceSelectClick.bind(this)
         };
@@ -45,8 +40,11 @@ var rtVis = (function () {
         var activeSource = this.activeSource;
         var subRegion = this.subRegion;
         var fullWidth = this.fullWidth;
+        var getDateLims = this.getDateLims;
+        var setActiveTime = function (lims) { this.activeTime = lims; }.bind(this);
         this._requiredData.then(function (data) {
             data = data[0];
+            var date_lims = null;
             data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
             data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
             data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
@@ -86,19 +84,31 @@ var rtVis = (function () {
             }
             if (data['rtData'][activeSource]['rtData'] !== null) {
                 s.setupRt(root_element);
+                date_lims = getDateLims(data['rtData'][activeSource]['rtData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['casesInfectionData'] !== null) {
                 s.setupCasesInfection(root_element);
+                date_lims = getDateLims(data['rtData'][activeSource]['casesInfectionData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['casesReportData'] !== null) {
                 s.setupCasesReport(root_element);
+                date_lims = getDateLims(data['rtData'][activeSource]['casesReportData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
-                s.setupControls(root_element, eventHandlers);
+                s.setupControls(root_element, eventHandlers, date_lims);
             }
             s.setupFooter(root_element);
-            t.plotAllTs(country, time, data, activeSource, runDate);
+            t.plotAllTs(country, date_lims, data, activeSource, runDate);
+            setActiveTime(date_lims);
         });
+    };
+    rtVis.prototype.getDateLims = function (data, onlyUnique) {
+        var parseTime = d3.timeParse("%Y-%m-%d");
+        var dates = data.map(function (d) { return (d['date']); }).filter(onlyUnique).map(function (d) { return (parseTime(d)); });
+        return ([d3.min(dates), d3.max(dates)]);
+    };
+    rtVis.prototype.onlyUnique = function (value, index, self) {
+        return self.indexOf(value) === index;
     };
     rtVis.prototype.setupPage = function (root_element) {
         this.setupFlex(root_element);
@@ -221,53 +231,17 @@ var interact = (function (_super) {
         });
         d3.select('#select2-dropdown-container-container').text(this.activeArea);
     };
-    interact.prototype.time7ButtonClick = function () {
+    interact.prototype.timeBrush = function (date_lims) {
+        var time = date_lims;
         var _config = this._config;
         var country = this.activeArea;
         var runDate = this.runDate;
         var activeSource = this.activeSource;
         this._requiredData.then(function (data) {
             var t = new ts(_config);
-            var time = '7d';
             t.plotAllTs(country, time, data[0], activeSource, runDate);
         });
-        this.activeTime = '7d';
-    };
-    interact.prototype.time14ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '14d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '14d';
-    };
-    interact.prototype.time30ButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = '30d';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = '30d';
-    };
-    interact.prototype.timeAllButtonClick = function () {
-        var _config = this._config;
-        var country = this.activeArea;
-        var runDate = this.runDate;
-        var activeSource = this.activeSource;
-        this._requiredData.then(function (data) {
-            var t = new ts(_config);
-            var time = 'all';
-            t.plotAllTs(country, time, data[0], activeSource, runDate);
-        });
-        this.activeTime = 'all';
+        this.activeTime = time;
     };
     interact.prototype.sourceSelectClick = function (e) {
         this.activeSource = d3.select('#source-select :checked').text();
@@ -303,7 +277,9 @@ catch (err) { }
 var setup = (function (_super) {
     __extends(setup, _super);
     function setup(x) {
-        return _super.call(this, x) || this;
+        var _this = _super.call(this, x) || this;
+        _this.margin = { top: 0, right: 40, bottom: 10, left: 50 };
+        return _this;
     }
     setup.prototype.setupCountryTitle = function (root_element) {
         var ct = d3.select(root_element)
@@ -353,7 +329,7 @@ var setup = (function (_super) {
             .attr('class', 'cases-report-ts-container')
             .attr('id', 'cases-report-ts-container');
     };
-    setup.prototype.setupControls = function (root_element, eventHandlersRef) {
+    setup.prototype.setupControls = function (root_element, eventHandlersRef, date_lims) {
         d3.select(root_element)
             .append('div')
             .attr('class', 'controls-container')
@@ -405,33 +381,7 @@ var setup = (function (_super) {
             .append('div')
             .text('Forecast')
             .attr('class', 'ts-legend-text');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-allday')
-            .text('All')
-            .on('click', eventHandlersRef['timeAllButtonClick']);
-        this.addButtonSpacer('#controls-container-time');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-30day')
-            .text('Previous Month')
-            .on('click', eventHandlersRef['time30ButtonClick']);
-        this.addButtonSpacer('#controls-container-time');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-7day')
-            .text('Previous 2 weeks')
-            .on('click', eventHandlersRef['time14ButtonClick']);
-        this.addButtonSpacer('#controls-container-time');
-        d3.select('#controls-container-time')
-            .append('button')
-            .attr('class', 'control-button')
-            .attr('id', 'control-5day')
-            .text('Previous 7 Days')
-            .on('click', eventHandlersRef['time7ButtonClick']);
+        this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush']);
         d3.select('#download-container')
             .append('div')
             .text('Download data:');
@@ -456,6 +406,48 @@ var setup = (function (_super) {
             .attr('id', 'download-casesReport')
             .text('Cases by date of report')
             .attr('target', '_blank');
+    };
+    setup.prototype.setupTimeControls = function (date_lims, container_id, date_handler) {
+        var svg_dims = document.getElementById(container_id).getBoundingClientRect();
+        svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
+        svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
+        var svg = d3.select('#' + 'controls-container-time')
+            .append('svg')
+            .attr('class', container_id + '-svg')
+            .attr('id', container_id + '-svg')
+            .style("width", '100%')
+            .style("height", '100%')
+            .append("g")
+            .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")");
+        var x = d3.scaleTime()
+            .domain([date_lims[0], date_lims[1]])
+            .range([0, svg_dims.width]);
+        var y = d3.scaleLinear()
+            .domain([0, 1])
+            .range([svg_dims.height, 0]);
+        svg.append("g")
+            .attr("transform", "translate(0," + svg_dims.height + ")")
+            .call(d3.axisBottom(x).tickSize([0]))
+            .attr("class", 'time-xaxis');
+        svg.append("g")
+            .call(d3.axisLeft(y))
+            .attr("class", 'r0-yaxis')
+            .style('display', 'none');
+        var brush = d3.brushX()
+            .extent([[this.margin.left, this.margin.top], [svg_dims.width - this.margin.right, svg_dims.height - this.margin.bottom]])
+            .on("start end", brushed);
+        svg.call(d3.brushX()
+            .extent([[0, 0], [svg_dims.width, svg_dims.height]]).on("start brush end", brushed));
+        function brushed(e) {
+            var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x');
+            var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x');
+            if ((maxDate - minDate) <= 4) {
+                date_handler([date_lims[0], date_lims[1]]);
+            }
+            else {
+                date_handler([x.invert(minDate), x.invert(maxDate)]);
+            }
+        }
     };
     setup.prototype.setupFooter = function (root_element) {
         d3.select(root_element)
@@ -917,16 +909,8 @@ var ts = (function (_super) {
         var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect();
         ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
         ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
-        var minDate = d3.min(rtData, function (d) { return parseTime(d.date); });
-        if (time === '7d') {
-            minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        }
-        else if (time === '14d') {
-            minDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-        }
-        else if (time === '30d') {
-            minDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        }
+        var minDate = time[0];
+        var maxDate = time[1];
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
         try {
             cases_data = cases_data.filter(function (a) { return d3.timeDay.offset(parseTime(a['date']), -1) >= minDate; });
@@ -941,12 +925,6 @@ var ts = (function (_super) {
                 .style('stroke-width', 0)
                 .style('fill', 'gray');
             return;
-        }
-        if (time !== 'all') {
-            var maxDate = new Date(Date.now());
-        }
-        else {
-            var maxDate = d3.max(rtData, function (d) { return parseTime(d.date); });
         }
         try {
             var cases_max = d3.max(cases_data, function (d) { return parseFloat(d.confirm); });

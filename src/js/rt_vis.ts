@@ -48,19 +48,14 @@ class rtVis {
   }
   setupFlex(root_element){
 
-    var onlyUnique = function(value, index, self) {
-      return self.indexOf(value) === index;
-    }
+    var onlyUnique = this.onlyUnique
 
     var containsAll = (arr, target) => target.every(v => arr.includes(v));
 
     var i = new interact(this._config)
 
     var eventHandlers = {
-      'time7ButtonClick': i.time7ButtonClick.bind(this),
-      'time14ButtonClick': i.time14ButtonClick.bind(this),
-      'time30ButtonClick': i.time30ButtonClick.bind(this),
-      'timeAllButtonClick': i.timeAllButtonClick.bind(this),
+      'timeBrush':i.timeBrush.bind(this),
       'dropdownClick': i.dropdownClick.bind(this),
       'sourceSelectClick': i.sourceSelectClick.bind(this)
     }
@@ -72,9 +67,13 @@ class rtVis {
     var activeSource = this.activeSource
     var subRegion = this.subRegion
     var fullWidth = this.fullWidth
+    var getDateLims = this.getDateLims
+    var setActiveTime = function(lims){this.activeTime = lims}.bind(this)
 
     this._requiredData.then(function(data: any){
       data = data[0]
+
+      var date_lims = null
 
       /*
 
@@ -121,27 +120,43 @@ class rtVis {
 
       if (data['rtData'][activeSource]['rtData'] !== null){
         s.setupRt(root_element)
+        date_lims = getDateLims(data['rtData'][activeSource]['rtData'], onlyUnique)
       }
 
       if (data['rtData'][activeSource]['casesInfectionData'] !== null){
         s.setupCasesInfection(root_element)
+        date_lims = getDateLims(data['rtData'][activeSource]['casesInfectionData'], onlyUnique)
       }
 
       if (data['rtData'][activeSource]['casesReportData'] !== null){
         s.setupCasesReport(root_element)
+        date_lims = getDateLims(data['rtData'][activeSource]['casesReportData'], onlyUnique)
       }
 
       if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
-        s.setupControls(root_element, eventHandlers)
+        s.setupControls(root_element, eventHandlers, date_lims)
       }
 
       s.setupFooter(root_element)
 
 
-      t.plotAllTs(country, time, data, activeSource, runDate)
+      t.plotAllTs(country, date_lims, data, activeSource, runDate)
+
+      setActiveTime(date_lims)
 
     });
 
+  }
+  getDateLims(data, onlyUnique){
+    var parseTime = d3.timeParse("%Y-%m-%d");
+
+    var dates = data.map(function(d){return(d['date'])}).filter(onlyUnique).map(function(d){return(parseTime(d))})
+
+    return([d3.min(dates), d3.max(dates)]);
+
+  }
+  onlyUnique(value, index, self) {
+    return self.indexOf(value) === index;
   }
   setupPage(root_element) {
 

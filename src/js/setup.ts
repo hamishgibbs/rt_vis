@@ -5,11 +5,14 @@ catch(err) {}
 
 interface setup {
   setupLayout(string, any): void;
+  margin: any;
 }
 
 class setup extends rtVis {
   constructor (x) {
     super(x)
+
+    this.margin = {top: 0, right: 40, bottom: 10, left: 50}
   }
   setupCountryTitle(root_element) {
 
@@ -74,7 +77,7 @@ class setup extends rtVis {
       .attr('id', 'cases-report-ts-container')
 
   }
-  setupControls(root_element, eventHandlersRef){
+  setupControls(root_element, eventHandlersRef, date_lims){
 
     d3.select(root_element)
       .append('div')
@@ -142,40 +145,8 @@ class setup extends rtVis {
         .text('Forecast')
         .attr('class', 'ts-legend-text')
 
-      //controls buttons
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-allday')
-        .text('All')
-        .on('click',  eventHandlersRef['timeAllButtonClick'])
-
-      this.addButtonSpacer('#controls-container-time')
-
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-30day')
-        .text('Previous Month')
-        .on('click',  eventHandlersRef['time30ButtonClick'])
-
-      this.addButtonSpacer('#controls-container-time')
-
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-7day')
-        .text('Previous 2 weeks')
-        .on('click',  eventHandlersRef['time14ButtonClick'])
-
-      this.addButtonSpacer('#controls-container-time')
-
-      d3.select('#controls-container-time')
-        .append('button')
-        .attr('class', 'control-button')
-        .attr('id', 'control-5day')
-        .text('Previous 7 Days')
-        .on('click',  eventHandlersRef['time7ButtonClick'])
+      //time buttons
+      this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush'])
 
       //Download buttons
       d3.select('#download-container')
@@ -211,6 +182,61 @@ class setup extends rtVis {
         .text('Cases by date of report')
         //.attr('href', this.casesReportUrl)
         .attr('target', '_blank')
+  }
+  setupTimeControls(date_lims, container_id, date_handler){
+
+    var svg_dims = document.getElementById(container_id).getBoundingClientRect()
+
+    svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
+    svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
+
+    var svg = d3.select('#' + 'controls-container-time')
+      .append('svg')
+      .attr('class', container_id + '-svg')
+      .attr('id', container_id + '-svg')
+      .style("width", '100%')
+      .style("height", '100%')
+      .append("g")
+      .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
+
+    var x = d3.scaleTime()
+      .domain([date_lims[0], date_lims[1]])
+      .range([0, svg_dims.width]);
+
+    var y = d3.scaleLinear()
+      .domain([0,1])
+      .range([svg_dims.height, 0]);
+
+    svg.append("g")
+       .attr("transform","translate(0,"+ svg_dims.height +")")
+       .call(d3.axisBottom(x).tickSize([0]))
+       .attr("class",'time-xaxis');
+
+    svg.append("g")
+      .call(d3.axisLeft(y))
+      .attr("class", 'r0-yaxis')
+      .style('display', 'none');
+
+    const brush = d3.brushX()
+      .extent([[this.margin.left, this.margin.top], [svg_dims.width - this.margin.right, svg_dims.height - this.margin.bottom]])
+      .on("start end", brushed);
+
+    svg.call(d3.brushX()
+        .extent( [ [0,0], [svg_dims.width, svg_dims.height] ] ).on("start brush end", brushed))
+
+    function brushed(e) {
+      var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x')
+      var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x')
+
+
+      if ((maxDate - minDate) <= 4){
+        date_handler([date_lims[0], date_lims[1]])
+      } else {
+        date_handler([x.invert(minDate), x.invert(maxDate)])
+      }
+
+    }
+
   }
   setupFooter(root_element){
 

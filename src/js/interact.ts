@@ -57,8 +57,9 @@ class interact extends rtVis {
     d3.select('#select2-dropdown-container-container').text(this.activeArea)
 
   }
-  time7ButtonClick() {
+  timeBrush(date_lims){
 
+    var time = date_lims
     var _config = this._config
     var country = this.activeArea
     var runDate = this.runDate
@@ -67,73 +68,12 @@ class interact extends rtVis {
     this._requiredData.then(function(data: any){
       var t = new ts(_config)
 
-      var time = '7d'
-
       t.plotAllTs(country, time, data[0], activeSource, runDate)
 
     });
 
-    this.activeTime = '7d'
+    this.activeTime = time
 
-  }
-  time14ButtonClick() {
-
-
-    var _config = this._config
-    var country = this.activeArea
-    var runDate = this.runDate
-    var activeSource = this.activeSource
-
-    this._requiredData.then(function(data: any){
-      var t = new ts(_config)
-
-      var time = '14d'
-
-      t.plotAllTs(country, time, data[0], activeSource, runDate)
-
-    });
-
-    this.activeTime = '14d'
-
-  }
-  time30ButtonClick() {
-
-
-    var _config = this._config
-    var country = this.activeArea
-    var runDate = this.runDate
-    var activeSource = this.activeSource
-
-    this._requiredData.then(function(data: any){
-      var t = new ts(_config)
-
-      var time = '30d'
-
-      t.plotAllTs(country, time, data[0], activeSource, runDate)
-
-    });
-
-    this.activeTime = '30d'
-
-  }
-  timeAllButtonClick() {
-
-
-    var _config = this._config
-    var country = this.activeArea
-    var runDate = this.runDate
-    var activeSource = this.activeSource
-
-    this._requiredData.then(function(data: any){
-      var t = new ts(_config)
-
-      var time = 'all'
-
-      t.plotAllTs(country, time, data[0], activeSource, runDate)
-
-    });
-
-    this.activeTime = 'all'
   }
   sourceSelectClick(e) {
 
