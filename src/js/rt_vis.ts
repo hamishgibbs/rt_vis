@@ -72,6 +72,7 @@ class rtVis {
     var subRegion = this.subRegion
     var fullWidth = this.fullWidth
     var getDateLims = this.getDateLims
+    var setActiveTime = function(lims){this.activeTime = lims}.bind(this)
 
     this._requiredData.then(function(data: any){
       data = data[0]
@@ -143,7 +144,9 @@ class rtVis {
       s.setupFooter(root_element)
 
 
-      t.plotAllTs(country, time, data, activeSource, runDate)
+      t.plotAllTs(country, date_lims, data, activeSource, runDate)
+
+      setActiveTime(date_lims)
 
     });
 

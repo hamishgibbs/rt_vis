@@ -235,7 +235,6 @@ class setup extends rtVis {
       .append("g")
       .attr("transform", "translate(" + this.margin.left + "," + this.margin.top + ")")
 
-
     var x = d3.scaleTime()
       .domain([date_lims[0], date_lims[1]])
       .range([0, svg_dims.width]);
@@ -262,9 +261,9 @@ class setup extends rtVis {
         .extent( [ [0,0], [svg_dims.width, svg_dims.height] ] ).on("start brush end", brushed))
 
     function brushed(e) {
-        console.log(e)
-        console.log(x.invert(d3.mouse(this)[0]))
-        date_handler([x.invert(d3.mouse(this)[0]), x.invert(d3.mouse(this)[1])])
+
+      console.log(x.invert(d3.mouse(this)[0]))
+      date_handler([x.invert(d3.mouse(this)[0]), x.invert(d3.mouse(this)[1])])
     }
 
   }

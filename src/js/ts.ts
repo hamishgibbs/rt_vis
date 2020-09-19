@@ -50,15 +50,7 @@ class ts extends rtVis {
     ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
     ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
 
-    var minDate = d3.min(rtData, function(d) {return parseTime(d.date); });
-
-    if (time === '7d'){
-      minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    } else if (time === '14d') {
-      minDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-    } else if (time === '30d') {
-      minDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    }
+    var minDate = time[0]
 
     rtData = rtData.filter(a=>parseTime(a['date'])>=minDate)
 
@@ -80,11 +72,9 @@ class ts extends rtVis {
 
     }
 
-    if (time !== 'all'){
-      var maxDate: any = new Date(Date.now());
-    } else {
-      var maxDate = d3.max(rtData, function(d) { return parseTime(d.date); });
-    }
+    var maxDate = time[1]
+
+    console.log([minDate, maxDate])
 
     try {
       var cases_max = d3.max(cases_data, function(d) { return parseFloat(d.confirm); });

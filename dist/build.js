@@ -45,6 +45,7 @@ var rtVis = (function () {
         var subRegion = this.subRegion;
         var fullWidth = this.fullWidth;
         var getDateLims = this.getDateLims;
+        var setActiveTime = function (lims) { this.activeTime = lims; }.bind(this);
         this._requiredData.then(function (data) {
             data = data[0];
             var date_lims = null;
@@ -101,7 +102,8 @@ var rtVis = (function () {
                 s.setupControls(root_element, eventHandlers, date_lims);
             }
             s.setupFooter(root_element);
-            t.plotAllTs(country, time, data, activeSource, runDate);
+            t.plotAllTs(country, date_lims, data, activeSource, runDate);
+            setActiveTime(date_lims);
         });
     };
     rtVis.prototype.getDateLims = function (data, onlyUnique) {
@@ -489,7 +491,6 @@ var setup = (function (_super) {
         svg.call(d3.brushX()
             .extent([[0, 0], [svg_dims.width, svg_dims.height]]).on("start brush end", brushed));
         function brushed(e) {
-            console.log(e);
             console.log(x.invert(d3.mouse(this)[0]));
             date_handler([x.invert(d3.mouse(this)[0]), x.invert(d3.mouse(this)[1])]);
         }
@@ -954,16 +955,7 @@ var ts = (function (_super) {
         var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect();
         ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
         ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
-        var minDate = d3.min(rtData, function (d) { return parseTime(d.date); });
-        if (time === '7d') {
-            minDate = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-        }
-        else if (time === '14d') {
-            minDate = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
-        }
-        else if (time === '30d') {
-            minDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-        }
+        var minDate = time[0];
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
         try {
             cases_data = cases_data.filter(function (a) { return d3.timeDay.offset(parseTime(a['date']), -1) >= minDate; });
@@ -979,12 +971,8 @@ var ts = (function (_super) {
                 .style('fill', 'gray');
             return;
         }
-        if (time !== 'all') {
-            var maxDate = new Date(Date.now());
-        }
-        else {
-            var maxDate = d3.max(rtData, function (d) { return parseTime(d.date); });
-        }
+        var maxDate = time[1];
+        console.log([minDate, maxDate]);
         try {
             var cases_max = d3.max(cases_data, function (d) { return parseFloat(d.confirm); });
         }
