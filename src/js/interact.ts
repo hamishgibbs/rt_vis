@@ -28,6 +28,16 @@ class interact extends rtVis {
     });
 
   }
+  mapDataClick(){
+
+    this.activeMapData = d3.select('#map-dataset-item-active').text()
+
+    this.createMap()
+
+    //console.log(e)
+    //console.log(this)
+
+  }
   dropdownClick(e) {
     this.activeArea = e.params.data.text
 
