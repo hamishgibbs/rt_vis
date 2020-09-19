@@ -7,16 +7,19 @@ interface map {
   projection: any
   map_svg_dims: any
   summaryData: any
+  mapDataClick: any
 }
 
 class map extends rtVis {
   constructor (x) {
     super(x)
   }
-  setupMap (geoData, summaryData, mapClick, dropdownClick) {
+  setupMap (geoData, summaryData, mapClick, dropdownClick, mapDataClick, activeMapData) {
 
     //figure out where to put dropdown - absolute position in top R is best (regardless of map)
     d3.select("#map-svg").remove()
+    d3.select('#map-container-tooltip').remove()
+    d3.select('#map-legend').remove()
 
     var map_svg = d3.select("#map-container")
       .append('svg')
@@ -47,16 +50,41 @@ class map extends rtVis {
     this.projection = projection
     this.map_svg_dims = map_svg_dims
     this.summaryData = summaryData
+    this.mapDataClick = mapDataClick
 
     var path = d3.geoPath().projection(projection);
 
-    var colour_ref = {'Decreasing':'#1170aa',
-                      'Likely decreasing':'#5fa2ce',
-                      'Unsure':'#7b848f',
-                      'Likely increasing':'#fd9e49',
-                      'Increasing':'#e75f00',
-                      'No Data':'lightgray'}
+    console.log(this)
 
+    var colour_ref = {'Expected change in daily cases':{'Decreasing':'#1170aa',
+                                      'Likely decreasing':'#5fa2ce',
+                                      'Unsure':'#7b848f',
+                                      'Likely increasing':'#fd9e49',
+                                      'Increasing':'#e75f00',
+                                      'No Data':'lightgray'},
+                      'New confirmed cases by infection date':{'No Data': 'lightgray',
+                                                               'Numeric': d3.scaleLinear().range(["white", "blue"])},
+                      'Effective reproduction no.':{'No Data': 'lightgray',
+                                                    'Numeric': d3.scaleLinear().range(["white", "red"])},
+                      'Rate of growth':{'No Data': 'lightgray',
+                                        'Numeric': d3.scaleLinear().range(["white", "green"])},
+                      'Doubling/halving time (days)':{'No Data': 'lightgray',
+                                                      'Numeric': d3.scaleLinear().range(["white", "purple"])}}
+
+
+    var map_data_values = this.prepareMapData(summaryData, activeMapData)
+
+    if (typeof(map_data_values[0]) === 'number'){
+      var legend_max = d3.max(map_data_values)
+      colour_ref[activeMapData]['Numeric'] = colour_ref[activeMapData]['Numeric'].domain([1,legend_max])
+    } else {
+      legend_max = 0
+    }
+
+    var parseMapData = this.parseMapData
+    var pallette = this.pallette
+
+    //return(colour_ref[activeMapData][
     map_svg.append("g")
       .attr("class", "areas")
     	.selectAll("path")
@@ -66,29 +94,45 @@ class map extends rtVis {
 	      .attr("d", path)
       	.attr("stroke", "white")
       	.attr("summary", function(d){ try {
-          return summaryData.filter(a=>a['region']==d.properties.sovereignt)[0]['Expected change in daily cases']
+          return summaryData.filter(a=>a['region']==d.properties.sovereignt)[0][activeMapData]
         } catch {
           return 'No Data'};})
       	.attr("country-name", function(d){ return d.properties.sovereignt; })
-        .attr("fill", function(d){ return colour_ref[d3.select(this).attr('summary')]; })
+        .attr("fill", function(d){return(pallette(parseMapData(d3.select(this).attr('summary')), colour_ref[activeMapData]));})
         .on('mouseenter', this.mapMouseIn.bind(this))
         .on("mouseout", this.mapMouseOut)
         .on("mouseover", this.mapMouseOver)
         .on('click', mapClick)
         .style('stroke', 'black')
-        .style('stroke-width', '0.2px')
-        .style('opacity', 0.5)
-        .transition()
-        .delay(50)
-        .style('opacity', 1);
+        .style('stroke-width', '0.2px');
 
-    this.createLegend(map_svg, map_svg_dims, colour_ref)
+    this.createLegend(map_svg, map_svg_dims, colour_ref[activeMapData], activeMapData, legend_max)
 
     var areaNames = geoData.features.map(function(d){return(d.properties.sovereignt)}).filter(this.onlyUnique).sort()
 
     // @ts-ignore
     $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select a country', data: areaNames}).on('select2:select', dropdownClick);
 
+  }
+  prepareMapData(summaryData, variable){
+
+    return(summaryData.map(a => this.parseMapData(a[variable])))
+
+  }
+  parseMapData(d){
+    if (['Decreasing', 'Likely decreasing', 'Unsure', 'Likely increasing', 'Increasing', 'No Data'].includes(d)){
+      return (d)
+    } else {
+      return(parseFloat(d.split(' ')[0]))
+    }
+
+  }
+  pallette(d, pal){
+    if (typeof(d) === 'number'){
+      return (pal['Numeric'](d))
+    } else {
+      return(pal[d])
+    }
   }
   mapMouseIn(e) {
       var x_coords = e.geometry.coordinates[0][0].map(function(x){return(x[0])})
@@ -111,8 +155,6 @@ class map extends rtVis {
         .style("left", x_coord + "px")
         .style("top", y_coord + "px")
 
-      console.log(e.properties.sovereignt)
-
       var tooltip_data = this.summaryData.filter(a => a.region == e.properties.sovereignt)[0]
 
       try {
@@ -133,7 +175,6 @@ class map extends rtVis {
         tooltip.html(tooltip_str)
       }
 
-      console.log(tooltip_str)
   }
   mapMouseOver(e) {
 
@@ -151,7 +192,7 @@ class map extends rtVis {
     tooltip
       .style("opacity", 0)
   }
-  createLegend(map_svg, map_svg_dims, colour_ref) {
+  createLegend(map_svg, map_svg_dims, colour_ref, activeMapData, legend_max) {
 
     var legend_height = 200
 
@@ -161,8 +202,23 @@ class map extends rtVis {
     var legendClick = function(x){
 
       if(d3.selectAll('#map-legend-text').style('opacity') === '1'){
+
         d3.selectAll('#map-legend-text').style('opacity', 0)
         d3.selectAll('#map-legend-item').style('opacity', 0)
+
+        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '200px')
+
+        d3.selectAll('#map-dataset-text').transition().duration(250).delay(100).style('opacity', 1)
+        d3.selectAll('#map-dataset-item-active').transition().duration(250).delay(100).style('opacity', 1)
+        d3.selectAll('#map-dataset-item').transition().duration(250).delay(100).style('opacity', 1)
+        d3.selectAll('#map-dataset-item').style('pointer-events', null)
+
+      } else if (d3.selectAll('#map-dataset-text').style('opacity') === '1') {
+
+        d3.selectAll('#map-dataset-text').style('opacity', 0)
+        d3.selectAll('#map-dataset-item-active').style('opacity', 0)
+        d3.selectAll('#map-dataset-item').style('opacity', 0)
+
         d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '64px').attr('height', '25px')
 
         legend.append('text')
@@ -176,9 +232,10 @@ class map extends rtVis {
           .style('opacity', 1)
 
       } else {
+
         d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1)
-        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '185px').attr('height', '200px')
+        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '200px')
 
 
         d3.select('#map-legend-title').remove()
@@ -202,18 +259,68 @@ class map extends rtVis {
       .style('fill', 'white')
       .style('rx', '8px')
 
-    legend.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title')
+    this.layoutLegend(legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max)
+    this.layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height)
 
-    legend.append('text')
+  }
+  layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height){
+
+    var g = legend.append('g')
+      .attr('id', 'map-dataset-content')
+      .attr('class', 'map-dataset-content')
+
+    g.append('text').text('Dataset Selection')
       .style('font-size', '14px')
       .style('padding-top', '10px')
-      .style('color', 'lightgrey')
-      .attr('class', 'map-legend-text')
-      .attr('id', 'map-legend-text')
+      .attr('class', 'map-dataset-text')
+      .attr('id', 'map-dataset-text')
       .attr('x', legend_x)
-      .attr('y', legend_y - 20)
+      .attr('y', legend_y)
 
-    legend.append('text').text('Expected change in cases')
+    var map_datasets = Object.keys(this.summaryData[0]).filter(a => a !== 'region')
+
+    var i;
+    for (i = 0; i < map_datasets.length; i++) {
+
+      g.append('rect')
+        .attr("x", legend_x)
+        .attr("y", (legend_y + ((legend_height / 6.5) * (i + 1))) + 5 - 20)
+        .attr('rx', '15')
+        .style("width", '240px')
+        .style("height", '25px')
+        .style('fill', 'lightgrey')
+        .attr('class', 'map-dataset-item')
+        .attr('id', 'map-dataset-item')
+
+      g.append('text')
+        .attr("x", legend_x + 8)
+        .attr("y", (legend_y + ((legend_height / 6.5) * (i + 1))) + 15 - 14)
+        .text(map_datasets[i])
+        .style('font-size', '12px')
+        .style('padding-left', '10px')
+        .attr('class', 'map-dataset-item')
+        .attr('id', 'map-dataset-item')
+        .on('click', this.mapDataClick)
+        .on('mouseenter', function(e){d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold')})
+        .on('mouseout', function(e){d3.select(this).attr('id', 'map-dataset-item').style('font-weight', 'normal')})
+    }
+
+    d3.selectAll('#map-dataset-text').style('opacity', 0)
+    d3.selectAll('#map-dataset-item').style('opacity', 0)
+    d3.selectAll('#map-dataset-item').style('pointer-events', 'none')
+
+  }
+  layoutLegend(legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max) {
+
+    var floatFormat = /\B(?=(\d{3})+(?!\d))/g
+
+    var g = legend.append('g')
+      .attr('id', 'map-legend-content')
+      .attr('class', 'map-legend-content')
+
+    g.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title')
+
+    g.append('text').text(activeMapData)
       .style('font-size', '14px')
       .style('padding-top', '10px')
       .attr('class', 'map-legend-text')
@@ -221,31 +328,109 @@ class map extends rtVis {
       .attr('x', legend_x)
       .attr('y', legend_y)
 
+
+    if (legend_max > 0){
+      var numeric_palette = true
+    } else {
+      var numeric_palette = false
+    }
+
     var i;
     for (i = 0; i < Object.entries(colour_ref).length; i++) {
 
-      legend.append('rect')
-        .attr("x", legend_x)
-        .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 5 - 20)
-        .style("width", '12px')
-        .style("height", '12px')
-        .style('fill', Object.entries(colour_ref)[i][1])
-        .attr('class', 'map-legend-item')
-        .attr('id', 'map-legend-item')
+      if (numeric_palette){
 
-      legend.append('text')
-        .attr("x", legend_x + 23)
-        .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 15 - 20)
-        .text(Object.entries(colour_ref)[i][0])
-        .style('font-size', '12px')
-        .style('padding-left', '10px')
-        .attr('class', 'map-legend-item')
-        .attr('id', 'map-legend-item')
+        if (i === 1){
+
+          var defs = g.append("defs");
+
+          var linearGradient = defs.append("linearGradient")
+            .attr("id", "linear-gradient")
+            .attr("x1", "0%")
+            .attr("y1", "0%")
+            .attr("x2", "0%")
+            .attr("y2", "100%");
+
+          linearGradient.append("stop")
+              .attr("offset", "0%")
+              .attr("stop-color", "white");
+
+          linearGradient.append("stop")
+              .attr("offset", "100%")
+              .attr("stop-color", colour_ref['Numeric'](legend_max));
+
+          g.append('rect')
+            .attr("x", legend_x)
+            .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 5 - 20)
+            .style("width", '12px')
+            .style("height", '120px')
+            .attr('class', 'map-legend-item')
+            .attr('id', 'map-legend-item')
+            .style("fill", "url(#linear-gradient)")
+
+          var i;
+          for (i = 0; i < 5; i++){
+
+            g.append('text')
+              .attr("x", legend_x + 23)
+              .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 20)
+              .text(((legend_max / 5) * i).toString().replace(floatFormat, ","))
+              .style('font-size', '12px')
+              .style('padding-left', '10px')
+              .attr('class', 'map-legend-item')
+              .attr('id', 'map-legend-item')
+
+          }
+
+        } else {
+
+          g.append('rect')
+            .attr("x", legend_x)
+            .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 5 - 20)
+            .style("width", '12px')
+            .style("height", '12px')
+            .style('fill', Object.entries(colour_ref)[i][1])
+            .attr('class', 'map-legend-item')
+            .attr('id', 'map-legend-item')
+
+          g.append('text')
+            .attr("x", legend_x + 23)
+            .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 15 - 20)
+            .text(Object.entries(colour_ref)[i][0])
+            .style('font-size', '12px')
+            .style('padding-left', '10px')
+            .attr('class', 'map-legend-item')
+            .attr('id', 'map-legend-item')
+
+        }
+
+
+      } else {
+
+        g.append('rect')
+          .attr("x", legend_x)
+          .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 5 - 20)
+          .style("width", '12px')
+          .style("height", '12px')
+          .style('fill', Object.entries(colour_ref)[i][1])
+          .attr('class', 'map-legend-item')
+          .attr('id', 'map-legend-item')
+
+        g.append('text')
+          .attr("x", legend_x + 23)
+          .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 15 - 20)
+          .text(Object.entries(colour_ref)[i][0])
+          .style('font-size', '12px')
+          .style('padding-left', '10px')
+          .attr('class', 'map-legend-item')
+          .attr('id', 'map-legend-item')
+
+      }
+
+      d3.selectAll('#map-legend-text').style('opacity', 0)
+      d3.selectAll('#map-legend-item').style('opacity', 0)
 
     }
-
-    d3.selectAll('#map-legend-text').style('opacity', 0)
-    d3.selectAll('#map-legend-item').style('opacity', 0)
 
   }
   calculateScaleCenter(features, map_width, map_height, path) {

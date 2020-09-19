@@ -27,6 +27,7 @@ class rtVis {
     this.activeTime = x['activeTime']
     this.runDate = x['runDate']
     this.activeSource = Object.keys(x['rtData'])[0]
+    this.activeMapData = 'Expected change in daily cases'
 
     var available_rt_data: any = Object.values(x['rtData'][this.activeSource]).filter(x => x !== null )
 
@@ -154,11 +155,14 @@ class rtVis {
     var _config = this._config
     var mapClick = i.mapClick.bind(this)
     var dropdownClick = i.dropdownClick.bind(this)
+    var mapDataClick = i.mapDataClick.bind(this)
     var activeSource = this.activeSource
+    var activeMapData = this.activeMapData
+
 
     this._requiredData.then(function(data: any){
       var m = new map(_config)
-      m.setupMap(data[0]['geoData'], data[0]['rtData'][activeSource]['summaryData'], mapClick, dropdownClick)
+      m.setupMap(data[0]['geoData'], data[0]['rtData'][activeSource]['summaryData'], mapClick, dropdownClick, mapDataClick, activeMapData)
 
     });
   }
