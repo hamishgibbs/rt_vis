@@ -54,8 +54,6 @@ class map extends rtVis {
 
     var path = d3.geoPath().projection(projection);
 
-    console.log(this)
-
     var colour_ref = {'Expected change in daily cases':{'Decreasing':'#1170aa',
                                       'Likely decreasing':'#5fa2ce',
                                       'Unsure':'#7b848f',

@@ -522,7 +522,6 @@ var map = (function (_super) {
         this.summaryData = summaryData;
         this.mapDataClick = mapDataClick;
         var path = d3.geoPath().projection(projection);
-        console.log(this);
         var colour_ref = { 'Expected change in daily cases': { 'Decreasing': '#1170aa',
                 'Likely decreasing': '#5fa2ce',
                 'Unsure': '#7b848f',
@@ -908,6 +907,7 @@ var ts = (function (_super) {
         var minDate = time[0];
         var maxDate = time[1];
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
+        rtData = rtData.filter(function (a) { return parseTime(a['date']) <= maxDate; });
         try {
             cases_data = cases_data.filter(function (a) { return d3.timeDay.offset(parseTime(a['date']), -1) >= minDate; });
         }
@@ -1131,8 +1131,8 @@ var ts = (function (_super) {
     };
     ts.prototype.gt_max_observed_cases = function (x, max_observed_cases) {
         if (max_observed_cases !== null) {
-            if (x >= max_observed_cases * 10) {
-                return (max_observed_cases * 10);
+            if (x >= max_observed_cases * 5) {
+                return (max_observed_cases * 5);
             }
             else {
                 return (x);
