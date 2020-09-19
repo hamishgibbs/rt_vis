@@ -38,6 +38,20 @@ class setup extends rtVis {
       .attr('id', 'dropdown-container')
 
   }
+
+  setupDownload(root_element, downloadUrl, fullWidth) {
+
+    d3.select(root_element)
+      .append('div')
+      .attr('class', 'download-container')
+      .attr('id', 'download-container')
+      .style('left', fullWidth + 'px')
+      .append('a')
+      .attr("href", downloadUrl)
+      .attr('target', '_blank')
+      .text('Download Data')
+
+  }
   setupRt(root_element){
 
     d3.select(root_element)
@@ -145,43 +159,9 @@ class setup extends rtVis {
         .text('Forecast')
         .attr('class', 'ts-legend-text')
 
-      //time buttons
+      //time control
       this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush'])
 
-      //Download buttons
-      d3.select('#download-container')
-        .append('div')
-        .text('Download data:')
-
-      this.addButtonSpacer('#download-container')
-
-      d3.select('#download-container')
-        .append('a')
-        .attr('class', 'download-button')
-        .attr('id', 'download-r0')
-        .text('R')
-        //.attr('href', this.r0Url)
-        .attr('target', '_blank')
-
-      this.addButtonSpacer('#download-container')
-
-      d3.select('#download-container')
-        .append('a')
-        .attr('class', 'download-button')
-        .attr('id', 'download-casesInfection')
-        .text('Cases by date of infection')
-        //.attr('href', this.casesInfectionUrl)
-        .attr('target', '_blank')
-
-      this.addButtonSpacer('#download-container')
-
-      d3.select('#download-container')
-        .append('a')
-        .attr('class', 'download-button')
-        .attr('id', 'download-casesReport')
-        .text('Cases by date of report')
-        //.attr('href', this.casesReportUrl)
-        .attr('target', '_blank')
   }
   setupTimeControls(date_lims, container_id, date_handler){
 

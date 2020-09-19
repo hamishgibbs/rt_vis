@@ -10,6 +10,7 @@ var rtVis = (function () {
         this.runDate = x['runDate'];
         this.activeSource = Object.keys(x['rtData'])[0];
         this.activeMapData = 'Expected change in daily cases';
+        this.downloadUrl = x['downloadUrl'];
         var available_rt_data = Object.values(x['rtData'][this.activeSource]).filter(function (x) { return x !== null; });
         if (!available_rt_data[0].then) {
             this._requiredData = Promise.all([{ 'geoData': x['geoData'],
@@ -42,6 +43,7 @@ var rtVis = (function () {
         var fullWidth = this.fullWidth;
         var getDateLims = this.getDateLims;
         var setActiveTime = function (lims) { this.activeTime = lims; }.bind(this);
+        var downloadUrl = this.downloadUrl;
         this._requiredData.then(function (data) {
             data = data[0];
             var date_lims = null;
@@ -58,6 +60,9 @@ var rtVis = (function () {
             var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null;
             if (!ts_null) {
                 s.setupDropDown(root_element);
+            }
+            if (downloadUrl !== null) {
+                s.setupDownload(root_element, downloadUrl, fullWidth);
             }
             if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null) {
                 s.setupMap(root_element);
@@ -299,6 +304,17 @@ var setup = (function (_super) {
             .attr('class', 'dropdown-container')
             .attr('id', 'dropdown-container');
     };
+    setup.prototype.setupDownload = function (root_element, downloadUrl, fullWidth) {
+        d3.select(root_element)
+            .append('div')
+            .attr('class', 'download-container')
+            .attr('id', 'download-container')
+            .style('left', fullWidth + 'px')
+            .append('a')
+            .attr("href", downloadUrl)
+            .attr('target', '_blank')
+            .text('Download Data');
+    };
     setup.prototype.setupRt = function (root_element) {
         d3.select(root_element)
             .append('div')
@@ -382,30 +398,6 @@ var setup = (function (_super) {
             .text('Forecast')
             .attr('class', 'ts-legend-text');
         this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush']);
-        d3.select('#download-container')
-            .append('div')
-            .text('Download data:');
-        this.addButtonSpacer('#download-container');
-        d3.select('#download-container')
-            .append('a')
-            .attr('class', 'download-button')
-            .attr('id', 'download-r0')
-            .text('R')
-            .attr('target', '_blank');
-        this.addButtonSpacer('#download-container');
-        d3.select('#download-container')
-            .append('a')
-            .attr('class', 'download-button')
-            .attr('id', 'download-casesInfection')
-            .text('Cases by date of infection')
-            .attr('target', '_blank');
-        this.addButtonSpacer('#download-container');
-        d3.select('#download-container')
-            .append('a')
-            .attr('class', 'download-button')
-            .attr('id', 'download-casesReport')
-            .text('Cases by date of report')
-            .attr('target', '_blank');
     };
     setup.prototype.setupTimeControls = function (date_lims, container_id, date_handler) {
         var svg_dims = document.getElementById(container_id).getBoundingClientRect();

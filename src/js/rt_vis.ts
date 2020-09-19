@@ -12,6 +12,7 @@ interface rtVis {
   runDate: string;
   activeSource: string;
   activeMapData: string;
+  downloadUrl: string;
   _dataset_ref: any;
   _requiredData: Promise<any[]>;
   _geoData: Promise<any[]>;
@@ -28,6 +29,7 @@ class rtVis {
     this.runDate = x['runDate']
     this.activeSource = Object.keys(x['rtData'])[0]
     this.activeMapData = 'Expected change in daily cases'
+    this.downloadUrl = x['downloadUrl']
 
     var available_rt_data: any = Object.values(x['rtData'][this.activeSource]).filter(x => x !== null )
 
@@ -69,6 +71,7 @@ class rtVis {
     var fullWidth = this.fullWidth
     var getDateLims = this.getDateLims
     var setActiveTime = function(lims){this.activeTime = lims}.bind(this)
+    var downloadUrl = this.downloadUrl
 
     this._requiredData.then(function(data: any){
       data = data[0]
@@ -95,6 +98,10 @@ class rtVis {
 
       if (!ts_null){
         s.setupDropDown(root_element)
+      }
+
+      if (downloadUrl !== null){
+        s.setupDownload(root_element, downloadUrl, fullWidth)
       }
 
       if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null){
