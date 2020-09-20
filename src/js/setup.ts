@@ -170,7 +170,7 @@ class setup extends rtVis {
     svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
     svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
 
-    var svg = d3.select('#' + 'controls-container-time')
+    var svg = d3.select('#' + container_id)
       .append('svg')
       .attr('class', container_id + '-svg')
       .attr('id', container_id + '-svg')

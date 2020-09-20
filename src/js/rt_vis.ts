@@ -48,9 +48,9 @@ class rtVis {
     this.fullWidth = x['fullWidth']
 
   }
-  summaryWidget() {
+  summaryWidget(root_element) {
 
-    this.setupPage('#root')
+    this.setupPage(root_element)
     this.createMap()
 
   }
@@ -88,14 +88,16 @@ class rtVis {
 
       */
       // For development until EpiNow2 changes
-      data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
-      data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
-      data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
-      data['rtData']['Cases']['casesReportData'] = data['rtData']['Cases']['casesReportData'].map(subRegion);
-      data['rtData']['Deaths']['summaryData'] = data['rtData']['Deaths']['summaryData'].map(subRegion);
-      data['rtData']['Deaths']['rtData'] = data['rtData']['Deaths']['rtData'].map(subRegion);
-      data['rtData']['Deaths']['casesInfectionData'] = data['rtData']['Deaths']['casesInfectionData'].map(subRegion);
-      data['rtData']['Deaths']['casesReportData'] = data['rtData']['Deaths']['casesReportData'].map(subRegion);
+      try {
+        data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
+        data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
+        data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
+        data['rtData']['Cases']['casesReportData'] = data['rtData']['Cases']['casesReportData'].map(subRegion);
+        data['rtData']['Deaths']['summaryData'] = data['rtData']['Deaths']['summaryData'].map(subRegion);
+        data['rtData']['Deaths']['rtData'] = data['rtData']['Deaths']['rtData'].map(subRegion);
+        data['rtData']['Deaths']['casesInfectionData'] = data['rtData']['Deaths']['casesInfectionData'].map(subRegion);
+        data['rtData']['Deaths']['casesReportData'] = data['rtData']['Deaths']['casesReportData'].map(subRegion);
+      } catch {}
 
       var s = new setup(_config);
       var t = new ts(_config)
