@@ -25,8 +25,8 @@ var rtVis = (function () {
         this._subregional_ref = x['subregional_ref'];
         this.fullWidth = x['fullWidth'];
     }
-    rtVis.prototype.summaryWidget = function () {
-        this.setupPage('#root');
+    rtVis.prototype.summaryWidget = function (root_element) {
+        this.setupPage(root_element);
         this.createMap();
     };
     rtVis.prototype.setupFlex = function (root_element) {
@@ -51,14 +51,17 @@ var rtVis = (function () {
         this._requiredData.then(function (data) {
             data = data[0];
             var date_lims = null;
-            data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
-            data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
-            data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
-            data['rtData']['Cases']['casesReportData'] = data['rtData']['Cases']['casesReportData'].map(subRegion);
-            data['rtData']['Deaths']['summaryData'] = data['rtData']['Deaths']['summaryData'].map(subRegion);
-            data['rtData']['Deaths']['rtData'] = data['rtData']['Deaths']['rtData'].map(subRegion);
-            data['rtData']['Deaths']['casesInfectionData'] = data['rtData']['Deaths']['casesInfectionData'].map(subRegion);
-            data['rtData']['Deaths']['casesReportData'] = data['rtData']['Deaths']['casesReportData'].map(subRegion);
+            try {
+                data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
+                data['rtData']['Cases']['rtData'] = data['rtData']['Cases']['rtData'].map(subRegion);
+                data['rtData']['Cases']['casesInfectionData'] = data['rtData']['Cases']['casesInfectionData'].map(subRegion);
+                data['rtData']['Cases']['casesReportData'] = data['rtData']['Cases']['casesReportData'].map(subRegion);
+                data['rtData']['Deaths']['summaryData'] = data['rtData']['Deaths']['summaryData'].map(subRegion);
+                data['rtData']['Deaths']['rtData'] = data['rtData']['Deaths']['rtData'].map(subRegion);
+                data['rtData']['Deaths']['casesInfectionData'] = data['rtData']['Deaths']['casesInfectionData'].map(subRegion);
+                data['rtData']['Deaths']['casesReportData'] = data['rtData']['Deaths']['casesReportData'].map(subRegion);
+            }
+            catch (_a) { }
             var s = new setup(_config);
             var t = new ts(_config);
             var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null;
@@ -74,15 +77,15 @@ var rtVis = (function () {
             try {
                 var areaNames = data['rtData'][activeSource]['rtData'].map(function (d) { return (d.region); }).filter(onlyUnique).sort();
             }
-            catch (_a) { }
+            catch (_b) { }
             try {
                 var areaNames = data['rtData'][activeSource]['casesInfectionData'].map(function (d) { return (d.region); }).filter(onlyUnique).sort();
             }
-            catch (_b) { }
+            catch (_c) { }
             try {
                 var areaNames = data['rtData'][activeSource]['casesReportData'].map(function (d) { return (d.region); }).filter(onlyUnique).sort();
             }
-            catch (_c) { }
+            catch (_d) { }
             if (!ts_null) {
                 $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', eventHandlers['dropdownClick']);
                 s.setupCountryTitle(root_element);
@@ -407,7 +410,7 @@ var setup = (function (_super) {
         var svg_dims = document.getElementById(container_id).getBoundingClientRect();
         svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
         svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
-        var svg = d3.select('#' + 'controls-container-time')
+        var svg = d3.select('#' + container_id)
             .append('svg')
             .attr('class', container_id + '-svg')
             .attr('id', container_id + '-svg')
@@ -539,9 +542,11 @@ var map = (function (_super) {
         var map_data_values = this.prepareMapData(summaryData, activeMapData);
         if (typeof (map_data_values[0]) === 'number') {
             var legend_max = d3.max(map_data_values);
-            colour_ref[activeMapData]['Numeric'] = colour_ref[activeMapData]['Numeric'].domain([1, legend_max]);
+            var legend_min = d3.min(map_data_values);
+            colour_ref[activeMapData]['Numeric'] = colour_ref[activeMapData]['Numeric'].domain([legend_min, legend_max]);
         }
         else {
+            legend_min = 0;
             legend_max = 0;
         }
         var parseMapData = this.parseMapData;
@@ -571,7 +576,7 @@ var map = (function (_super) {
             .on('click', mapClick)
             .style('stroke', 'black')
             .style('stroke-width', '0.2px');
-        this.createLegend(map_svg, map_svg_dims, colour_ref[activeMapData], activeMapData, legend_max);
+        this.createLegend(map_svg, map_svg_dims, colour_ref[activeMapData], activeMapData, legend_max, legend_min);
         var areaNames = geoData.features.map(function (d) { return (d.properties.sovereignt); }).filter(this.onlyUnique).sort();
         $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select a country', data: areaNames }).on('select2:select', dropdownClick);
     };
@@ -642,7 +647,7 @@ var map = (function (_super) {
         tooltip
             .style("opacity", 0);
     };
-    map.prototype.createLegend = function (map_svg, map_svg_dims, colour_ref, activeMapData, legend_max) {
+    map.prototype.createLegend = function (map_svg, map_svg_dims, colour_ref, activeMapData, legend_max, legend_min) {
         var legend_height = 200;
         var legend_x = map_svg_dims.width / 30;
         var legend_y = map_svg_dims.height / 2;
@@ -692,7 +697,7 @@ var map = (function (_super) {
             .style('stroke', 'black')
             .style('fill', 'white')
             .style('rx', '8px');
-        this.layoutLegend(legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max);
+        this.layoutLegend(legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max, legend_min);
         this.layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height);
     };
     map.prototype.layoutDatasetSelect = function (legend, activeMapData, legend_x, legend_y, legend_height) {
@@ -734,7 +739,7 @@ var map = (function (_super) {
         d3.selectAll('#map-dataset-item').style('opacity', 0);
         d3.selectAll('#map-dataset-item').style('pointer-events', 'none');
     };
-    map.prototype.layoutLegend = function (legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max) {
+    map.prototype.layoutLegend = function (legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max, legend_min) {
         var floatFormat = /\B(?=(\d{3})+(?!\d))/g;
         var g = legend.append('g')
             .attr('id', 'map-legend-content')
@@ -778,12 +783,13 @@ var map = (function (_super) {
                         .attr('class', 'map-legend-item')
                         .attr('id', 'map-legend-item')
                         .style("fill", "url(#linear-gradient)");
+                    var tickRange = this.legendTicks(legend_min, legend_max, 4).concat([legend_max]);
                     var i;
                     for (i = 0; i < 5; i++) {
                         g.append('text')
                             .attr("x", legend_x + 23)
                             .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 20)
-                            .text(((legend_max / 5) * i).toString().replace(floatFormat, ","))
+                            .text((Math.round(((tickRange[i]) + Number.EPSILON) * 100) / 100).toString().replace(floatFormat, ","))
                             .style('font-size', '12px')
                             .style('padding-left', '10px')
                             .attr('class', 'map-legend-item')
@@ -830,6 +836,10 @@ var map = (function (_super) {
             d3.selectAll('#map-legend-text').style('opacity', 0);
             d3.selectAll('#map-legend-item').style('opacity', 0);
         }
+    };
+    map.prototype.legendTicks = function (min, max, outlength) {
+        var step = (max - min) / outlength;
+        return (Array.from({ length: outlength }, function (x, i) { return (step * i) + min; }));
     };
     map.prototype.calculateScaleCenter = function (features, map_width, map_height, path) {
         var bbox_path = path.bounds(features), scale = 120 / Math.max((bbox_path[1][0] - bbox_path[0][0]) / map_width, (bbox_path[1][1] - bbox_path[0][1]) / map_height);
