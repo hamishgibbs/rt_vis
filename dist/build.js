@@ -65,6 +65,7 @@ var rtVis = (function () {
             var s = new setup(_config);
             var t = new ts(_config);
             var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null;
+            d3.select(root_element).append('div').attr('class', 'header-container').attr('id', 'header-container');
             if (!ts_null) {
                 s.setupDropDown(root_element);
             }
@@ -306,17 +307,16 @@ var setup = (function (_super) {
             .attr('id', 'map-container');
     };
     setup.prototype.setupDropDown = function (root_element) {
-        d3.select(root_element)
+        d3.select('#header-container')
             .append('div')
             .attr('class', 'dropdown-container')
             .attr('id', 'dropdown-container');
     };
     setup.prototype.setupDownload = function (root_element, downloadUrl, fullWidth) {
-        d3.select(root_element)
+        d3.select('#header-container')
             .append('div')
             .attr('class', 'download-container')
             .attr('id', 'download-container')
-            .style('left', fullWidth + 'px')
             .append('a')
             .attr("href", downloadUrl)
             .attr('target', '_blank')
@@ -454,14 +454,13 @@ var setup = (function (_super) {
             .attr('class', 'footer');
     };
     setup.prototype.addSourceSelect = function (root_element, id, elements, eventhandler, fullWidth) {
-        if (fullWidth === undefined) {
-            fullWidth = 1000;
-        }
         var div = d3.select(root_element)
+            .append('div')
+            .attr('class', 'source-container')
+            .attr('id', 'source-container')
             .append('select')
             .attr('class', id)
             .attr('id', id)
-            .style('left', fullWidth + 'px')
             .on('change', eventhandler);
         var i;
         for (i = 0; i < elements.length; i++) {
@@ -616,12 +615,12 @@ var map = (function (_super) {
             .style("top", y_coord + "px");
         var tooltip_data = this.summaryData.filter(function (a) { return a.region == e.properties.sovereignt; })[0];
         try {
-            var tooltip_str = '<b>' + e.properties.sovereignt + '</b>' + '</br>' + '</br>' +
+            var tooltip_str = '<b>' + e.properties.sovereignt + '</b>' +
                 Object.keys(tooltip_data).map(function (key) {
                     if (key !== 'region') {
                         return "" + key + ": " + tooltip_data[key];
                     }
-                }).join("</br> </br>");
+                }).join("</br>");
         }
         catch (_a) {
             var tooltip_str = '';

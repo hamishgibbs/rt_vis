@@ -32,7 +32,7 @@ class setup extends rtVis {
   }
   setupDropDown(root_element){
 
-    d3.select(root_element)
+    d3.select('#header-container')
       .append('div')
       .attr('class', 'dropdown-container')
       .attr('id', 'dropdown-container')
@@ -41,11 +41,11 @@ class setup extends rtVis {
 
   setupDownload(root_element, downloadUrl, fullWidth) {
 
-    d3.select(root_element)
+
+    d3.select('#header-container')
       .append('div')
       .attr('class', 'download-container')
       .attr('id', 'download-container')
-      .style('left', fullWidth + 'px')
       .append('a')
       .attr("href", downloadUrl)
       .attr('target', '_blank')
@@ -227,15 +227,13 @@ class setup extends rtVis {
   }
   addSourceSelect(root_element, id, elements, eventhandler, fullWidth){
 
-    if (fullWidth === undefined){
-      fullWidth = 1000
-    }
-
     var div = d3.select(root_element)
+      .append('div')
+      .attr('class', 'source-container')
+      .attr('id', 'source-container')
       .append('select')
       .attr('class', id)
       .attr('id', id)
-      .style('left', fullWidth + 'px')
       .on('change', eventhandler)
 
     var i

@@ -104,6 +104,8 @@ class rtVis {
 
       var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null
 
+      d3.select(root_element).append('div').attr('class', 'header-container').attr('id', 'header-container')
+
       if (!ts_null){
         s.setupDropDown(root_element)
       }
