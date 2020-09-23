@@ -62,6 +62,8 @@ To have `Grunt` watch for changes to files during development:
 grunt watch
 ```
 
+Open `index.html` in your browser and reload to observe changes to the library. Make note of the configuration variables and setup in `index.html`. 
+
 If you are begninning to learn JavaScript, Typescript, and D3: 
 
 * [Observable](https://observablehq.com/@d3) has useful interactive examples of D3.
