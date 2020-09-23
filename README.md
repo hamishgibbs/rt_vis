@@ -10,7 +10,7 @@ To report an problem or suggest changes, please [open an issue](https://github.c
 
 ## Developer Guide
 
-This project is written in `[Typescript](https://www.typescriptlang.org/)` and uses `[Grunt](https://gruntjs.com/)` as a task runner. 
+This project is written in [Typescript](https://www.typescriptlang.org/) and uses [Grunt](https://gruntjs.com/) as a task runner. 
 
 **To develop this project locally:**
 
