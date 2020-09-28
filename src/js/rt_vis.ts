@@ -80,6 +80,7 @@ class rtVis {
     var getDateLims = this.getDateLims
     var setActiveTime = function(lims){this.activeTime = lims}.bind(this)
     var downloadUrl = this.downloadUrl
+    var ts_color_ref = this.ts_color_ref
 
     this._requiredData.then(function(data: any){
       data = data[0]
@@ -151,7 +152,7 @@ class rtVis {
       }
 
       if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
-        s.setupControls(root_element, eventHandlers, date_lims)
+        s.setupControls(root_element, eventHandlers, date_lims, ts_color_ref)
       }
 
       s.setupFooter(root_element)

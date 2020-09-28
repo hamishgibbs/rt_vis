@@ -49,6 +49,7 @@ var rtVis = (function () {
         var getDateLims = this.getDateLims;
         var setActiveTime = function (lims) { this.activeTime = lims; }.bind(this);
         var downloadUrl = this.downloadUrl;
+        var ts_color_ref = this.ts_color_ref;
         this._requiredData.then(function (data) {
             data = data[0];
             var date_lims = null;
@@ -108,7 +109,7 @@ var rtVis = (function () {
                 date_lims = getDateLims(data['rtData'][activeSource]['casesReportData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
-                s.setupControls(root_element, eventHandlers, date_lims);
+                s.setupControls(root_element, eventHandlers, date_lims, ts_color_ref);
             }
             s.setupFooter(root_element);
             t.plotAllTs(country, date_lims, data, activeSource, runDate);
@@ -353,7 +354,7 @@ var setup = (function (_super) {
             .attr('class', 'cases-report-ts-container')
             .attr('id', 'cases-report-ts-container');
     };
-    setup.prototype.setupControls = function (root_element, eventHandlersRef, date_lims) {
+    setup.prototype.setupControls = function (root_element, eventHandlersRef, date_lims, ts_color_ref) {
         d3.select(root_element)
             .append('div')
             .attr('class', 'controls-container')
@@ -382,7 +383,8 @@ var setup = (function (_super) {
             .append('div')
             .style('width', '12px')
             .style('height', '12px')
-            .attr('class', 'ts-legend-e');
+            .attr('class', 'ts-legend-e')
+            .style('background-color', ts_color_ref['poly_50_e']);
         d3.select('#legend-e')
             .append('div')
             .text('Estimate')
@@ -391,7 +393,8 @@ var setup = (function (_super) {
             .append('div')
             .style('width', '12px')
             .style('height', '12px')
-            .attr('class', 'ts-legend-eb');
+            .attr('class', 'ts-legend-eb')
+            .style('background-color', ts_color_ref['poly_50_eb']);
         d3.select('#legend-eb')
             .append('div')
             .text('Estimate based on partial data')
@@ -400,7 +403,8 @@ var setup = (function (_super) {
             .append('div')
             .style('width', '12px')
             .style('height', '12px')
-            .attr('class', 'ts-legend-f');
+            .attr('class', 'ts-legend-f')
+            .style('background-color', ts_color_ref['poly_50_f']);
         d3.select('#legend-f')
             .append('div')
             .text('Forecast')
@@ -981,7 +985,6 @@ var ts = (function (_super) {
             }
             catch (_f) { }
         }
-        console.log(this);
         this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e', this.ts_color_ref);
         this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb', this.ts_color_ref);
         this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f', this.ts_color_ref);

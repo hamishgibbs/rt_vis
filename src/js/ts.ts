@@ -130,9 +130,7 @@ class ts extends rtVis {
           .attr('class', 'cases_bar');
       } catch {}
     }
-
-    console.log(this)
-
+    
     this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e', this.ts_color_ref)
     this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb', this.ts_color_ref)
     this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f', this.ts_color_ref)
