@@ -13,6 +13,7 @@ interface rtVis {
   activeSource: string;
   activeMapData: string;
   downloadUrl: string;
+  ts_color_ref: any;
   _dataset_ref: any;
   _requiredData: Promise<any[]>;
   _geoData: Promise<any[]>;
@@ -30,6 +31,7 @@ class rtVis {
     this.activeSource = Object.keys(x['rtData'])[0]
     this.activeMapData = 'Expected change in daily cases'
     this.downloadUrl = x['downloadUrl']
+    this.ts_color_ref = x['ts_color_ref']
 
     var available_rt_data: any = Object.values(x['rtData'][this.activeSource]).filter(x => x !== null )
 

@@ -11,6 +11,7 @@ var rtVis = (function () {
         this.activeSource = Object.keys(x['rtData'])[0];
         this.activeMapData = 'Expected change in daily cases';
         this.downloadUrl = x['downloadUrl'];
+        this.ts_color_ref = x['ts_color_ref'];
         var available_rt_data = Object.values(x['rtData'][this.activeSource]).filter(function (x) { return x !== null; });
         if (!available_rt_data[0].then) {
             this._requiredData = Promise.all([{ 'geoData': x['geoData'],
