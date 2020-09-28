@@ -50,8 +50,14 @@ class ts extends rtVis {
     ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
     ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
 
+    var data_minDate = d3.min(rtData.map(function(x){return(parseTime(x['date']))}))
+
     var minDate = time[0]
     var maxDate = time[1]
+
+    if (data_minDate > minDate){
+      minDate = data_minDate
+    }
 
     rtData = rtData.filter(a=>parseTime(a['date'])>=minDate)
     rtData = rtData.filter(a=>parseTime(a['date'])<=maxDate)
@@ -130,7 +136,7 @@ class ts extends rtVis {
           .attr('class', 'cases_bar');
       } catch {}
     }
-    
+
     this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e', this.ts_color_ref)
     this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb', this.ts_color_ref)
     this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f', this.ts_color_ref)
