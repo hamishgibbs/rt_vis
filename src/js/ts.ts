@@ -131,17 +131,19 @@ class ts extends rtVis {
       } catch {}
     }
 
-    this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e')
-    this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb')
-    this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f')
+    console.log(this)
 
-    this.addEstimatePolys(ts_svg, estimate_data, poly_50, 'poly_50_e')
-    this.addEstimatePolys(ts_svg, estimate_b_data, poly_50, 'poly_50_eb')
-    this.addEstimatePolys(ts_svg, forecast_data, poly_50, 'poly_50_f')
+    this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e', this.ts_color_ref)
+    this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb', this.ts_color_ref)
+    this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f', this.ts_color_ref)
 
-    this.addEstimatePolys(ts_svg, estimate_data, poly_20, 'poly_20_e')
-    this.addEstimatePolys(ts_svg, estimate_b_data, poly_20, 'poly_20_eb')
-    this.addEstimatePolys(ts_svg, forecast_data, poly_20, 'poly_20_f')
+    this.addEstimatePolys(ts_svg, estimate_data, poly_50, 'poly_50_e', this.ts_color_ref)
+    this.addEstimatePolys(ts_svg, estimate_b_data, poly_50, 'poly_50_eb', this.ts_color_ref)
+    this.addEstimatePolys(ts_svg, forecast_data, poly_50, 'poly_50_f', this.ts_color_ref)
+
+    this.addEstimatePolys(ts_svg, estimate_data, poly_20, 'poly_20_e', this.ts_color_ref)
+    this.addEstimatePolys(ts_svg, estimate_b_data, poly_20, 'poly_20_eb', this.ts_color_ref)
+    this.addEstimatePolys(ts_svg, forecast_data, poly_20, 'poly_20_f', this.ts_color_ref)
 
     if (r0) {
       ts_svg.append("path")
@@ -257,11 +259,12 @@ class ts extends rtVis {
       .attr('fill-opacity', '0')
 
   }
-  addEstimatePolys(svg, data, poly, id){
+  addEstimatePolys(svg, data, poly, id, ts_color_ref){
     svg.append("path")
       .datum(data)
       .attr("d", poly)
       .attr("class", id)
+      .style('fill', ts_color_ref[id])
   }
   plotAllTs(country, time, data, activeSource, runDate = undefined) {
 

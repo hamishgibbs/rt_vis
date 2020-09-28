@@ -981,15 +981,16 @@ var ts = (function (_super) {
             }
             catch (_f) { }
         }
-        this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e');
-        this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb');
-        this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f');
-        this.addEstimatePolys(ts_svg, estimate_data, poly_50, 'poly_50_e');
-        this.addEstimatePolys(ts_svg, estimate_b_data, poly_50, 'poly_50_eb');
-        this.addEstimatePolys(ts_svg, forecast_data, poly_50, 'poly_50_f');
-        this.addEstimatePolys(ts_svg, estimate_data, poly_20, 'poly_20_e');
-        this.addEstimatePolys(ts_svg, estimate_b_data, poly_20, 'poly_20_eb');
-        this.addEstimatePolys(ts_svg, forecast_data, poly_20, 'poly_20_f');
+        console.log(this);
+        this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_data, poly_50, 'poly_50_e', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_50, 'poly_50_eb', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, forecast_data, poly_50, 'poly_50_f', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_data, poly_20, 'poly_20_e', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_20, 'poly_20_eb', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, forecast_data, poly_20, 'poly_20_f', this.ts_color_ref);
         if (r0) {
             ts_svg.append("path")
                 .datum(rtData)
@@ -1083,11 +1084,12 @@ var ts = (function (_super) {
             .on('mouseout', tsMouseOut)
             .attr('fill-opacity', '0');
     };
-    ts.prototype.addEstimatePolys = function (svg, data, poly, id) {
+    ts.prototype.addEstimatePolys = function (svg, data, poly, id, ts_color_ref) {
         svg.append("path")
             .datum(data)
             .attr("d", poly)
-            .attr("class", id);
+            .attr("class", id)
+            .style('fill', ts_color_ref[id]);
     };
     ts.prototype.plotAllTs = function (country, time, data, activeSource, runDate) {
         if (runDate === void 0) { runDate = undefined; }
