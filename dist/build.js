@@ -919,12 +919,8 @@ var ts = (function (_super) {
         var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect();
         ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
         ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
-        var data_minDate = d3.min(rtData.map(function (x) { return (parseTime(x['date'])); }));
-        var minDate = time[0];
+        var minDate = d3.min(rtData.map(function (x) { return (parseTime(x['date'])); }));
         var maxDate = time[1];
-        if (data_minDate > minDate) {
-            minDate = data_minDate;
-        }
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
         rtData = rtData.filter(function (a) { return parseTime(a['date']) <= maxDate; });
         try {
