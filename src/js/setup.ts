@@ -91,7 +91,7 @@ class setup extends rtVis {
       .attr('id', 'cases-report-ts-container')
 
   }
-  setupControls(root_element, eventHandlersRef, date_lims){
+  setupControls(root_element, eventHandlersRef, date_lims, ts_color_ref){
 
     d3.select(root_element)
       .append('div')
@@ -131,6 +131,7 @@ class setup extends rtVis {
         .style('width', '12px')
         .style('height', '12px')
         .attr('class', 'ts-legend-e')
+        .style('background-color', ts_color_ref['poly_50_e'])
 
       d3.select('#legend-e')
         .append('div')
@@ -142,6 +143,7 @@ class setup extends rtVis {
         .style('width', '12px')
         .style('height', '12px')
         .attr('class', 'ts-legend-eb')
+        .style('background-color', ts_color_ref['poly_50_eb'])
 
       d3.select('#legend-eb')
         .append('div')
@@ -153,6 +155,7 @@ class setup extends rtVis {
         .style('width', '12px')
         .style('height', '12px')
         .attr('class', 'ts-legend-f')
+        .style('background-color', ts_color_ref['poly_50_f'])
 
       d3.select('#legend-f')
         .append('div')

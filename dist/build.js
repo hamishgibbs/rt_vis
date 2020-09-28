@@ -11,6 +11,7 @@ var rtVis = (function () {
         this.activeSource = Object.keys(x['rtData'])[0];
         this.activeMapData = 'Expected change in daily cases';
         this.downloadUrl = x['downloadUrl'];
+        this.ts_color_ref = x['ts_color_ref'];
         var available_rt_data = Object.values(x['rtData'][this.activeSource]).filter(function (x) { return x !== null; });
         if (!available_rt_data[0].then) {
             this._requiredData = Promise.all([{ 'geoData': x['geoData'],
@@ -48,6 +49,7 @@ var rtVis = (function () {
         var getDateLims = this.getDateLims;
         var setActiveTime = function (lims) { this.activeTime = lims; }.bind(this);
         var downloadUrl = this.downloadUrl;
+        var ts_color_ref = this.ts_color_ref;
         this._requiredData.then(function (data) {
             data = data[0];
             var date_lims = null;
@@ -107,7 +109,7 @@ var rtVis = (function () {
                 date_lims = getDateLims(data['rtData'][activeSource]['casesReportData'], onlyUnique);
             }
             if (data['rtData'][activeSource]['rtData'] !== null || data['rtData'][activeSource]['casesInfectionData'] !== null || data['rtData'][activeSource]['casesReportData'] !== null) {
-                s.setupControls(root_element, eventHandlers, date_lims);
+                s.setupControls(root_element, eventHandlers, date_lims, ts_color_ref);
             }
             s.setupFooter(root_element);
             t.plotAllTs(country, date_lims, data, activeSource, runDate);
@@ -352,7 +354,7 @@ var setup = (function (_super) {
             .attr('class', 'cases-report-ts-container')
             .attr('id', 'cases-report-ts-container');
     };
-    setup.prototype.setupControls = function (root_element, eventHandlersRef, date_lims) {
+    setup.prototype.setupControls = function (root_element, eventHandlersRef, date_lims, ts_color_ref) {
         d3.select(root_element)
             .append('div')
             .attr('class', 'controls-container')
@@ -381,7 +383,8 @@ var setup = (function (_super) {
             .append('div')
             .style('width', '12px')
             .style('height', '12px')
-            .attr('class', 'ts-legend-e');
+            .attr('class', 'ts-legend-e')
+            .style('background-color', ts_color_ref['poly_50_e']);
         d3.select('#legend-e')
             .append('div')
             .text('Estimate')
@@ -390,7 +393,8 @@ var setup = (function (_super) {
             .append('div')
             .style('width', '12px')
             .style('height', '12px')
-            .attr('class', 'ts-legend-eb');
+            .attr('class', 'ts-legend-eb')
+            .style('background-color', ts_color_ref['poly_50_eb']);
         d3.select('#legend-eb')
             .append('div')
             .text('Estimate based on partial data')
@@ -399,7 +403,8 @@ var setup = (function (_super) {
             .append('div')
             .style('width', '12px')
             .style('height', '12px')
-            .attr('class', 'ts-legend-f');
+            .attr('class', 'ts-legend-f')
+            .style('background-color', ts_color_ref['poly_50_f']);
         d3.select('#legend-f')
             .append('div')
             .text('Forecast')
@@ -980,15 +985,15 @@ var ts = (function (_super) {
             }
             catch (_f) { }
         }
-        this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e');
-        this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb');
-        this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f');
-        this.addEstimatePolys(ts_svg, estimate_data, poly_50, 'poly_50_e');
-        this.addEstimatePolys(ts_svg, estimate_b_data, poly_50, 'poly_50_eb');
-        this.addEstimatePolys(ts_svg, forecast_data, poly_50, 'poly_50_f');
-        this.addEstimatePolys(ts_svg, estimate_data, poly_20, 'poly_20_e');
-        this.addEstimatePolys(ts_svg, estimate_b_data, poly_20, 'poly_20_eb');
-        this.addEstimatePolys(ts_svg, forecast_data, poly_20, 'poly_20_f');
+        this.addEstimatePolys(ts_svg, estimate_data, poly_90, 'poly_90_e', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_90, 'poly_90_eb', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, forecast_data, poly_90, 'poly_90_f', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_data, poly_50, 'poly_50_e', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_50, 'poly_50_eb', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, forecast_data, poly_50, 'poly_50_f', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_data, poly_20, 'poly_20_e', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, estimate_b_data, poly_20, 'poly_20_eb', this.ts_color_ref);
+        this.addEstimatePolys(ts_svg, forecast_data, poly_20, 'poly_20_f', this.ts_color_ref);
         if (r0) {
             ts_svg.append("path")
                 .datum(rtData)
@@ -1082,11 +1087,12 @@ var ts = (function (_super) {
             .on('mouseout', tsMouseOut)
             .attr('fill-opacity', '0');
     };
-    ts.prototype.addEstimatePolys = function (svg, data, poly, id) {
+    ts.prototype.addEstimatePolys = function (svg, data, poly, id, ts_color_ref) {
         svg.append("path")
             .datum(data)
             .attr("d", poly)
-            .attr("class", id);
+            .attr("class", id)
+            .style('fill', ts_color_ref[id]);
     };
     ts.prototype.plotAllTs = function (country, time, data, activeSource, runDate) {
         if (runDate === void 0) { runDate = undefined; }
