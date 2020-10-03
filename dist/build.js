@@ -727,6 +727,7 @@ var map = (function (_super) {
         };
         var legendClick = function (x) {
             console.log(!d3.select('#map-legend-title-other').empty());
+            d3.select('#map-legend-title-other').remove();
             if (!d3.select('#map-legend-title-sm').empty()) {
                 console.log('legend');
                 d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1);
@@ -786,12 +787,15 @@ var map = (function (_super) {
             .style('fill', 'white')
             .style('rx', '8px');
         this.layoutLegend(legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max, legend_min);
-        this.layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height);
+        this.layoutDatasetSelect(map_svg, legend, activeMapData, legend_x, legend_y, legend_height);
     };
-    map.prototype.layoutDatasetSelect = function (legend, activeMapData, legend_x, legend_y, legend_height) {
+    map.prototype.layoutDatasetSelect = function (map_svg, legend, activeMapData, legend_x, legend_y, legend_height) {
         var g = legend.append('g')
             .attr('id', 'map-dataset-content')
             .attr('class', 'map-dataset-content');
+        var dataset_labels = map_svg.append('g')
+            .attr('id', 'map-dataset-labels')
+            .attr('class', 'map-dataset-labels');
         g.append('text').text('Dataset Selection')
             .style('font-size', '14px')
             .style('padding-top', '10px')
@@ -811,7 +815,7 @@ var map = (function (_super) {
                 .style('fill', 'lightgrey')
                 .attr('class', 'map-dataset-item')
                 .attr('id', 'map-dataset-item');
-            g.append('text')
+            dataset_labels.append('text')
                 .attr("x", legend_x + 8)
                 .attr("y", (legend_y + ((legend_height / 6.5) * (i + 1))) + 15 - 14)
                 .text(map_datasets[i])

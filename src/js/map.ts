@@ -279,7 +279,7 @@ class map extends rtVis {
       console.log(!d3.select('#map-legend-title-other').empty())
       //need an indicator that the dataset was updated and to stop legend execution
 
-      //d3.select('#map-legend-title-other').remove()
+      d3.select('#map-legend-title-other').remove()
 
       if (!d3.select('#map-legend-title-sm').empty()){
         //If closed legend is true
@@ -383,14 +383,18 @@ class map extends rtVis {
       .style('rx', '8px')
 
     this.layoutLegend(legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max, legend_min)
-    this.layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height)
+    this.layoutDatasetSelect(map_svg, legend, activeMapData, legend_x, legend_y, legend_height)
 
   }
-  layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height){
+  layoutDatasetSelect(map_svg, legend, activeMapData, legend_x, legend_y, legend_height){
 
     var g = legend.append('g')
       .attr('id', 'map-dataset-content')
       .attr('class', 'map-dataset-content')
+
+    var dataset_labels = map_svg.append('g')
+      .attr('id', 'map-dataset-labels')
+      .attr('class', 'map-dataset-labels')
 
     g.append('text').text('Dataset Selection')
       .style('font-size', '14px')
@@ -415,7 +419,7 @@ class map extends rtVis {
         .attr('class', 'map-dataset-item')
         .attr('id', 'map-dataset-item')
 
-      g.append('text')
+      dataset_labels.append('text')
         .attr("x", legend_x + 8)
         .attr("y", (legend_y + ((legend_height / 6.5) * (i + 1))) + 15 - 14)
         .text(map_datasets[i])
@@ -426,6 +430,7 @@ class map extends rtVis {
         .on('click', this.mapDataClick)
         .on('mouseenter', function(e){
           d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold');
+          //Both legend click events are firing when only this one should
           d3.select('#map-legend').attr('clickable', false)
         })
         .on('mouseout', function(e){
@@ -452,7 +457,7 @@ class map extends rtVis {
       .attr('x', legend_x - 2)
       .attr('y', legend_y - 38)
       .style('font-size', '14px')
-      .attr('id', 'map-legend-title-other')
+      .attr('id', 'map-legend-title-sm')
 
     g.append('text').text(activeMapData)
       .style('font-size', '14px')
