@@ -292,7 +292,7 @@ var setup = (function (_super) {
     __extends(setup, _super);
     function setup(x) {
         var _this = _super.call(this, x) || this;
-        _this.margin = { top: 0, right: 40, bottom: 10, left: 50 };
+        _this.margin = { top: 0, right: 40, bottom: 10, left: 10 };
         return _this;
     }
     setup.prototype.setupCountryTitle = function (root_element) {
@@ -369,13 +369,23 @@ var setup = (function (_super) {
             .attr('id', 'controls-container-time');
         d3.select('#controls-container-legend')
             .append('div')
+            .text('Legend')
+            .attr('class', 'ts-legend-text')
+            .style('font-weight', 'bold')
+            .style('padding-bottom', '20px');
+        d3.select('#controls-container-legend')
+            .append('div')
+            .attr('id', 'controls-container-legend-items')
+            .attr('class', 'controls-container-legend-items');
+        d3.select('#controls-container-legend-items')
+            .append('div')
             .attr('class', 'legend-e')
             .attr('id', 'legend-e');
-        d3.select('#controls-container-legend')
+        d3.select('#controls-container-legend-items')
             .append('div')
             .attr('class', 'legend-eb')
             .attr('id', 'legend-eb');
-        d3.select('#controls-container-legend')
+        d3.select('#controls-container-legend-items')
             .append('div')
             .attr('class', 'legend-f')
             .attr('id', 'legend-f');
@@ -412,6 +422,12 @@ var setup = (function (_super) {
         this.setupTimeControls(date_lims, 'controls-container-time', eventHandlersRef['timeBrush']);
     };
     setup.prototype.setupTimeControls = function (date_lims, container_id, date_handler) {
+        d3.select('#' + container_id)
+            .append('div')
+            .text('Filter Date')
+            .attr('class', 'ts-legend-text')
+            .style('font-weight', 'bold')
+            .style('padding-bottom', '10px');
         var svg_dims = document.getElementById(container_id).getBoundingClientRect();
         svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
         svg_dims.height = svg_dims.height - this.margin.top - this.margin.bottom;
