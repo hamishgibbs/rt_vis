@@ -238,7 +238,7 @@ class map extends rtVis {
         .attr('x', legend_x - 2)
         .attr('y', legend_y - 38)
         .style('font-size', '14px')
-        .attr('id', 'map-legend-title')
+        .attr('id', 'map-legend-title-sm')
         .style('opacity', 0)
         .transition().duration(250)
         .style('opacity', 1)
@@ -276,22 +276,60 @@ class map extends rtVis {
 
     var legendClick = function(x){
 
-      if(d3.selectAll('#map-legend-text').style('opacity') === '1'){
-        // dataset selection
+      console.log('#map-dataset-text', d3.selectAll('#map-dataset-text').style('opacity'))
+      console.log('#map-legend-text', d3.selectAll('#map-legend-text').style('opacity'))
+      console.log(d3.select('#map-legend-title-sm').empty() && d3.selectAll('#map-legend-text').style('opacity') == '0' && d3.selectAll('#map-dataset-text').style('opacity') == '0')
+      console.log(d3.select('#map-legend-title-sm'))
+
+
+      if (!d3.select('#map-legend-title-sm').empty()){
+        //If closed legend is true
+        //make legend
+
+        console.log('legend')
+        //legend
+
+        d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1)
+        d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1)
+        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px')
+
+        d3.select('#map-legend-title-sm').remove()
+        d3.select('#map-legend-title').remove()
+
+        legendTitle(legend)
+
+        d3.select('#map-legend-title').style('font-weight', 'bold')
+
+        d3.select('#map-legend-data').remove()
+
+        dataSelectTitle(legend)
+
+        d3.select('#expand-underline').remove()
+
+        expandUnderline(legend, legend_x + 37, legend_y - 25, 58)
+
+      } else if (d3.selectAll('#map-legend-text').style('opacity') === '1'){
+        //if legend is active
+        //make dataset select
 
         console.log('dataset selection')
 
+        //hide legend items
         d3.selectAll('#map-legend-text').style('opacity', 0)
         d3.selectAll('#map-legend-item').style('opacity', 0)
 
+        //resize legend rect
         d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px')
 
+        //show dataset selection
         d3.selectAll('#map-dataset-text').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-dataset-item-active').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-dataset-item').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-dataset-item').style('pointer-events', null)
 
+        //remove previous legend headers
         d3.select('#map-legend-title').remove()
+        d3.select('#map-legend-title-sm').remove()
 
         legendTitle(legend)
 
@@ -306,9 +344,8 @@ class map extends rtVis {
         expandUnderline(legend, legend_x + 160, legend_y - 25, 120)
 
 
-
-      } else if (d3.selectAll('#map-dataset-text').style('opacity') === '1') {
-        //Legend closed
+      } else {
+        //close legend
 
         console.log('legend closed')
 
@@ -324,33 +361,11 @@ class map extends rtVis {
 
         legendTitleSm(legend)
 
-      } else {
-
-        console.log('legend')
-        //legend
-
-        d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1)
-        d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1)
-        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px')
-
-        d3.select('#map-legend-title').remove()
-
-        legendTitle(legend)
-
-        d3.select('#map-legend-title').style('font-weight', 'bold')
-
-        d3.select('#map-legend-data').remove()
-
-        dataSelectTitle(legend)
-
-        d3.select('#expand-underline').remove()
-
-        expandUnderline(legend, legend_x + 37, legend_y - 25, 58)
-
-
       }
 
     }
+
+    //Something is wrong with if statements
 
     var legend = map_svg.append('g')
       .attr('class', 'map-legend')
@@ -432,7 +447,7 @@ class map extends rtVis {
       .attr('x', legend_x - 2)
       .attr('y', legend_y - 38)
       .style('font-size', '14px')
-      .attr('id', 'map-legend-title')
+      .attr('id', 'map-legend-title-sm')
 
     g.append('text').text(activeMapData)
       .style('font-size', '14px')

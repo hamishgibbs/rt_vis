@@ -695,7 +695,7 @@ var map = (function (_super) {
                 .attr('x', legend_x - 2)
                 .attr('y', legend_y - 38)
                 .style('font-size', '14px')
-                .attr('id', 'map-legend-title')
+                .attr('id', 'map-legend-title-sm')
                 .style('opacity', 0)
                 .transition().duration(250)
                 .style('opacity', 1);
@@ -726,7 +726,25 @@ var map = (function (_super) {
                 .attr("x2", x + (width / 2));
         };
         var legendClick = function (x) {
-            if (d3.selectAll('#map-legend-text').style('opacity') === '1') {
+            console.log('#map-dataset-text', d3.selectAll('#map-dataset-text').style('opacity'));
+            console.log('#map-legend-text', d3.selectAll('#map-legend-text').style('opacity'));
+            console.log(d3.select('#map-legend-title-sm').empty() && d3.selectAll('#map-legend-text').style('opacity') == '0' && d3.selectAll('#map-dataset-text').style('opacity') == '0');
+            console.log(d3.select('#map-legend-title-sm'));
+            if (!d3.select('#map-legend-title-sm').empty()) {
+                console.log('legend');
+                d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1);
+                d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1);
+                d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px');
+                d3.select('#map-legend-title-sm').remove();
+                d3.select('#map-legend-title').remove();
+                legendTitle(legend);
+                d3.select('#map-legend-title').style('font-weight', 'bold');
+                d3.select('#map-legend-data').remove();
+                dataSelectTitle(legend);
+                d3.select('#expand-underline').remove();
+                expandUnderline(legend, legend_x + 37, legend_y - 25, 58);
+            }
+            else if (d3.selectAll('#map-legend-text').style('opacity') === '1') {
                 console.log('dataset selection');
                 d3.selectAll('#map-legend-text').style('opacity', 0);
                 d3.selectAll('#map-legend-item').style('opacity', 0);
@@ -736,6 +754,7 @@ var map = (function (_super) {
                 d3.selectAll('#map-dataset-item').transition().duration(250).delay(100).style('opacity', 1);
                 d3.selectAll('#map-dataset-item').style('pointer-events', null);
                 d3.select('#map-legend-title').remove();
+                d3.select('#map-legend-title-sm').remove();
                 legendTitle(legend);
                 d3.select('#map-legend-data').remove();
                 dataSelectTitle(legend);
@@ -743,7 +762,7 @@ var map = (function (_super) {
                 d3.select('#expand-underline').remove();
                 expandUnderline(legend, legend_x + 160, legend_y - 25, 120);
             }
-            else if (d3.selectAll('#map-dataset-text').style('opacity') === '1') {
+            else {
                 console.log('legend closed');
                 d3.selectAll('#map-dataset-text').style('opacity', 0);
                 d3.selectAll('#map-dataset-item-active').style('opacity', 0);
@@ -753,19 +772,6 @@ var map = (function (_super) {
                 d3.select('#map-legend-data').remove();
                 d3.select('#expand-underline').remove();
                 legendTitleSm(legend);
-            }
-            else {
-                console.log('legend');
-                d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1);
-                d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1);
-                d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px');
-                d3.select('#map-legend-title').remove();
-                legendTitle(legend);
-                d3.select('#map-legend-title').style('font-weight', 'bold');
-                d3.select('#map-legend-data').remove();
-                dataSelectTitle(legend);
-                d3.select('#expand-underline').remove();
-                expandUnderline(legend, legend_x + 37, legend_y - 25, 58);
             }
         };
         var legend = map_svg.append('g')
@@ -834,7 +840,7 @@ var map = (function (_super) {
             .attr('x', legend_x - 2)
             .attr('y', legend_y - 38)
             .style('font-size', '14px')
-            .attr('id', 'map-legend-title');
+            .attr('id', 'map-legend-title-sm');
         g.append('text').text(activeMapData)
             .style('font-size', '14px')
             .style('padding-top', '10px')
