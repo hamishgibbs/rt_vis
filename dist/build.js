@@ -431,7 +431,7 @@ var setup = (function (_super) {
             .range([svg_dims.height, 0]);
         svg.append("g")
             .attr("transform", "translate(0," + svg_dims.height + ")")
-            .call(d3.axisBottom(x).tickSize([0]))
+            .call(d3.axisBottom(x).ticks(6).tickSize([0]))
             .attr("class", 'time-xaxis');
         svg.append("g")
             .call(d3.axisLeft(y))

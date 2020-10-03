@@ -192,7 +192,7 @@ class setup extends rtVis {
 
     svg.append("g")
        .attr("transform","translate(0,"+ svg_dims.height +")")
-       .call(d3.axisBottom(x).tickSize([0]))
+       .call(d3.axisBottom(x).ticks(6).tickSize([0]))
        .attr("class",'time-xaxis');
 
     svg.append("g")

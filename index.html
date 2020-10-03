@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <title>RT interactive visualization</title>
-    <script src="https://d3js.org/d3.v5.min.js"></script>
-    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
+    <script src="http://localhost:5000/lib/d3.v5.min.js"></script>
+    <script src="http://localhost:5000/lib/d3-geo-projection.v2.min.js"></script>
+    <script src="http://localhost:5000/lib/jquery.min.js"></script>
+    <link href="http://localhost:5000/lib/select2.min.css" rel="stylesheet" />
+    <script src="http://localhost:5000/lib/select2.min.js"></script>
     <link rel="stylesheet" href="dist/styles.css">
   </head>
   <body>
@@ -16,22 +16,20 @@
     <script src="dist/build.min.js"></script>
     <script>
 
-
-
       var x = {
         'activeArea':'United Kingdom',
         'activeTime':'all',
-        'geoData':d3.json('data/geo_data/world2.geojson'),
-        'rtData': {'Cases':{'summaryData':d3.csv('data/national/cases/summary/summary_table.csv'),
-                            'rtData':d3.csv('date/national/cases/summary/rt.csv'),
-                            'casesInfectionData':d3.csv('date/national/cases/summary/cases_by_infection.csv'),
-                            'casesReportData':d3.csv('date/national/cases/summary/cases_by_report.csv'),
-                            'obsCasesData':d3.csv('date/national/cases/summary/reported_cases.csv')},
-                   'Deaths':{'summaryData':d3.csv('date/national/deaths/summary/summary_table.csv'),
-                             'rtData':d3.csv('date/national/deaths/summary/rt.csv'),
-                             'casesInfectionData':d3.csv('date/national/deaths/summary/cases_by_infection.csv'),
-                             'casesReportData':d3.csv('date/national/deaths/summary/cases_by_report.csv'),
-                             'obsCasesData':d3.csv('date/national/deaths/summary/reported_cases.csv')}},
+        'geoData':d3.json('http://localhost:5000/data/geo_data/world2.geojson'),
+        'rtData': {'Cases':{'summaryData':d3.csv('http://localhost:5000/data/national/cases/summary/summary_table.csv'),
+                            'rtData':d3.csv('http://localhost:5000/data/national/cases/summary/rt.csv'),
+                            'casesInfectionData':d3.csv('http://localhost:5000/data/national/cases/summary/cases_by_infection.csv'),
+                            'casesReportData':d3.csv('http://localhost:5000/data/national/cases/summary/cases_by_report.csv'),
+                            'obsCasesData':d3.csv('http://localhost:5000/data/national/cases/summary/reported_cases.csv')},
+                   'Deaths':{'summaryData':d3.csv('http://localhost:5000/data/national/deaths/summary/summary_table.csv'),
+                             'rtData':d3.csv('http://localhost:5000/data/national/deaths/summary/rt.csv'),
+                             'casesInfectionData':d3.csv('http://localhost:5000/data/national/deaths/summary/cases_by_infection.csv'),
+                             'casesReportData':d3.csv('http://localhost:5000/data/national/deaths/summary/cases_by_report.csv'),
+                             'obsCasesData':d3.csv('http://localhost:5000/data/national/deaths/summary/reported_cases.csv')}},
         'subregional_ref':{'Afghanistan':'https://epiforecasts.io/covid/posts/national/afghanistan/',
                            'Brazil':'https://epiforecasts.io/covid/posts/national/brazil/',
                            'Colombia':'https://epiforecasts.io/covid/posts/national/colombia/',
