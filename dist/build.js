@@ -726,10 +726,7 @@ var map = (function (_super) {
                 .attr("x2", x + (width / 2));
         };
         var legendClick = function (x) {
-            console.log('#map-dataset-text', d3.selectAll('#map-dataset-text').style('opacity'));
-            console.log('#map-legend-text', d3.selectAll('#map-legend-text').style('opacity'));
-            console.log(d3.select('#map-legend-title-sm').empty() && d3.selectAll('#map-legend-text').style('opacity') == '0' && d3.selectAll('#map-dataset-text').style('opacity') == '0');
-            console.log(d3.select('#map-legend-title-sm'));
+            console.log(!d3.select('#map-legend-title-other').empty());
             if (!d3.select('#map-legend-title-sm').empty()) {
                 console.log('legend');
                 d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1);
@@ -823,8 +820,14 @@ var map = (function (_super) {
                 .attr('class', 'map-dataset-item')
                 .attr('id', 'map-dataset-item')
                 .on('click', this.mapDataClick)
-                .on('mouseenter', function (e) { d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold'); })
-                .on('mouseout', function (e) { d3.select(this).attr('id', 'map-dataset-item').style('font-weight', 'normal'); });
+                .on('mouseenter', function (e) {
+                d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold');
+                d3.select('#map-legend').attr('clickable', false);
+            })
+                .on('mouseout', function (e) {
+                d3.select(this).attr('id', 'map-dataset-item').style('font-weight', 'normal');
+                d3.select('#map-legend').attr('clickable', true);
+            });
         }
         d3.selectAll('#map-dataset-text').style('opacity', 0);
         d3.selectAll('#map-dataset-item').style('opacity', 0);
@@ -840,7 +843,7 @@ var map = (function (_super) {
             .attr('x', legend_x - 2)
             .attr('y', legend_y - 38)
             .style('font-size', '14px')
-            .attr('id', 'map-legend-title-sm');
+            .attr('id', 'map-legend-title-other');
         g.append('text').text(activeMapData)
             .style('font-size', '14px')
             .style('padding-top', '10px')
