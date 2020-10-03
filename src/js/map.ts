@@ -16,7 +16,6 @@ class map extends rtVis {
   }
   setupMap (geoData, summaryData, mapClick, dropdownClick, mapDataClick, activeMapData) {
 
-    //figure out where to put dropdown - absolute position in top R is best (regardless of map)
     d3.select("#map-svg").remove()
     d3.select('#map-container-tooltip').remove()
     d3.select('#map-legend').remove()
@@ -84,7 +83,6 @@ class map extends rtVis {
     var parseMapData = this.parseMapData
     var pallette = this.pallette
 
-    //return(colour_ref[activeMapData][
     map_svg.append("g")
       .attr("class", "areas")
     	.selectAll("path")
@@ -351,8 +349,6 @@ class map extends rtVis {
       }
 
     }
-
-    //Something is wrong with if statements
 
     var legend = map_svg.append('g')
       .attr('class', 'map-legend')
