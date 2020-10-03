@@ -566,7 +566,11 @@ var map = (function (_super) {
             .attr("stroke", "white")
             .attr("summary", function (d) {
             try {
-                return summaryData.filter(function (a) { return a['region'] == d.properties.sovereignt; })[0][activeMapData];
+                var summary_val = summaryData.filter(function (a) { return a['region'] == d.properties.sovereignt; })[0][activeMapData];
+                if (summary_val === 'NA') {
+                    throw 'Some summary values are null';
+                }
+                return summary_val;
             }
             catch (_a) {
                 return 'No Data';
@@ -574,7 +578,9 @@ var map = (function (_super) {
             ;
         })
             .attr("country-name", function (d) { return d.properties.sovereignt; })
-            .attr("fill", function (d) { return (pallette(parseMapData(d3.select(this).attr('summary')), colour_ref[activeMapData])); })
+            .attr("fill", function (d) {
+            return (pallette(parseMapData(d3.select(this).attr('summary')), colour_ref[activeMapData]));
+        })
             .on('mouseenter', this.mapMouseIn.bind(this))
             .on("mouseout", this.mapMouseOut)
             .on("mouseover", this.mapMouseOver)

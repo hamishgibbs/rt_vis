@@ -93,12 +93,28 @@ class map extends rtVis {
         .attr('class', 'area-poly')
 	      .attr("d", path)
       	.attr("stroke", "white")
-      	.attr("summary", function(d){ try {
-          return summaryData.filter(a=>a['region']==d.properties.sovereignt)[0][activeMapData]
+      	.attr("summary", function(d){try {
+
+          var summary_val = summaryData.filter(a=>a['region']==d.properties.sovereignt)[0][activeMapData]
+
+          if (summary_val === 'NA'){
+            throw 'Some summary values are null'
+          }
+
+          return summary_val
         } catch {
           return 'No Data'};})
       	.attr("country-name", function(d){ return d.properties.sovereignt; })
-        .attr("fill", function(d){return(pallette(parseMapData(d3.select(this).attr('summary')), colour_ref[activeMapData]));})
+        .attr("fill", function(d){
+          return(
+            pallette(
+              parseMapData(
+                d3.select(this).attr('summary')
+              ),
+              colour_ref[activeMapData]
+            ));
+          }
+        )
         .on('mouseenter', this.mapMouseIn.bind(this))
         .on("mouseout", this.mapMouseOut)
         .on("mouseover", this.mapMouseOver)
@@ -128,6 +144,7 @@ class map extends rtVis {
 
   }
   pallette(d, pal){
+
     if (typeof(d) === 'number'){
       return (pal['Numeric'](d))
     } else {
