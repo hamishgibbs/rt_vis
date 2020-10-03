@@ -279,6 +279,8 @@ class map extends rtVis {
       if(d3.selectAll('#map-legend-text').style('opacity') === '1'){
         // dataset selection
 
+        console.log('dataset selection')
+
         d3.selectAll('#map-legend-text').style('opacity', 0)
         d3.selectAll('#map-legend-item').style('opacity', 0)
 
@@ -308,6 +310,8 @@ class map extends rtVis {
       } else if (d3.selectAll('#map-dataset-text').style('opacity') === '1') {
         //Legend closed
 
+        console.log('legend closed')
+
         d3.selectAll('#map-dataset-text').style('opacity', 0)
         d3.selectAll('#map-dataset-item-active').style('opacity', 0)
         d3.selectAll('#map-dataset-item').style('opacity', 0)
@@ -321,6 +325,8 @@ class map extends rtVis {
         legendTitleSm(legend)
 
       } else {
+
+        console.log('legend')
         //legend
 
         d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1)
@@ -336,6 +342,8 @@ class map extends rtVis {
         d3.select('#map-legend-data').remove()
 
         dataSelectTitle(legend)
+
+        d3.select('#expand-underline').remove()
 
         expandUnderline(legend, legend_x + 37, legend_y - 25, 58)
 
@@ -433,7 +441,6 @@ class map extends rtVis {
       .attr('id', 'map-legend-text')
       .attr('x', legend_x)
       .attr('y', legend_y)
-
 
     if (legend_max > 0){
       var numeric_palette = true

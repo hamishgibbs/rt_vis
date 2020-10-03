@@ -34,9 +34,6 @@ class interact extends rtVis {
 
     this.createMap()
 
-    //console.log(e)
-    //console.log(this)
-
   }
   dropdownClick(e) {
     this.activeArea = e.params.data.text

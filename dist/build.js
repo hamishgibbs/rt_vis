@@ -727,6 +727,7 @@ var map = (function (_super) {
         };
         var legendClick = function (x) {
             if (d3.selectAll('#map-legend-text').style('opacity') === '1') {
+                console.log('dataset selection');
                 d3.selectAll('#map-legend-text').style('opacity', 0);
                 d3.selectAll('#map-legend-item').style('opacity', 0);
                 d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px');
@@ -743,6 +744,7 @@ var map = (function (_super) {
                 expandUnderline(legend, legend_x + 160, legend_y - 25, 120);
             }
             else if (d3.selectAll('#map-dataset-text').style('opacity') === '1') {
+                console.log('legend closed');
                 d3.selectAll('#map-dataset-text').style('opacity', 0);
                 d3.selectAll('#map-dataset-item-active').style('opacity', 0);
                 d3.selectAll('#map-dataset-item').style('opacity', 0);
@@ -753,6 +755,7 @@ var map = (function (_super) {
                 legendTitleSm(legend);
             }
             else {
+                console.log('legend');
                 d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1);
                 d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1);
                 d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px');
@@ -761,6 +764,7 @@ var map = (function (_super) {
                 d3.select('#map-legend-title').style('font-weight', 'bold');
                 d3.select('#map-legend-data').remove();
                 dataSelectTitle(legend);
+                d3.select('#expand-underline').remove();
                 expandUnderline(legend, legend_x + 37, legend_y - 25, 58);
             }
         };
