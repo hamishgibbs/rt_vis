@@ -6,3 +6,4 @@ src/js/*.js.map
 test.html
 test.Rmd
 data
+lib
