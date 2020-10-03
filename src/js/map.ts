@@ -276,17 +276,9 @@ class map extends rtVis {
 
     var legendClick = function(x){
 
-      console.log(!d3.select('#map-legend-title-other').empty())
-      //need an indicator that the dataset was updated and to stop legend execution
-
-      d3.select('#map-legend-title-other').remove()
-
       if (!d3.select('#map-legend-title-sm').empty()){
         //If closed legend is true
         //make legend
-
-        console.log('legend')
-        //legend
 
         d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1)
@@ -310,8 +302,6 @@ class map extends rtVis {
       } else if (d3.selectAll('#map-legend-text').style('opacity') === '1'){
         //if legend is active
         //make dataset select
-
-        console.log('dataset selection')
 
         //hide legend items
         d3.selectAll('#map-legend-text').style('opacity', 0)
@@ -345,8 +335,6 @@ class map extends rtVis {
 
       } else {
         //close legend
-
-        console.log('legend closed')
 
         d3.selectAll('#map-dataset-text').style('opacity', 0)
         d3.selectAll('#map-dataset-item-active').style('opacity', 0)
@@ -430,12 +418,9 @@ class map extends rtVis {
         .on('click', this.mapDataClick)
         .on('mouseenter', function(e){
           d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold');
-          //Both legend click events are firing when only this one should
-          d3.select('#map-legend').attr('clickable', false)
         })
         .on('mouseout', function(e){
           d3.select(this).attr('id', 'map-dataset-item').style('font-weight', 'normal')
-          d3.select('#map-legend').attr('clickable', true)
         })
     }
 

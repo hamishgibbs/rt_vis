@@ -726,10 +726,7 @@ var map = (function (_super) {
                 .attr("x2", x + (width / 2));
         };
         var legendClick = function (x) {
-            console.log(!d3.select('#map-legend-title-other').empty());
-            d3.select('#map-legend-title-other').remove();
             if (!d3.select('#map-legend-title-sm').empty()) {
-                console.log('legend');
                 d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1);
                 d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1);
                 d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px');
@@ -743,7 +740,6 @@ var map = (function (_super) {
                 expandUnderline(legend, legend_x + 37, legend_y - 25, 58);
             }
             else if (d3.selectAll('#map-legend-text').style('opacity') === '1') {
-                console.log('dataset selection');
                 d3.selectAll('#map-legend-text').style('opacity', 0);
                 d3.selectAll('#map-legend-item').style('opacity', 0);
                 d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px');
@@ -761,7 +757,6 @@ var map = (function (_super) {
                 expandUnderline(legend, legend_x + 160, legend_y - 25, 120);
             }
             else {
-                console.log('legend closed');
                 d3.selectAll('#map-dataset-text').style('opacity', 0);
                 d3.selectAll('#map-dataset-item-active').style('opacity', 0);
                 d3.selectAll('#map-dataset-item').style('opacity', 0);
@@ -826,11 +821,9 @@ var map = (function (_super) {
                 .on('click', this.mapDataClick)
                 .on('mouseenter', function (e) {
                 d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold');
-                d3.select('#map-legend').attr('clickable', false);
             })
                 .on('mouseout', function (e) {
                 d3.select(this).attr('id', 'map-dataset-item').style('font-weight', 'normal');
-                d3.select('#map-legend').attr('clickable', true);
             });
         }
         d3.selectAll('#map-dataset-text').style('opacity', 0);
@@ -847,7 +840,7 @@ var map = (function (_super) {
             .attr('x', legend_x - 2)
             .attr('y', legend_y - 38)
             .style('font-size', '14px')
-            .attr('id', 'map-legend-title-other');
+            .attr('id', 'map-legend-title-sm');
         g.append('text').text(activeMapData)
             .style('font-size', '14px')
             .style('padding-top', '10px')
