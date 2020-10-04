@@ -3,11 +3,11 @@
   <head>
     <meta charset="utf-8" />
     <title>RT interactive visualization</title>
-    <script src="http://localhost:5000/lib/d3.v5.min.js"></script>
-    <script src="http://localhost:5000/lib/d3-geo-projection.v2.min.js"></script>
-    <script src="http://localhost:5000/lib/jquery.min.js"></script>
-    <link href="http://localhost:5000/lib/select2.min.css" rel="stylesheet" />
-    <script src="http://localhost:5000/lib/select2.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/css/select2.min.css" rel="stylesheet" />
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-beta.1/dist/js/select2.min.js"></script>
     <link rel="stylesheet" href="dist/styles.css">
   </head>
   <body>
@@ -16,41 +16,41 @@
     <script src="dist/build.min.js"></script>
     <script>
 
-      var x = {
-        'activeArea':'United Kingdom',
-        'activeTime':'all',
-        'geoData':d3.json('http://localhost:5000/data/geo_data/world2.geojson'),
-        'rtData': {'Cases':{'summaryData':d3.csv('http://localhost:5000/data/national/cases/summary/summary_table.csv'),
-                            'rtData':d3.csv('http://localhost:5000/data/national/cases/summary/rt.csv'),
-                            'casesInfectionData':d3.csv('http://localhost:5000/data/national/cases/summary/cases_by_infection.csv'),
-                            'casesReportData':d3.csv('http://localhost:5000/data/national/cases/summary/cases_by_report.csv'),
-                            'obsCasesData':d3.csv('http://localhost:5000/data/national/cases/summary/reported_cases.csv')},
-                   'Deaths':{'summaryData':d3.csv('http://localhost:5000/data/national/deaths/summary/summary_table.csv'),
-                             'rtData':d3.csv('http://localhost:5000/data/national/deaths/summary/rt.csv'),
-                             'casesInfectionData':d3.csv('http://localhost:5000/data/national/deaths/summary/cases_by_infection.csv'),
-                             'casesReportData':d3.csv('http://localhost:5000/data/national/deaths/summary/cases_by_report.csv'),
-                             'obsCasesData':d3.csv('http://localhost:5000/data/national/deaths/summary/reported_cases.csv')}},
-        'subregional_ref':{'Afghanistan':'https://epiforecasts.io/covid/posts/national/afghanistan/',
-                           'Brazil':'https://epiforecasts.io/covid/posts/national/brazil/',
-                           'Colombia':'https://epiforecasts.io/covid/posts/national/colombia/',
-                           'India':'https://epiforecasts.io/covid/posts/national/india/',
-                           'Italy':'https://epiforecasts.io/covid/posts/national/italy/',
-                           'Germany':'https://epiforecasts.io/covid/posts/national/germany/',
-                           'Russia':'https://epiforecasts.io/covid/posts/national/russia/',
-                           'United Kingdom':'https://epiforecasts.io/covid/posts/national/united-kingdom/',
-                           'United States of America':'https://epiforecasts.io/covid/posts/national/united-states/'},
-        'fullWidth':800,
-        'downloadUrl':'https://github.com/epiforecasts/covid-rt-estimates/tree/master/national',
-        'ts_color_ref':{'poly_90_e':'#d1ebe3',
-                        'poly_90_eb':'#f7dfcc',
-                        'poly_90_f':'#e3e2ef',
-                        'poly_50_e':'#9bd4c2',
-                        'poly_50_eb':'#edb98f',
-                        'poly_50_f':'#c2c0dd',
-                        'poly_20_e':'#75c4ab',
-                        'poly_20_eb':'#e69e65',
-                        'poly_20_f':'#aba8d0'},
-      }
+    var x = {
+      'activeArea':'United Kingdom',
+      'activeTime':'all',
+      'geoData':d3.json('https://raw.githubusercontent.com/hamishgibbs/rt_interactive_vis/master/geo_data/world2.geojson'),
+      'rtData': {'Cases':{'summaryData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/summary_table.csv'),
+                          'rtData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/rt.csv'),
+                          'casesInfectionData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_infection.csv'),
+                          'casesReportData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/cases_by_report.csv'),
+                          'obsCasesData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/cases/summary/reported_cases.csv')},
+                 'Deaths':{'summaryData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/summary_table.csv'),
+                           'rtData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/rt.csv'),
+                           'casesInfectionData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/cases_by_infection.csv'),
+                           'casesReportData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/cases_by_report.csv'),
+                           'obsCasesData':d3.csv('https://raw.githubusercontent.com/epiforecasts/covid-rt-estimates/master/national/deaths/summary/reported_cases.csv')}},
+      'subregional_ref':{'Afghanistan':'https://epiforecasts.io/covid/posts/national/afghanistan/',
+                         'Brazil':'https://epiforecasts.io/covid/posts/national/brazil/',
+                         'Colombia':'https://epiforecasts.io/covid/posts/national/colombia/',
+                         'India':'https://epiforecasts.io/covid/posts/national/india/',
+                         'Italy':'https://epiforecasts.io/covid/posts/national/italy/',
+                         'Germany':'https://epiforecasts.io/covid/posts/national/germany/',
+                         'Russia':'https://epiforecasts.io/covid/posts/national/russia/',
+                         'United Kingdom':'https://epiforecasts.io/covid/posts/national/united-kingdom/',
+                         'United States of America':'https://epiforecasts.io/covid/posts/national/united-states/'},
+      'fullWidth':1200,
+      'downloadUrl':'https://github.com/epiforecasts/covid-rt-estimates/tree/master/national',
+      'ts_color_ref':{'poly_90_e':'#d1ebe3',
+                      'poly_90_eb':'#f7dfcc',
+                      'poly_90_f':'#e3e2ef',
+                      'poly_50_e':'#9bd4c2',
+                      'poly_50_eb':'#edb98f',
+                      'poly_50_f':'#c2c0dd',
+                      'poly_20_e':'#75c4ab',
+                      'poly_20_eb':'#e69e65',
+                      'poly_20_f':'#aba8d0'},
+    }
 
 
 
