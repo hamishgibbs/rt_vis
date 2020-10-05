@@ -621,7 +621,12 @@ var map = (function (_super) {
     };
     map.prototype.pallette = function (d, pal) {
         if (typeof (d) === 'number') {
-            return (pal['Numeric'](d));
+            try {
+                return (pal['Numeric'](d));
+            }
+            catch (_a) {
+                return (pal['No Data']);
+            }
         }
         else {
             return (pal[d]);
@@ -1010,7 +1015,13 @@ var ts = (function (_super) {
         var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect();
         ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
         ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
-        var minDate = d3.min(rtData.map(function (x) { return (parseTime(x['date'])); }));
+        var country_minDate = d3.min(rtData.map(function (x) { return (parseTime(x['date'])); }));
+        if (time[0] >= country_minDate) {
+            var minDate = time[0];
+        }
+        else {
+            var minDate = country_minDate;
+        }
         var maxDate = time[1];
         rtData = rtData.filter(function (a) { return parseTime(a['date']) >= minDate; });
         rtData = rtData.filter(function (a) { return parseTime(a['date']) <= maxDate; });
@@ -1183,7 +1194,8 @@ var ts = (function (_super) {
             .datum(data)
             .attr("d", poly)
             .attr("class", id)
-            .style('fill', ts_color_ref[id]);
+            .style('fill', ts_color_ref[id])
+            .style('opacity', 0.5);
     };
     ts.prototype.plotAllTs = function (country, time, data, activeSource, runDate) {
         if (runDate === void 0) { runDate = undefined; }

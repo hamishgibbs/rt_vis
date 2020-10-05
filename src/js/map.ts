@@ -144,7 +144,17 @@ class map extends rtVis {
   pallette(d, pal){
 
     if (typeof(d) === 'number'){
-      return (pal['Numeric'](d))
+
+      try {
+
+        return (pal['Numeric'](d))
+
+      } catch {
+
+        return (pal['No Data'])
+
+      }
+
     } else {
       return(pal[d])
     }

@@ -232,8 +232,7 @@ class setup extends rtVis {
     function brushed(e) {
       var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x')
       var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x')
-
-
+      
       if ((maxDate - minDate) <= 4){
         date_handler([date_lims[0], date_lims[1]])
       } else {

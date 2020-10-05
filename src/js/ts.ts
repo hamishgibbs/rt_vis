@@ -50,7 +50,14 @@ class ts extends rtVis {
     ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
     ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
 
-    var minDate = d3.min(rtData.map(function(x){return(parseTime(x['date']))}))
+    var country_minDate = d3.min(rtData.map(function(x){return(parseTime(x['date']))}))
+
+    if (time[0] >= country_minDate){
+        var minDate = time[0]
+    } else {
+        var minDate = country_minDate
+    }
+
     var maxDate = time[1]
 
     rtData = rtData.filter(a=>parseTime(a['date'])>=minDate)
@@ -263,6 +270,7 @@ class ts extends rtVis {
       .attr("d", poly)
       .attr("class", id)
       .style('fill', ts_color_ref[id])
+      .style('opacity', 0.5)
   }
   plotAllTs(country, time, data, activeSource, runDate = undefined) {
 
