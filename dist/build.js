@@ -609,14 +609,20 @@ var map = (function (_super) {
     };
     map.prototype.prepareMapData = function (summaryData, variable) {
         var _this = this;
+        summaryData.map(function (a) { return console.log(a[variable]); });
         return (summaryData.map(function (a) { return _this.parseMapData(a[variable]); }));
     };
     map.prototype.parseMapData = function (d) {
-        if (['Decreasing', 'Likely decreasing', 'Unsure', 'Likely increasing', 'Increasing', 'No Data'].includes(d)) {
-            return (d);
+        try {
+            if (['Decreasing', 'Likely decreasing', 'Unsure', 'Likely increasing', 'Increasing', 'No Data'].includes(d)) {
+                return (d);
+            }
+            else {
+                return (parseFloat(d.split(' ')[0]));
+            }
         }
-        else {
-            return (parseFloat(d.split(' ')[0]));
+        catch (_a) {
+            return ('No Data');
         }
     };
     map.prototype.pallette = function (d, pal) {

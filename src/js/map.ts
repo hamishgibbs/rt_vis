@@ -104,6 +104,7 @@ class map extends rtVis {
           return 'No Data'};})
       	.attr("country-name", function(d){ return d.properties.sovereignt; })
         .attr("fill", function(d){
+
           return(
             pallette(
               parseMapData(
@@ -130,15 +131,27 @@ class map extends rtVis {
   }
   prepareMapData(summaryData, variable){
 
+    summaryData.map(a => console.log(a[variable]))
+
     return(summaryData.map(a => this.parseMapData(a[variable])))
 
   }
   parseMapData(d){
-    if (['Decreasing', 'Likely decreasing', 'Unsure', 'Likely increasing', 'Increasing', 'No Data'].includes(d)){
-      return (d)
-    } else {
-      return(parseFloat(d.split(' ')[0]))
+
+    try {
+
+      if (['Decreasing', 'Likely decreasing', 'Unsure', 'Likely increasing', 'Increasing', 'No Data'].includes(d)){
+        return (d)
+      } else {
+        return(parseFloat(d.split(' ')[0]))
+      }
+
+    } catch {
+
+      return('No Data')
+      
     }
+
 
   }
   pallette(d, pal){
