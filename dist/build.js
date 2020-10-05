@@ -461,7 +461,6 @@ var setup = (function (_super) {
         function brushed(e) {
             var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x');
             var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x');
-            console.log(minDate, maxDate);
             if ((maxDate - minDate) <= 4) {
                 date_handler([date_lims[0], date_lims[1]]);
             }
@@ -621,7 +620,6 @@ var map = (function (_super) {
         }
     };
     map.prototype.pallette = function (d, pal) {
-        console.log(d);
         if (typeof (d) === 'number') {
             try {
                 return (pal['Numeric'](d));
@@ -1017,7 +1015,6 @@ var ts = (function (_super) {
         var ts_svg_dims = document.getElementById(container_id).getBoundingClientRect();
         ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
         ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
-        console.log(d3.min(rtData.map(function (x) { return (parseTime(x['date'])); })), time[0]);
         var country_minDate = d3.min(rtData.map(function (x) { return (parseTime(x['date'])); }));
         if (time[0] >= country_minDate) {
             var minDate = time[0];

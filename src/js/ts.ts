@@ -50,10 +50,6 @@ class ts extends rtVis {
     ts_svg_dims.width = ts_svg_dims.width - this.margin.left - this.margin.right;
     ts_svg_dims.height = ts_svg_dims.height - this.margin.top - this.margin.bottom;
 
-    //var minDate = d3.min(rtData.map(function(x){return(parseTime(x['date']))}))
-
-    console.log(d3.min(rtData.map(function(x){return(parseTime(x['date']))})), time[0])
-
     var country_minDate = d3.min(rtData.map(function(x){return(parseTime(x['date']))}))
 
     if (time[0] >= country_minDate){

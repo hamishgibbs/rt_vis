@@ -143,8 +143,6 @@ class map extends rtVis {
   }
   pallette(d, pal){
 
-    console.log(d)
-
     if (typeof(d) === 'number'){
 
       try {
@@ -154,7 +152,7 @@ class map extends rtVis {
       } catch {
 
         return (pal['No Data'])
-        
+
       }
 
     } else {
