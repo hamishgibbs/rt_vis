@@ -263,6 +263,7 @@ class ts extends rtVis {
       .attr("d", poly)
       .attr("class", id)
       .style('fill', ts_color_ref[id])
+      .style('opacity', 0.5)
   }
   plotAllTs(country, time, data, activeSource, runDate = undefined) {
 

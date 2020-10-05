@@ -1189,7 +1189,8 @@ var ts = (function (_super) {
             .datum(data)
             .attr("d", poly)
             .attr("class", id)
-            .style('fill', ts_color_ref[id]);
+            .style('fill', ts_color_ref[id])
+            .style('opacity', 0.5);
     };
     ts.prototype.plotAllTs = function (country, time, data, activeSource, runDate) {
         if (runDate === void 0) { runDate = undefined; }
