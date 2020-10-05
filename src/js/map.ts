@@ -146,10 +146,15 @@ class map extends rtVis {
     console.log(d)
 
     if (typeof(d) === 'number'){
+
       try {
+
         return (pal['Numeric'](d))
+
       } catch {
+
         return (pal['No Data'])
+        
       }
 
     } else {
