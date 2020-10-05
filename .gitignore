@@ -5,3 +5,5 @@ src/js/*.js.map
 *.tscache
 test.html
 test.Rmd
+data
+lib

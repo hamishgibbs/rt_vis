@@ -69,9 +69,10 @@
   font-weight: bold;
 }
 
+
 .controls-container {
   width: 100%;
-  height: 50px;
+  height: 60px;
   display: flex;
   padding-top: 10px;
 }
@@ -83,9 +84,13 @@
 
 .controls-container-legend {
   width: 50%;
-  height: 20px;
-  display: flex;
   padding-left: 30px;
+}
+
+.controls-container-legend-items {
+  height: 20px;
+  padding-left: 10px;
+  display: flex;
   justify-content: space-around;
 }
 
@@ -114,7 +119,6 @@
 .controls-container-time {
   width: 50%;
   height: 50px;
-  display: flex;
 }
 
 .controls-container button {
@@ -129,10 +133,6 @@
   background-color: #C3C3C3;
 }
 
-.controls-container-time {
-  justify-content: flex-end;
-  padding-right: 30px
-}
 
 .download-container a {
   background-color: #e7e7e7;

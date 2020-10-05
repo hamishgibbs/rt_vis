@@ -12,7 +12,7 @@ class setup extends rtVis {
   constructor (x) {
     super(x)
 
-    this.margin = {top: 0, right: 40, bottom: 10, left: 50}
+    this.margin = {top: 0, right: 40, bottom: 10, left: 10}
   }
   setupCountryTitle(root_element) {
 
@@ -109,18 +109,33 @@ class setup extends rtVis {
         .attr('class', 'controls-container-time')
         .attr('id', 'controls-container-time')
 
-      //legend item containers
+      //Legend title container
+
       d3.select('#controls-container-legend')
+        .append('div')
+        .text('Legend')
+        .attr('class', 'ts-legend-text')
+        .style('font-weight', 'bold')
+        .style('padding-bottom', '20px')
+
+      d3.select('#controls-container-legend')
+        .append('div')
+        .attr('id', 'controls-container-legend-items')
+        .attr('class', 'controls-container-legend-items')
+
+
+      //legend item containers
+      d3.select('#controls-container-legend-items')
         .append('div')
         .attr('class', 'legend-e')
         .attr('id', 'legend-e')
 
-      d3.select('#controls-container-legend')
+      d3.select('#controls-container-legend-items')
         .append('div')
         .attr('class', 'legend-eb')
         .attr('id', 'legend-eb')
 
-      d3.select('#controls-container-legend')
+      d3.select('#controls-container-legend-items')
         .append('div')
         .attr('class', 'legend-f')
         .attr('id', 'legend-f')
@@ -168,6 +183,13 @@ class setup extends rtVis {
   }
   setupTimeControls(date_lims, container_id, date_handler){
 
+    d3.select('#' + container_id)
+      .append('div')
+      .text('Filter Date')
+      .attr('class', 'ts-legend-text')
+      .style('font-weight', 'bold')
+      .style('padding-bottom', '10px')
+
     var svg_dims = document.getElementById(container_id).getBoundingClientRect()
 
     svg_dims.width = svg_dims.width - this.margin.left - this.margin.right;
@@ -192,7 +214,7 @@ class setup extends rtVis {
 
     svg.append("g")
        .attr("transform","translate(0,"+ svg_dims.height +")")
-       .call(d3.axisBottom(x).tickSize([0]))
+       .call(d3.axisBottom(x).ticks(6).tickSize([0]))
        .attr("class",'time-xaxis');
 
     svg.append("g")

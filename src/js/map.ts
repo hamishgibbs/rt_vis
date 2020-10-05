@@ -16,7 +16,6 @@ class map extends rtVis {
   }
   setupMap (geoData, summaryData, mapClick, dropdownClick, mapDataClick, activeMapData) {
 
-    //figure out where to put dropdown - absolute position in top R is best (regardless of map)
     d3.select("#map-svg").remove()
     d3.select('#map-container-tooltip').remove()
     d3.select('#map-legend').remove()
@@ -84,7 +83,6 @@ class map extends rtVis {
     var parseMapData = this.parseMapData
     var pallette = this.pallette
 
-    //return(colour_ref[activeMapData][
     map_svg.append("g")
       .attr("class", "areas")
     	.selectAll("path")
@@ -93,12 +91,28 @@ class map extends rtVis {
         .attr('class', 'area-poly')
 	      .attr("d", path)
       	.attr("stroke", "white")
-      	.attr("summary", function(d){ try {
-          return summaryData.filter(a=>a['region']==d.properties.sovereignt)[0][activeMapData]
+      	.attr("summary", function(d){try {
+
+          var summary_val = summaryData.filter(a=>a['region']==d.properties.sovereignt)[0][activeMapData]
+
+          if (summary_val === 'NA'){
+            throw 'Some summary values are null'
+          }
+
+          return summary_val
         } catch {
           return 'No Data'};})
       	.attr("country-name", function(d){ return d.properties.sovereignt; })
-        .attr("fill", function(d){return(pallette(parseMapData(d3.select(this).attr('summary')), colour_ref[activeMapData]));})
+        .attr("fill", function(d){
+          return(
+            pallette(
+              parseMapData(
+                d3.select(this).attr('summary')
+              ),
+              colour_ref[activeMapData]
+            ));
+          }
+        )
         .on('mouseenter', this.mapMouseIn.bind(this))
         .on("mouseout", this.mapMouseOut)
         .on("mouseover", this.mapMouseOver)
@@ -128,6 +142,7 @@ class map extends rtVis {
 
   }
   pallette(d, pal){
+
     if (typeof(d) === 'number'){
       return (pal['Numeric'](d))
     } else {
@@ -199,21 +214,125 @@ class map extends rtVis {
     var legend_x = map_svg_dims.width / 30
     var legend_y = map_svg_dims.height / 2
 
+    var legendTitle = function(legend){
+
+      legend.append('text')
+        .text('Legend')
+        .attr('x', legend_x + 10)
+        .attr('y', legend_y - 32.5)
+        .style('font-size', '15px')
+        .attr('id', 'map-legend-title')
+        .style('opacity', 0)
+        .transition().duration(250)
+        .style('opacity', 1)
+
+    }
+
+    var legendTitleSm = function(legend){
+      //Legend title for collapsed legend
+
+      legend.append('text')
+        .text('Legend')
+        .attr('x', legend_x - 2)
+        .attr('y', legend_y - 38)
+        .style('font-size', '14px')
+        .attr('id', 'map-legend-title-sm')
+        .style('opacity', 0)
+        .transition().duration(250)
+        .style('opacity', 1)
+
+    }
+
+    var dataSelectTitle = function(legend){
+
+      legend.append('text')
+        .text('Dataset Selection')
+        .attr('x', legend_x + 100)
+        .attr('y', legend_y - 32.5)
+        .style('font-size', '15px')
+        .attr('id', 'map-legend-data')
+        .style('opacity', 0)
+        .transition().duration(400)
+        .style('opacity', 1)
+
+    }
+
+    var expandUnderline = function(element, x, y, width){
+      element.append('line')
+        .attr('id', 'expand-underline')
+        .attr("x1", x)
+        .attr("x2", x)
+        .attr("y1", y)
+        .attr("y2", y)
+        .style('stroke-width', '2.5px')
+        .style('stroke', 'black')
+        .transition()
+        .duration(250)
+        .attr("x1", x - (width / 2))
+        .attr("x2", x + (width / 2))
+    }
+
     var legendClick = function(x){
 
-      if(d3.selectAll('#map-legend-text').style('opacity') === '1'){
+      if (!d3.select('#map-legend-title-sm').empty()){
+        //If closed legend is true
+        //make legend
 
+        d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1)
+        d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1)
+        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px')
+
+        d3.select('#map-legend-title-sm').remove()
+        d3.select('#map-legend-title').remove()
+
+        legendTitle(legend)
+
+        d3.select('#map-legend-title').style('font-weight', 'bold')
+
+        d3.select('#map-legend-data').remove()
+
+        dataSelectTitle(legend)
+
+        d3.select('#expand-underline').remove()
+
+        expandUnderline(legend, legend_x + 37, legend_y - 25, 58)
+
+      } else if (d3.selectAll('#map-legend-text').style('opacity') === '1'){
+        //if legend is active
+        //make dataset select
+
+        //hide legend items
         d3.selectAll('#map-legend-text').style('opacity', 0)
         d3.selectAll('#map-legend-item').style('opacity', 0)
 
-        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '200px')
+        //resize legend rect
+        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '235px')
 
+        //show dataset selection
         d3.selectAll('#map-dataset-text').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-dataset-item-active').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-dataset-item').transition().duration(250).delay(100).style('opacity', 1)
         d3.selectAll('#map-dataset-item').style('pointer-events', null)
 
-      } else if (d3.selectAll('#map-dataset-text').style('opacity') === '1') {
+        //remove previous legend headers
+        d3.select('#map-legend-title').remove()
+        d3.select('#map-legend-title-sm').remove()
+
+        legendTitle(legend)
+
+        d3.select('#map-legend-data').remove()
+
+        dataSelectTitle(legend)
+
+        d3.select('#map-legend-data').style('font-weight', 'bold')
+
+        d3.select('#expand-underline').remove()
+
+        expandUnderline(legend, legend_x + 160, legend_y - 25, 120)
+
+
+      } else {
+        //close legend
 
         d3.selectAll('#map-dataset-text').style('opacity', 0)
         d3.selectAll('#map-dataset-item-active').style('opacity', 0)
@@ -221,24 +340,12 @@ class map extends rtVis {
 
         d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '64px').attr('height', '25px')
 
-        legend.append('text')
-          .text('Legend')
-          .attr('x', legend_x - 2)
-          .attr('y', legend_y - 2.5)
-          .style('font-size', '14px')
-          .attr('id', 'map-legend-title')
-          .style('opacity', 0)
-          .transition().duration(250)
-          .style('opacity', 1)
-
-      } else {
-
-        d3.selectAll('#map-legend-text').transition().duration(250).delay(100).style('opacity', 1)
-        d3.selectAll('#map-legend-item').transition().duration(250).delay(100).style('opacity', 1)
-        d3.selectAll('#map-legend-rect').transition().duration(250).attr('width', '260px').attr('height', '200px')
-
-
         d3.select('#map-legend-title').remove()
+        d3.select('#map-legend-data').remove()
+        d3.select('#expand-underline').remove()
+
+        legendTitleSm(legend)
+
       }
 
     }
@@ -250,7 +357,7 @@ class map extends rtVis {
 
     legend.append('rect')
       .attr('x', legend_x - 10)
-      .attr('y', legend_y - 20)
+      .attr('y', legend_y - 55)
       .attr('width', '64px')
       .attr('height', '25px')
       .attr('class', 'map-legend-rect')
@@ -260,14 +367,18 @@ class map extends rtVis {
       .style('rx', '8px')
 
     this.layoutLegend(legend, activeMapData, colour_ref, legend_x, legend_y, legend_height, legend_max, legend_min)
-    this.layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height)
+    this.layoutDatasetSelect(map_svg, legend, activeMapData, legend_x, legend_y, legend_height)
 
   }
-  layoutDatasetSelect(legend, activeMapData, legend_x, legend_y, legend_height){
+  layoutDatasetSelect(map_svg, legend, activeMapData, legend_x, legend_y, legend_height){
 
     var g = legend.append('g')
       .attr('id', 'map-dataset-content')
       .attr('class', 'map-dataset-content')
+
+    var dataset_labels = map_svg.append('g')
+      .attr('id', 'map-dataset-labels')
+      .attr('class', 'map-dataset-labels')
 
     g.append('text').text('Dataset Selection')
       .style('font-size', '14px')
@@ -292,7 +403,7 @@ class map extends rtVis {
         .attr('class', 'map-dataset-item')
         .attr('id', 'map-dataset-item')
 
-      g.append('text')
+      dataset_labels.append('text')
         .attr("x", legend_x + 8)
         .attr("y", (legend_y + ((legend_height / 6.5) * (i + 1))) + 15 - 14)
         .text(map_datasets[i])
@@ -301,8 +412,12 @@ class map extends rtVis {
         .attr('class', 'map-dataset-item')
         .attr('id', 'map-dataset-item')
         .on('click', this.mapDataClick)
-        .on('mouseenter', function(e){d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold')})
-        .on('mouseout', function(e){d3.select(this).attr('id', 'map-dataset-item').style('font-weight', 'normal')})
+        .on('mouseenter', function(e){
+          d3.select(this).attr('id', 'map-dataset-item-active').style('font-weight', 'bold');
+        })
+        .on('mouseout', function(e){
+          d3.select(this).attr('id', 'map-dataset-item').style('font-weight', 'normal')
+        })
     }
 
     d3.selectAll('#map-dataset-text').style('opacity', 0)
@@ -318,7 +433,12 @@ class map extends rtVis {
       .attr('id', 'map-legend-content')
       .attr('class', 'map-legend-content')
 
-    g.append('text').text('Legend').attr('x', legend_x - 2).attr('y', legend_y - 2.5).style('font-size', '14px').attr('id', 'map-legend-title')
+    g.append('text')
+      .text('Legend')
+      .attr('x', legend_x - 2)
+      .attr('y', legend_y - 38)
+      .style('font-size', '14px')
+      .attr('id', 'map-legend-title-sm')
 
     g.append('text').text(activeMapData)
       .style('font-size', '14px')
@@ -327,7 +447,6 @@ class map extends rtVis {
       .attr('id', 'map-legend-text')
       .attr('x', legend_x)
       .attr('y', legend_y)
-
 
     if (legend_max > 0){
       var numeric_palette = true
@@ -342,6 +461,7 @@ class map extends rtVis {
 
         if (i === 1){
 
+          //Linear color scale
           var defs = g.append("defs");
 
           var linearGradient = defs.append("linearGradient")
@@ -387,6 +507,7 @@ class map extends rtVis {
 
         } else {
 
+          //For no data element
           g.append('rect')
             .attr("x", legend_x)
             .attr("y", (legend_y + ((legend_height / 7) * (i + 1))) + 5 - 20)
