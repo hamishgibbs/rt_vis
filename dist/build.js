@@ -620,8 +620,14 @@ var map = (function (_super) {
         }
     };
     map.prototype.pallette = function (d, pal) {
+        console.log(d);
         if (typeof (d) === 'number') {
-            return (pal['Numeric'](d));
+            try {
+                return (pal['Numeric'](d));
+            }
+            catch (_a) {
+                return (pal['No Data']);
+            }
         }
         else {
             return (pal[d]);
