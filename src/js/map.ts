@@ -125,7 +125,7 @@ class map extends rtVis {
     var areaNames = geoData.features.map(function(d){return(d.properties.sovereignt)}).filter(this.onlyUnique).sort()
 
     // @ts-ignore
-    $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select a country', data: areaNames}).on('select2:select', dropdownClick);
+    $('#dropdown-container').append('.js-example-basic-single').select2({placeholder: 'Select an area', data: areaNames}).on('select2:select', dropdownClick);
 
   }
   prepareMapData(summaryData, variable){

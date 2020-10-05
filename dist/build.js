@@ -605,7 +605,7 @@ var map = (function (_super) {
             .style('stroke-width', '0.2px');
         this.createLegend(map_svg, map_svg_dims, colour_ref[activeMapData], activeMapData, legend_max, legend_min);
         var areaNames = geoData.features.map(function (d) { return (d.properties.sovereignt); }).filter(this.onlyUnique).sort();
-        $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select a country', data: areaNames }).on('select2:select', dropdownClick);
+        $('#dropdown-container').append('.js-example-basic-single').select2({ placeholder: 'Select an area', data: areaNames }).on('select2:select', dropdownClick);
     };
     map.prototype.prepareMapData = function (summaryData, variable) {
         var _this = this;
