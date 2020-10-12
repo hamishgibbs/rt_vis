@@ -131,8 +131,6 @@ class map extends rtVis {
   }
   prepareMapData(summaryData, variable){
 
-    summaryData.map(a => console.log(a[variable]))
-
     return(summaryData.map(a => this.parseMapData(a[variable])))
 
   }
@@ -149,7 +147,7 @@ class map extends rtVis {
     } catch {
 
       return('No Data')
-      
+
     }
 
 
