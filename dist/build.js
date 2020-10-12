@@ -98,7 +98,8 @@ var rtVis = (function () {
                 t.tsCountryTitle(country, 'country-title-container');
             }
             if (Object.keys(data['rtData']).length > 1) {
-                s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth);
+                var sources_header = s.setupSourcesHeader(root_element);
+                s.addSourceSelect(sources_header, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth);
             }
             if (data['rtData'][activeSource]['rtData'] !== null) {
                 s.setupRt(root_element);
@@ -487,11 +488,20 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'footer');
     };
+    setup.prototype.setupSourcesHeader = function (root_element) {
+        var header = d3.select(root_element)
+            .append('div')
+            .attr('class', 'sources-header')
+            .attr('id', 'sources-header')
+            .style('height', '30px')
+            .style('width', '100%');
+        return (header);
+    };
     setup.prototype.addSourceSelect = function (root_element, id, elements, eventhandler, fullWidth) {
         if (fullWidth === undefined) {
             fullWidth = 1000;
         }
-        var div = d3.select(root_element)
+        var div = root_element
             .append('select')
             .attr('class', id)
             .attr('id', id)

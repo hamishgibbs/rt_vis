@@ -261,13 +261,25 @@ class setup extends rtVis {
       .attr('class', 'footer')
 
   }
+  setupSourcesHeader(root_element){
+
+    var header = d3.select(root_element)
+                  .append('div')
+                  .attr('class', 'sources-header')
+                  .attr('id', 'sources-header')
+                  .style('height', '30px')
+                  .style('width', '100%')
+
+    return(header)
+
+  }
   addSourceSelect(root_element, id, elements, eventhandler, fullWidth){
 
     if (fullWidth === undefined){
       fullWidth = 1000
     }
 
-    var div = d3.select(root_element)
+    var div = root_element
       .append('select')
       .attr('class', id)
       .attr('id', id)

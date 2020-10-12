@@ -139,7 +139,9 @@ class rtVis {
       }
 
       if (Object.keys(data['rtData']).length > 1){
-        s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth)
+        var sources_header = s.setupSourcesHeader(root_element)
+
+        s.addSourceSelect(sources_header, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth)
       }
 
       if (data['rtData'][activeSource]['rtData'] !== null){
