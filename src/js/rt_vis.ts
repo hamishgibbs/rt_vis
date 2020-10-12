@@ -107,7 +107,7 @@ class rtVis {
 
       var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null
 
-      if (!ts_null && downloadUrl !== null){
+      if (!ts_null || downloadUrl !== null){
         var header = s.setupHeader(root_element)
 
         console.log(header)
