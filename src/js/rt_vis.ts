@@ -20,7 +20,7 @@ interface rtVis {
   _subregional_ref: any;
 }
 
-class rtVis {
+export default class rtVis {
   constructor(x: any) {
 
     this._config = x
