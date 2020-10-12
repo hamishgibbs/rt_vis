@@ -30,9 +30,21 @@ class setup extends rtVis {
       .attr('id', 'map-container')
 
   }
+  setupHeader(root_element){
+
+    var header = d3.select(root_element)
+      .append('div')
+      .attr('class', 'dash-header')
+      .attr('id', 'dash-header')
+      .style('height', '30px')
+      .style('width', '100%')
+
+    return(header)
+
+  }
   setupDropDown(root_element){
 
-    d3.select(root_element)
+    root_element
       .append('div')
       .attr('class', 'dropdown-container')
       .attr('id', 'dropdown-container')
@@ -41,7 +53,7 @@ class setup extends rtVis {
 
   setupDownload(root_element, downloadUrl, fullWidth) {
 
-    d3.select(root_element)
+    root_element
       .append('div')
       .attr('class', 'download-container')
       .attr('id', 'download-container')
@@ -232,7 +244,7 @@ class setup extends rtVis {
     function brushed(e) {
       var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x')
       var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x')
-      
+
       if ((maxDate - minDate) <= 4){
         date_handler([date_lims[0], date_lims[1]])
       } else {
@@ -249,17 +261,29 @@ class setup extends rtVis {
       .attr('class', 'footer')
 
   }
+  setupSourcesHeader(root_element){
+
+    var header = d3.select(root_element)
+                  .append('div')
+                  .attr('class', 'sources-header')
+                  .attr('id', 'sources-header')
+                  .style('height', '25px')
+                  .style('width', '100%')
+
+    return(header)
+
+  }
   addSourceSelect(root_element, id, elements, eventhandler, fullWidth){
 
     if (fullWidth === undefined){
       fullWidth = 1000
     }
 
-    var div = d3.select(root_element)
+    var div = root_element
+      .append('div')
       .append('select')
       .attr('class', id)
       .attr('id', id)
-      .style('left', fullWidth + 'px')
       .on('change', eventhandler)
 
     var i

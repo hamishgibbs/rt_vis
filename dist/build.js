@@ -67,11 +67,14 @@ var rtVis = (function () {
             var s = new setup(_config);
             var t = new ts(_config);
             var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null;
+            if (!ts_null || downloadUrl !== null) {
+                var header = s.setupHeader(root_element);
+            }
             if (!ts_null) {
-                s.setupDropDown(root_element);
+                s.setupDropDown(header);
             }
             if (downloadUrl !== null) {
-                s.setupDownload(root_element, downloadUrl, fullWidth);
+                s.setupDownload(header, downloadUrl, fullWidth);
             }
             if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null) {
                 s.setupMap(root_element);
@@ -94,7 +97,8 @@ var rtVis = (function () {
                 t.tsCountryTitle(country, 'country-title-container');
             }
             if (Object.keys(data['rtData']).length > 1) {
-                s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth);
+                var sources_header = s.setupSourcesHeader(root_element);
+                s.addSourceSelect(sources_header, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth);
             }
             if (data['rtData'][activeSource]['rtData'] !== null) {
                 s.setupRt(root_element);
@@ -307,14 +311,23 @@ var setup = (function (_super) {
             .attr('class', 'map-container')
             .attr('id', 'map-container');
     };
+    setup.prototype.setupHeader = function (root_element) {
+        var header = d3.select(root_element)
+            .append('div')
+            .attr('class', 'dash-header')
+            .attr('id', 'dash-header')
+            .style('height', '30px')
+            .style('width', '100%');
+        return (header);
+    };
     setup.prototype.setupDropDown = function (root_element) {
-        d3.select(root_element)
+        root_element
             .append('div')
             .attr('class', 'dropdown-container')
             .attr('id', 'dropdown-container');
     };
     setup.prototype.setupDownload = function (root_element, downloadUrl, fullWidth) {
-        d3.select(root_element)
+        root_element
             .append('div')
             .attr('class', 'download-container')
             .attr('id', 'download-container')
@@ -474,15 +487,24 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'footer');
     };
+    setup.prototype.setupSourcesHeader = function (root_element) {
+        var header = d3.select(root_element)
+            .append('div')
+            .attr('class', 'sources-header')
+            .attr('id', 'sources-header')
+            .style('height', '25px')
+            .style('width', '100%');
+        return (header);
+    };
     setup.prototype.addSourceSelect = function (root_element, id, elements, eventhandler, fullWidth) {
         if (fullWidth === undefined) {
             fullWidth = 1000;
         }
-        var div = d3.select(root_element)
+        var div = root_element
+            .append('div')
             .append('select')
             .attr('class', id)
             .attr('id', id)
-            .style('left', fullWidth + 'px')
             .on('change', eventhandler);
         var i;
         for (i = 0; i < elements.length; i++) {
@@ -609,7 +631,6 @@ var map = (function (_super) {
     };
     map.prototype.prepareMapData = function (summaryData, variable) {
         var _this = this;
-        summaryData.map(function (a) { return console.log(a[variable]); });
         return (summaryData.map(function (a) { return _this.parseMapData(a[variable]); }));
     };
     map.prototype.parseMapData = function (d) {

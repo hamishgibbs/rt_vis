@@ -87,9 +87,6 @@ export default class rtVis {
 
       var date_lims = null
 
-      /*
-
-      */
       // For development until EpiNow2 changes
       try {
         data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
@@ -107,12 +104,16 @@ export default class rtVis {
 
       var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null
 
+      if (!ts_null || downloadUrl !== null){
+        var header = s.setupHeader(root_element)
+      }
+
       if (!ts_null){
-        s.setupDropDown(root_element)
+        s.setupDropDown(header)
       }
 
       if (downloadUrl !== null){
-        s.setupDownload(root_element, downloadUrl, fullWidth)
+        s.setupDownload(header, downloadUrl, fullWidth)
       }
 
       if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null){
@@ -133,7 +134,9 @@ export default class rtVis {
       }
 
       if (Object.keys(data['rtData']).length > 1){
-        s.addSourceSelect(root_element, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth)
+        var sources_header = s.setupSourcesHeader(root_element)
+
+        s.addSourceSelect(sources_header, 'source-select', Object.keys(data['rtData']), eventHandlers['sourceSelectClick'], fullWidth)
       }
 
       if (data['rtData'][activeSource]['rtData'] !== null){
