@@ -3,10 +3,10 @@ try {
 }
 catch(err) {}
 
-interface rtVis {
+class rtVisInterface {
   _config: any;
-  fullHeight: any,
-  fullWidth: any,
+  fullHeight: any;
+  fullWidth: any;
   activeArea: string;
   activeTime: string;
   runDate: string;
@@ -20,8 +20,10 @@ interface rtVis {
   _subregional_ref: any;
 }
 
-export default class rtVis {
+class rtVis extends rtVisInterface {
   constructor(x: any) {
+
+    super()
 
     this._config = x
 

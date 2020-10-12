@@ -4,7 +4,7 @@ module.exports = function(grunt) {
     ts: {
       default: {
         src: ["**/*.ts", "!node_modules/**/*.ts"]
-      }
+      },
     },
     concat: {
       options: {

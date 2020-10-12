@@ -1,30 +1,51 @@
+var __extends = (this && this.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
 try {
     var d3 = require('d3');
 }
 catch (err) { }
-var rtVis = (function () {
+var rtVisInterface = (function () {
+    function rtVisInterface() {
+    }
+    return rtVisInterface;
+}());
+var rtVis = (function (_super) {
+    __extends(rtVis, _super);
     function rtVis(x) {
-        this._config = x;
-        this.activeArea = x['activeArea'];
-        this.activeTime = x['activeTime'];
-        this.runDate = x['runDate'];
-        this.activeSource = Object.keys(x['rtData'])[0];
-        this.activeMapData = 'Expected change in daily cases';
-        this.downloadUrl = x['downloadUrl'];
-        this.ts_color_ref = x['ts_color_ref'];
-        var available_rt_data = Object.values(x['rtData'][this.activeSource]).filter(function (x) { return x !== null; });
+        var _this = _super.call(this) || this;
+        _this._config = x;
+        _this.activeArea = x['activeArea'];
+        _this.activeTime = x['activeTime'];
+        _this.runDate = x['runDate'];
+        _this.activeSource = Object.keys(x['rtData'])[0];
+        _this.activeMapData = 'Expected change in daily cases';
+        _this.downloadUrl = x['downloadUrl'];
+        _this.ts_color_ref = x['ts_color_ref'];
+        var available_rt_data = Object.values(x['rtData'][_this.activeSource]).filter(function (x) { return x !== null; });
         if (!available_rt_data[0].then) {
-            this._requiredData = Promise.all([{ 'geoData': x['geoData'],
+            _this._requiredData = Promise.all([{ 'geoData': x['geoData'],
                     'rtData': x['rtData'] }
             ]);
         }
         else {
-            this._requiredData = this.recursiveObjectPromiseAll([{ 'geoData': x['geoData'],
+            _this._requiredData = _this.recursiveObjectPromiseAll([{ 'geoData': x['geoData'],
                     'rtData': x['rtData']
                 }]);
         }
-        this._subregional_ref = x['subregional_ref'];
-        this.fullWidth = x['fullWidth'];
+        _this._subregional_ref = x['subregional_ref'];
+        _this.fullWidth = x['fullWidth'];
+        return _this;
     }
     rtVis.prototype.summaryWidget = function (root_element) {
         this.setupPage(root_element);
@@ -197,7 +218,7 @@ var rtVis = (function () {
     };
     ;
     return rtVis;
-}());
+}(rtVisInterface));
 ;;var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
         extendStatics = Object.setPrototypeOf ||
