@@ -69,7 +69,6 @@ var rtVis = (function () {
             var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null;
             if (!ts_null || downloadUrl !== null) {
                 var header = s.setupHeader(root_element);
-                console.log(header);
             }
             if (!ts_null) {
                 s.setupDropDown(header);

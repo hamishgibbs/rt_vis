@@ -87,9 +87,6 @@ class rtVis {
 
       var date_lims = null
 
-      /*
-
-      */
       // For development until EpiNow2 changes
       try {
         data['rtData']['Cases']['summaryData'] = data['rtData']['Cases']['summaryData'].map(subRegion);
@@ -109,8 +106,6 @@ class rtVis {
 
       if (!ts_null || downloadUrl !== null){
         var header = s.setupHeader(root_element)
-
-        console.log(header)
       }
 
       if (!ts_null){
