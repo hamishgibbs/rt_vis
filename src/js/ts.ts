@@ -5,6 +5,8 @@ catch(err) {}
 
 interface ts {
   margin: any
+  _subregional_ref: any;
+  ts_color_ref: any;
 }
 
 class ts extends rtVis {
