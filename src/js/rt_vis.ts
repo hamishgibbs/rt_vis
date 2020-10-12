@@ -107,12 +107,18 @@ class rtVis {
 
       var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null
 
+      if (!ts_null && downloadUrl !== null){
+        var header = s.setupHeader(root_element)
+
+        console.log(header)
+      }
+
       if (!ts_null){
-        s.setupDropDown(root_element)
+        s.setupDropDown(header)
       }
 
       if (downloadUrl !== null){
-        s.setupDownload(root_element, downloadUrl, fullWidth)
+        s.setupDownload(header, downloadUrl, fullWidth)
       }
 
       if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null){

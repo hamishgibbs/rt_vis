@@ -30,6 +30,18 @@ class setup extends rtVis {
       .attr('id', 'map-container')
 
   }
+  setupHeader(root_element){
+
+    var header = d3.select(root_element)
+      .append('div')
+      .attr('class', 'dash-header')
+      .attr('id', 'dash-header')
+      .style('height', '20px')
+      .style('width', '100%')
+
+    return(header)
+
+  }
   setupDropDown(root_element){
 
     d3.select(root_element)
@@ -232,7 +244,7 @@ class setup extends rtVis {
     function brushed(e) {
       var maxDate = d3.select(d3.selectAll('.handle--e')._groups[0][0]).attr('x')
       var minDate = d3.select(d3.selectAll('.handle--w')._groups[0][0]).attr('x')
-      
+
       if ((maxDate - minDate) <= 4){
         date_handler([date_lims[0], date_lims[1]])
       } else {

@@ -67,11 +67,15 @@ var rtVis = (function () {
             var s = new setup(_config);
             var t = new ts(_config);
             var ts_null = data['rtData'][activeSource]['rtData'] === null && data['rtData'][activeSource]['casesInfectionData'] === null && data['rtData'][activeSource]['casesReportData'] === null;
+            if (!ts_null && downloadUrl !== null) {
+                var header = s.setupHeader(root_element);
+                console.log(header);
+            }
             if (!ts_null) {
-                s.setupDropDown(root_element);
+                s.setupDropDown(header);
             }
             if (downloadUrl !== null) {
-                s.setupDownload(root_element, downloadUrl, fullWidth);
+                s.setupDownload(header, downloadUrl, fullWidth);
             }
             if (data['geoData'] !== null && data['rtData'][activeSource]['summaryData'] !== null) {
                 s.setupMap(root_element);
@@ -306,6 +310,15 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'map-container')
             .attr('id', 'map-container');
+    };
+    setup.prototype.setupHeader = function (root_element) {
+        var header = d3.select(root_element)
+            .append('div')
+            .attr('class', 'dash-header')
+            .attr('id', 'dash-header')
+            .style('height', '20px')
+            .style('width', '100%');
+        return (header);
     };
     setup.prototype.setupDropDown = function (root_element) {
         d3.select(root_element)
@@ -609,7 +622,6 @@ var map = (function (_super) {
     };
     map.prototype.prepareMapData = function (summaryData, variable) {
         var _this = this;
-        summaryData.map(function (a) { return console.log(a[variable]); });
         return (summaryData.map(function (a) { return _this.parseMapData(a[variable]); }));
     };
     map.prototype.parseMapData = function (d) {
