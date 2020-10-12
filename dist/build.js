@@ -316,18 +316,18 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'dash-header')
             .attr('id', 'dash-header')
-            .style('height', '20px')
+            .style('height', '30px')
             .style('width', '100%');
         return (header);
     };
     setup.prototype.setupDropDown = function (root_element) {
-        d3.select(root_element)
+        root_element
             .append('div')
             .attr('class', 'dropdown-container')
             .attr('id', 'dropdown-container');
     };
     setup.prototype.setupDownload = function (root_element, downloadUrl, fullWidth) {
-        d3.select(root_element)
+        root_element
             .append('div')
             .attr('class', 'download-container')
             .attr('id', 'download-container')

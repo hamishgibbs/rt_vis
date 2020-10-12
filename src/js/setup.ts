@@ -36,7 +36,7 @@ class setup extends rtVis {
       .append('div')
       .attr('class', 'dash-header')
       .attr('id', 'dash-header')
-      .style('height', '20px')
+      .style('height', '30px')
       .style('width', '100%')
 
     return(header)
@@ -44,7 +44,7 @@ class setup extends rtVis {
   }
   setupDropDown(root_element){
 
-    d3.select(root_element)
+    root_element
       .append('div')
       .attr('class', 'dropdown-container')
       .attr('id', 'dropdown-container')
@@ -53,7 +53,7 @@ class setup extends rtVis {
 
   setupDownload(root_element, downloadUrl, fullWidth) {
 
-    d3.select(root_element)
+    root_element
       .append('div')
       .attr('class', 'download-container')
       .attr('id', 'download-container')
