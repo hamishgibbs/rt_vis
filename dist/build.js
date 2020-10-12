@@ -493,7 +493,7 @@ var setup = (function (_super) {
             .append('div')
             .attr('class', 'sources-header')
             .attr('id', 'sources-header')
-            .style('height', '30px')
+            .style('height', '25px')
             .style('width', '100%');
         return (header);
     };
@@ -502,10 +502,10 @@ var setup = (function (_super) {
             fullWidth = 1000;
         }
         var div = root_element
+            .append('div')
             .append('select')
             .attr('class', id)
             .attr('id', id)
-            .style('left', fullWidth + 'px')
             .on('change', eventhandler);
         var i;
         for (i = 0; i < elements.length; i++) {

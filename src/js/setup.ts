@@ -267,7 +267,7 @@ class setup extends rtVis {
                   .append('div')
                   .attr('class', 'sources-header')
                   .attr('id', 'sources-header')
-                  .style('height', '30px')
+                  .style('height', '25px')
                   .style('width', '100%')
 
     return(header)
@@ -280,10 +280,10 @@ class setup extends rtVis {
     }
 
     var div = root_element
+      .append('div')
       .append('select')
       .attr('class', id)
       .attr('id', id)
-      .style('left', fullWidth + 'px')
       .on('change', eventhandler)
 
     var i

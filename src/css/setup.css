@@ -149,8 +149,11 @@
   background-color: #C3C3C3;
 }
 
+.sources-header div{
+  float: right;
+}
+
 .source-select {
-  position: absolute;
   border-radius: 8px;
   font-size: 14px;
   background-color: #e7e7e7;
