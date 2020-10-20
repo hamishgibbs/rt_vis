@@ -675,7 +675,7 @@ var map = (function (_super) {
             .style("top", y_coord + "px");
         var tooltip_data = this.summaryData.filter(function (a) { return a.region == e.properties.sovereignt; })[0];
         try {
-            var tooltip_str = '<b>' + e.properties.sovereignt + '</b>' + '</br>' +
+            var tooltip_str = '<b>' + e.properties.sovereignt + ': </b>' +
                 Object.keys(tooltip_data).map(function (key) {
                     if (key !== 'region') {
                         return "" + key + ": " + tooltip_data[key];
