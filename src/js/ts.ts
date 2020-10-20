@@ -9,7 +9,7 @@ interface ts {
   ts_color_ref: any;
 }
 
-class ts extends rtVis {
+class ts {
   constructor (x) {
     super(x)
     this.margin = {top: 10, right: 30, bottom: 30, left: 60}
@@ -323,14 +323,14 @@ class ts extends rtVis {
 
       if (parseTime !== null) {
         var poly = d3.area()
-            .x(function(d) { return x_scale(parseTime(d[x])) })
-            .y0(function(d) { return y_scale(gt_max_observed_cases(d[y0], max_observed_cases)) })
-            .y1(function(d) { return y_scale(gt_max_observed_cases(d[y1], max_observed_cases)) })
+            .x(function(d: any) { return x_scale(parseTime(d[x])) })
+            .y0(function(d: any) { return y_scale(gt_max_observed_cases(d[y0], max_observed_cases)) })
+            .y1(function(d: any) { return y_scale(gt_max_observed_cases(d[y1], max_observed_cases)) })
       } else {
         var poly = d3.area()
-            .x(function(d) { return x_scale(d[x]) })
-            .y0(function(d) { return y_scale(gt_max_observed_cases(d[y0], max_observed_cases)) })
-            .y1(function(d) { return y_scale(gt_max_observed_cases(d[y1], max_observed_cases)) })
+            .x(function(d: any) { return x_scale(d[x]) })
+            .y0(function(d: any) { return y_scale(gt_max_observed_cases(d[y0], max_observed_cases)) })
+            .y1(function(d: any) { return y_scale(gt_max_observed_cases(d[y1], max_observed_cases)) })
       }
 
       return(poly)

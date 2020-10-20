@@ -20,7 +20,7 @@ class rtVisInterface {
   _subregional_ref: any;
 }
 
-class rtVis extends rtVisInterface {
+export class rtVis extends rtVisInterface {
   constructor(x: any) {
 
     super()

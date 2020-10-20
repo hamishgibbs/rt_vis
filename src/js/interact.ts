@@ -6,7 +6,7 @@ catch(err) {}
 interface interact {
 }
 
-class interact extends rtVis {
+class interact {
   constructor (x) {
     super(x)
   }
