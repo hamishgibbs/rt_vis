@@ -8,7 +8,7 @@ interface setup {
   margin: any;
 }
 
-class setup extends rtVis {
+class setup {
   constructor (x) {
     super(x)
 

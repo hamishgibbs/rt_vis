@@ -3,8 +3,9 @@ module.exports = function(grunt) {
   grunt.initConfig({
     ts: {
       default: {
+        tsconfig: './tsconfig.json',
         src: ["**/*.ts", "!node_modules/**/*.ts"]
-      }
+      },
     },
     concat: {
       options: {
