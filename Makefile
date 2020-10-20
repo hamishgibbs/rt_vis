@@ -6,11 +6,11 @@ endif
 
 R = /usr/local/bin/Rscript $^ $@
 
-
 bump:
-	cd /Users/hamishgibbs/Documents/Covid-19/RtD3 && bash bump.sh
+	cd ${WORK_DIR}/RtD3 && bash bump.sh
 
 check: build_rmd.R
+	make bump
 	mkdir tmp
 	$(R)
 
