@@ -7,3 +7,4 @@ test.html
 test.Rmd
 data
 lib
+.env
